@@ -7,10 +7,23 @@ import {
 } from '../salesforceUrl/salesforceUrl';
 
 
+interface ApiError extends Error {
+    status?: number;
+    payload?: string;
+}
+
 type JsforceConn = {
     instanceUrl?: string;
     version?: string;
     accessToken?: string;
+    metadata?: {
+        describe: (asOfVersion?: string) => Promise<unknown>;
+        list: (queries: unknown[], asOfVersion?: string) => Promise<unknown[]>;
+        retrieve: (options: unknown) => Promise<{ id?: string; asyncProcessId?: string; zipFile?: string }>;
+        checkRetrieveStatus: (id: string, includeZip?: boolean) => Promise<unknown>;
+        deploy: (zipB64: string, options: unknown) => Promise<{ id?: string; asyncProcessId?: string; zipFile?: string }>;
+        checkDeployStatus: (id: string, includeDetails?: boolean) => Promise<unknown>;
+    };
 };
 
 type MetadataClientOptions = {
@@ -154,7 +167,7 @@ export function createMetadataApiClient(options: MetadataClientOptions = {}) {
         const text = await res.text();
         if (!res.ok) {
             const soapErr = parseSoapError(text);
-            const err = new Error(soapErr || `Metadata API error (${res.status})`);
+            const err = new Error(soapErr || `Metadata API error (${res.status})`) as ApiError;
             err.status = res.status;
             err.payload = text;
             throw err;
@@ -162,7 +175,7 @@ export function createMetadataApiClient(options: MetadataClientOptions = {}) {
         const doc = new DOMParser().parseFromString(stripBom(text), 'application/xml');
         const soapErr = parseSoapError(text);
         if (soapErr) {
-            const err = new Error(soapErr);
+            const err = new Error(soapErr) as ApiError;
             err.status = 500;
             err.payload = text;
             throw err;
@@ -200,7 +213,7 @@ export function createMetadataApiClient(options: MetadataClientOptions = {}) {
             return doc;
         },
 
-        async listMetadata({ queries, asOfVersion = effectiveApiVersion } = {}) {
+        async listMetadata({ queries, asOfVersion = effectiveApiVersion }: { queries?: Array<{ type?: string; folder?: string }>; asOfVersion?: string } = {}) {
             const q = Array.isArray(queries) ? queries : [];
             if (!q.length) return [];
             if (typeof jsforceConnection?.metadata?.list === 'function') {
@@ -232,14 +245,14 @@ export function createMetadataApiClient(options: MetadataClientOptions = {}) {
                 .filter(x => x.fullName || x.fileName);
         },
 
-        async retrieve({ typesMap, apiVersion = effectiveApiVersion } = {}) {
+        async retrieve({ typesMap, apiVersion = effectiveApiVersion }: { typesMap?: Map<string, string[]>; apiVersion?: string } = {}) {
             const typesXml = xmlForTypes(typesMap || new Map());
             if (typeof jsforceConnection?.metadata?.retrieve === 'function') {
                 const unpackaged = {
                     version: apiVersion,
                     types: Array.from(typesMap?.entries?.() || []).map(([name, members]) => ({
                         name,
-                        members: Array.isArray(members) ? members : Array.from(members || []),
+                        members: Array.isArray(members) ? members : Array.from(members as Iterable<string> || []),
                     })),
                 };
                 const result = await jsforceConnection.metadata.retrieve({

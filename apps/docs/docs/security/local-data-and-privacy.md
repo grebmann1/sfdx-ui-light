@@ -4,7 +4,7 @@ title: Local Data and Privacy
 
 # Local Data and Privacy
 
-This section explains how SF Toolkit handles local workspace data and network transfer behavior.
+This section explains how Workbench handles local workspace data and network transfer behavior.
 
 ## Local retention by default for workspace files
 
@@ -14,7 +14,7 @@ This section explains how SF Toolkit handles local workspace data and network tr
 
 ## No automatic raw workspace upload
 
-- SF Toolkit does not automatically transfer your full virtual file system contents to a central server as raw file dumps
+- Workbench does not automatically transfer your full virtual file system contents to a central server as raw file dumps
 - your local workspace state is intended to stay on your machine unless you explicitly export/share content
 
 ## When network traffic can happen

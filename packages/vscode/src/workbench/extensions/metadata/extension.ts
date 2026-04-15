@@ -135,12 +135,14 @@ const METADATA_EXTENSION_BASE_CONFIG = buildSalesforceExtensionConfig({
             'editor/context': [
                 {
                     command: 'salesforceMetadata.fetchMetadata',
+                    group: 'z_salesforce@4',
                 },
             ],
             'explorer/context': [
                 {
                     command: 'salesforceMetadata.generateManifestFile',
                     when: 'resourceFilename != package.xml',
+                    group: 'z_salesforce@3',
                 },
             ],
         },

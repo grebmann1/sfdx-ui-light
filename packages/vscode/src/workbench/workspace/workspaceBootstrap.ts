@@ -30,6 +30,16 @@ function prefixWorkspaceFiles(workspaceRoot: string, files: Record<string, strin
     return rooted;
 }
 
+/** Returns all intermediate ancestor paths of `path`, excluding '/' itself. */
+function ancestorPaths(path: string): string[] {
+    const parts = path.split('/').filter(Boolean);
+    const ancestors: string[] = [];
+    for (let i = 1; i < parts.length; i++) {
+        ancestors.push('/' + parts.slice(0, i).join('/'));
+    }
+    return ancestors;
+}
+
 export async function buildWorkspaceBootstrap(
     connection: { orgId?: unknown; instanceUrl?: unknown } | null | undefined,
     workspaceBasePath = '/workspace/orgs'
@@ -39,6 +49,7 @@ export async function buildWorkspaceBootstrap(
     return {
         workspaceRoot,
         ensureDirectories: [
+            ...ancestorPaths(workspaceRoot),
             workspaceRoot,
             `${workspaceRoot}/.vscode`,
             `${workspaceRoot}/.salesforce`,

@@ -81,3 +81,10 @@
 .slds-global-header__item {
     padding: 0 0.5rem;
 }
+
+.mode-toggle-btn {
+    margin-left: 0.25rem;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+}

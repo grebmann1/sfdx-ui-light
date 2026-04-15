@@ -19,7 +19,7 @@ const APPLICATIONS = {
 };
 
 export default class Default extends LightningElement {
-    @api isBackButtonDisplayed = false;
+    @api isToggleVisible = false;
 
     _currentApplication; //APPLICATIONS.ASSISTANT;//
     betaSmartInputEnabled = false;
@@ -187,10 +187,6 @@ export default class Default extends LightningElement {
             baseUrl: chrome.runtime.getURL('/views/app.html'),
             redirectUrl: encodeURIComponent(params.toString()),
         });
-    };
-
-    handleBackClick = () => {
-        this.dispatchEvent(new CustomEvent('back', { bubbles: true, composed: true }));
     };
 
     emitApplicationChange = applicationName => {

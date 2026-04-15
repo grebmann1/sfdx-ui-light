@@ -1,10 +1,11 @@
 import { wire, api, track } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import { CurrentPageReference, NavigationContext, navigate } from 'lwr/navigation';
-import { isUndefinedOrNull, isNotUndefinedOrNull } from 'shared/utils';
+import { isUndefinedOrNull, isNotUndefinedOrNull, lowerCaseKey } from 'shared/utils';
 import { store_application, store as legacyStore } from 'shared/store';
 import { connectStore, store, DESCRIBE, SOBJECTEXPLORER } from 'core/store';
 import Analytics from 'shared/analytics';
+import { getCategoryIcon } from './constants';
 
 const TYPEFILTER_OPTIONS = [
     { label: 'Object', value: 'object' },
@@ -34,14 +35,11 @@ export default class App extends ToolkitElement {
 
     displayFilter = false;
     records: Array<Record<string, any>> = [];
-    filteredRecords: Array<Record<string, any>> = [];
-    menuRecords: Array<Record<string, any>> = [];
-    @track formattedMenuItems: Array<Record<string, any>> = [];
+    @track filteredRecords: Array<Record<string, any>> = [];
 
     // Filter
     typeFilter_value: string[] = [];
     metadataFilter_value: string[] = [];
-    keepFilter = false;
 
     _pageRef: any;
     @wire(CurrentPageReference)
@@ -85,16 +83,20 @@ export default class App extends ToolkitElement {
         this.displayFilter = false;
     };
 
-    handleItemSelection = async (e: any): Promise<void> => {
-        const objectName = e.detail.name;
-        // Open or focus tab
+    handleTreeSelect = (e: any): void => {
+        const item = e.detail?.item;
+        if (!item?.rawName) return;
         navigate(this.navContext, {
             type: 'application',
             state: {
                 applicationName: 'sobject',
-                attribute1: objectName,
+                attribute1: item.rawName,
             },
         });
+    };
+
+    handleRefresh = async (): Promise<void> => {
+        await this.describeAll();
     };
 
     handleTabSelect = (e: any): void => {
@@ -115,7 +117,6 @@ export default class App extends ToolkitElement {
         this.typeFilter_value = e.detail.value;
         setTimeout(() => {
             this.filteredRecords = this.filterRecords();
-            this.setFormattedMenuItems();
         }, 1);
     };
 
@@ -123,37 +124,28 @@ export default class App extends ToolkitElement {
         this.metadataFilter_value = e.detail.value;
         setTimeout(() => {
             this.filteredRecords = this.filterRecords();
-            this.setFormattedMenuItems();
         }, 1);
     };
 
     /** Methods */
 
     loadFromNavigation = async ({ state }: { state: any }): Promise<void> => {
-        this.keepFilter = false;
         const { applicationName, attribute1 } = state;
         if (applicationName != 'sobject') return;
         if (attribute1) {
-            this.keepFilter = true;
-            // Open or focus tab
             const tab = SOBJECTEXPLORER.formatTab({ id: attribute1, label: attribute1 });
             store.dispatch(SOBJECTEXPLORER.reduxSlice.actions.upsertTab({ tab }));
         }
-        this.setFormattedMenuItems();
+        this.filteredRecords = this.filterRecords();
     };
 
     extractCategory = (item: string): string => {
-        if (item.endsWith('ChangeEvent')) {
-            return 'change';
-        } else if (item.endsWith('Feed')) {
-            return 'feed';
-        } else if (item.endsWith('History')) {
-            return 'history';
-        } else if (item.endsWith('Share')) {
-            return 'share';
-        } else if (item.endsWith('__mdt')) {
-            return 'metadata';
-        }
+        if (item.endsWith('ChangeEvent')) return 'change';
+        if (item.endsWith('Feed')) return 'feed';
+        if (item.endsWith('History')) return 'history';
+        if (item.endsWith('Share')) return 'share';
+        if (item.endsWith('__mdt')) return 'metadata';
+        if (item.endsWith('__e')) return 'event';
         return 'object';
     };
 
@@ -162,7 +154,8 @@ export default class App extends ToolkitElement {
             return this.records;
         return this.records
             .filter(
-                x => this.typeFilter_value.includes(x.category) || this.typeFilter_value.length == 0
+                x =>
+                    this.typeFilter_value.includes(x.category) || this.typeFilter_value.length == 0
             )
             .filter(
                 x =>
@@ -174,7 +167,6 @@ export default class App extends ToolkitElement {
 
     loadAlls = async (): Promise<void> => {
         await this.describeAll();
-        this.setFormattedMenuItems();
     };
 
     load_describeGlobal = async (): Promise<Array<Record<string, any>>> => {
@@ -206,40 +198,63 @@ export default class App extends ToolkitElement {
         }
     };
 
-    setFormattedMenuItems = (): void => {
-        this.formattedMenuItems = this.filteredRecords
-            .map(x => ({
-                label: `${x.label}(${x.name})`,
-                name: x.name,
-                key: x.name,
-                isSelected: this.currentTab && this.currentTab.id === x.name,
-            }))
-            .sort((a, b) => a.name.localeCompare(b.name));
-    };
-
     /** Getters */
+
+    get computedTree() {
+        return this.filteredRecords
+            .map(x => ({
+                id: lowerCaseKey(x.name),
+                name: `${x.name} / ${x.label}`,
+                title: `${x.name} / ${x.label}`,
+                rawName: x.name,
+                icon: getCategoryIcon(x.category, x.custom),
+            }))
+            .sort((a, b) => a.rawName.localeCompare(b.rawName));
+    }
+
+    get selectedId() {
+        return this.currentTab?.id ? lowerCaseKey(this.currentTab.id) : '';
+    }
+
+    get sobjectCount() {
+        return this.filteredRecords.length;
+    }
+
+    get panelTitle() {
+        return this.isLoading ? 'SObjects' : `SObjects (${this.sobjectCount})`;
+    }
+
+    get searchFields() {
+        return ['name', 'id'];
+    }
 
     get typeFilter_options() {
         return TYPEFILTER_OPTIONS;
     }
+
     get metadataFilter_options() {
         return METADATAFILTER_OPTIONS;
     }
+
     get filtering_variant() {
         return this.displayFilter ? 'brand' : 'border-filled';
     }
+
     get pageClass() {
         return super.pageClass + ' slds-p-around_small';
     }
+
     get formattedTabs() {
         return this.tabs.map(tab => ({
             ...tab,
             name: tab.label || tab.id,
         }));
     }
+
     get activeTabId() {
         return this.currentTab?.id;
     }
+
     get isViewerDisplayed() {
         return isNotUndefinedOrNull(this.currentTab);
     }

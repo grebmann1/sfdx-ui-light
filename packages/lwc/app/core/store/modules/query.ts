@@ -16,6 +16,7 @@ export const executeQuery = createAsyncThunk(
         {
             connector,
             soql,
+            rawSoql,
             tabId,
             createdDate,
             useToolingApi,
@@ -23,6 +24,7 @@ export const executeQuery = createAsyncThunk(
         }: {
             connector: ConnectorLike;
             soql: string;
+            rawSoql?: string;
             tabId: string;
             createdDate: string | number | Date;
             useToolingApi?: boolean;
@@ -35,7 +37,7 @@ export const executeQuery = createAsyncThunk(
             const res = await _conn.query(soql).scanAll(includeDeletedRecords || false);
             dispatch(
                 DOCUMENT.reduxSlices.RECENT.actions.saveQuery({
-                    soql,
+                    soql: rawSoql ?? soql,
                     alias: connector.configuration.alias,
                     data: res,
                 })

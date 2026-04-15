@@ -30,6 +30,8 @@ export const IFRAME_JSFORCE_BRIDGE_METHODS = [
     'metadata.retrieveViaMetadataApi',
     'metadata.retrieveToolingTypes',
     'schema.describeCustomObject',
+    'metadata.deployViaToolingApi',
+    'metadata.deployViaMetadataApi',
 ] as const;
 
 export type IframeJsforceBridgeMethod = (typeof IFRAME_JSFORCE_BRIDGE_METHODS)[number];

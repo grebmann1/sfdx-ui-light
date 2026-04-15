@@ -5,13 +5,12 @@ apps/docs/node_modules
 packages/vscode/node_modules
 packages/desktop/node_modules
 
-# Build outputs
-dist
+# Intermediate / dev-only build outputs (not needed in Docker context)
 site
 __lwr_cache__
-packages/server/dist
-packages/vscode/dist
 packages/shared/dist
+
+# Keep dist/ and packages/*/dist — they are pre-built locally before docker build
 
 # Git
 .git
@@ -21,7 +20,6 @@ packages/shared/dist
 Dockerfile
 docker-compose.yml
 .dockerignore
-docker/
 
 # Environment files (injected at runtime)
 .env

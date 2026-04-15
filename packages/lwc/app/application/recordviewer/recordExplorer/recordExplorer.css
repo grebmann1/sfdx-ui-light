@@ -2,27 +2,12 @@
     --slds-c-button-spacing-block-end: 4px;
 }
 
-.slds-breadcrumb .slds-breadcrumb__item:first-child > span {
-    --slds-c-breadcrumbs-spacing-inline-start: 0;
-}
-
-.slds-breadcrumb .slds-breadcrumb__item > span {
-    display: block;
-    padding-top: 0;
-    padding-right: var(
-        --slds-c-breadcrumbs-spacing-inline-end,
-        var(--sds-c-breadcrumbs-spacing-inline-end, 0.5rem)
-    );
-    padding-bottom: 0;
-    padding-left: var(
-        --slds-c-breadcrumbs-spacing-inline-start,
-        var(--sds-c-breadcrumbs-spacing-inline-start, 0.5rem)
-    );
-}
+/* ── Table layout ──────────────────────────────────────────── */
 
 .tableFixHead table {
     border-collapse: inherit;
     width: 100%;
+    overflow: clip;
 }
 
 .tableFixHead thead {
@@ -31,11 +16,157 @@
     z-index: 2;
 }
 
-.slds-editor-footer {
-    background-color: #fafaf9;
+/* ── Toolbar (top action buttons) ──────────────────────────── */
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    gap: 2px;
 }
 
-.record-links {
+.toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    padding: 4px;
+    cursor: pointer;
+    color: var(--slds-g-color-neutral-base-30, #444);
+    transition: background-color 120ms ease, color 120ms ease;
+}
+
+.toolbar-btn:hover:not(:disabled) {
+    background-color: var(--slds-g-color-neutral-base-90, #e5e5e5);
+    color: var(--slds-g-color-neutral-base-10, #1a1a1a);
+}
+
+.toolbar-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.toolbar-btn.is-active {
+    color: var(--slds-g-color-brand-base-50, #0176d3);
+    background-color: var(--slds-g-color-brand-base-95, #e8f4ff);
+}
+
+/* ── Inline icon button (copy, etc.) ───────────────────────── */
+
+.icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    border-radius: 3px;
+    padding: 2px;
+    cursor: pointer;
+    color: var(--slds-g-color-neutral-base-40, #5a5a5a);
+    opacity: 0;
+    transition: opacity 120ms ease, background-color 120ms ease;
+    vertical-align: middle;
+}
+
+.icon-btn:hover {
+    background-color: var(--slds-g-color-neutral-base-88, #e0e0e0);
+    opacity: 1 !important;
+}
+
+/* Show inline icon buttons when hovering the row they belong to */
+.info-row:hover .icon-btn,
+.slds-th__action:hover .icon-btn {
+    opacity: 0.7;
+}
+
+.th-toggle-btn {
+    opacity: 0.7;
+}
+
+/* ── Record info card ───────────────────────────────────────── */
+
+.record-info-card {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 2px 0 4px;
+}
+
+.info-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    min-height: 20px;
+}
+
+.info-icon {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    color: var(--slds-g-color-neutral-base-50, #747474);
+}
+
+.info-label {
+    flex-shrink: 0;
+    width: 68px;
+    color: var(--slds-g-color-neutral-base-50, #747474);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 500;
+}
+
+.info-value {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    overflow: hidden;
+    flex: 1;
+    color: var(--slds-g-color-neutral-base-10, #1a1a1a);
+    font-size: 12px;
+}
+
+.info-sep {
+    color: var(--slds-g-color-neutral-base-70, #b0b0b0);
+    margin: 0 1px;
+}
+
+.info-id-prefix {
+    color: var(--slds-g-color-neutral-base-50, #747474);
+    font-variant-numeric: tabular-nums;
+    font-size: 11px;
+}
+
+/* ── Info links row ─────────────────────────────────────────── */
+
+.info-links {
+    display: flex;
+    align-items: center;
     flex-wrap: wrap;
-    gap: 0.25rem;
+    gap: 2px;
+}
+
+.info-link {
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    border: 1px solid var(--slds-g-color-neutral-base-80, #d4d4d4);
+    color: var(--slds-g-color-neutral-base-30, #444);
+    text-decoration: none;
+    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+    white-space: nowrap;
+}
+
+.info-link:hover {
+    background-color: var(--slds-g-color-neutral-base-95, #f3f3f3);
+    border-color: var(--slds-g-color-neutral-base-60, #999);
+    color: var(--slds-g-color-neutral-base-10, #1a1a1a);
+}
+
+/* ── Edit footer ─────────────────────────────────────────────── */
+
+.slds-editor-footer {
+    background-color: #fafaf9;
 }

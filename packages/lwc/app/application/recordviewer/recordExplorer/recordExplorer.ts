@@ -323,7 +323,9 @@ export default class RecordExplorer extends ToolkitElement {
                 });
                 //console.log(`Updated Successfully : ${ret.id}`);
                 this.resetEditing();
-                refreshCurrentTab();
+                if (this.isPanel) {
+                    refreshCurrentTab();
+                }
             } else {
                 this.isViewChangeFilterEnabled = true; // To display all the modified fields in case of error.
                 const fieldErrorSet = {};
@@ -695,5 +697,9 @@ export default class RecordExplorer extends ToolkitElement {
 
     get buttonSize() {
         return this.isPanel ? 'small' : 'medium';
+    }
+
+    get infoButtonClass() {
+        return `toolbar-btn${this.isInfoDisplayed ? ' is-active' : ''}`;
     }
 }

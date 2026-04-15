@@ -63,7 +63,7 @@ export class WindowManager {
             height: 960,
             minWidth: 1100,
             minHeight: 700,
-            title: 'SF Toolkit Desktop',
+            title: 'Workbench Desktop',
             show: false,
             autoHideMenuBar: false,
             webPreferences: {
@@ -153,12 +153,12 @@ export class WindowManager {
         const username = String(payload.username || '').trim();
         const message = String(payload.message || '').trim();
         if (payload.isLoggedIn === true && username) {
-            matchingWindow.setTitle(`SF Toolkit Desktop - ${username}`);
+            matchingWindow.setTitle(`Workbench Desktop - ${username}`);
             return;
         }
 
         if (payload.isLoggedIn === false && message) {
-            matchingWindow.setTitle(`SF Toolkit Desktop - ${message}`);
+            matchingWindow.setTitle(`Workbench Desktop - ${message}`);
         }
     }
 
@@ -199,7 +199,7 @@ export class WindowManager {
         const username = String(payload.username || '').trim();
         const titleSuffix = alias || username;
 
-        return titleSuffix ? `SF Toolkit Desktop - ${titleSuffix}` : 'SF Toolkit Desktop';
+        return titleSuffix ? `Workbench Desktop - ${titleSuffix}` : 'Workbench Desktop';
     }
 
     private focusWindow(window: BrowserWindow): void {

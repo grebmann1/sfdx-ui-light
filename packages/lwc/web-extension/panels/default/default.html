@@ -1,16 +1,10 @@
 <template>
     <div class="slds-popup-container slds-background-white">
         <!-- HEADER -->
-        <extension-header onsearch={handleSearch}>
+        <extension-header
+            is-toggle-visible={isToggleVisible}
+            onsearch={handleSearch}>
             <lightning-button-group slot="action">
-                <template lwc:if={isBackButtonDisplayed}>
-                    <lightning-button
-                        class="back-button"
-                        icon-name="utility:back"
-                        label="Back"
-                        onclick={handleBackClick}
-                        size="medium"></lightning-button>
-                </template>
                 <!-- Actions for connections -->
                 <template lwc:if={isAgentDisplayed}>
                     <lightning-button-icon

@@ -333,6 +333,7 @@ export default class App extends ToolkitElement {
             QUERY.executeQuery({
                 connector: this.connector,
                 soql: formatQueryWithComment(query),
+                rawSoql: query,
                 tabId: ui.currentTab.id,
                 sobjectName: this.selectedSObject,
                 isAllRows,

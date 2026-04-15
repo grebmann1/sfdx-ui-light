@@ -43,6 +43,15 @@ type BridgeClient = {
     types: Record<string, string[]>
   }) => Promise<any>
   describeCustomObject: (objectName: string) => Promise<any>
+  deployViaToolingApi: (args: {
+    items: Array<{ path: string; sobject: string; id: string; field: string; text: string }>
+  }) => Promise<{ results: any[]; failures: any[] }>
+  deployViaMetadataApi: (args: {
+    zipBase64: string
+    checkOnly?: boolean
+    pollIntervalMs?: number
+    timeoutMs?: number
+  }) => Promise<{ id: string; success: boolean; status: string; errorMessage: string; details: unknown }>
 }
 
 type ConnectionRecord = {
@@ -70,6 +79,7 @@ type BridgeConnectionContext = {
   onHostEvent: (
     listener: (event: IframeJsforceBridgeHostEvent) => void
   ) => { dispose: () => void }
+  resolveBridgeClient: () => Promise<BridgeClient>
   dispose: () => void
 }
 
@@ -237,6 +247,18 @@ function createMockBridgeClient(workspaceRoot: string): BridgeClient {
     },
     async describeCustomObject(objectName: string) {
       return { name: objectName, fields: [] }
+    },
+    async deployViaToolingApi() {
+      return { results: [], failures: [] }
+    },
+    async deployViaMetadataApi() {
+      return {
+        id: `mock-deploy-${Date.now()}`,
+        success: true,
+        status: 'Succeeded',
+        errorMessage: '',
+        details: null
+      }
     }
   }
 }
@@ -595,15 +617,32 @@ export async function createBridgeConnectionContext({
           zipFile: includeZip ? status.zipFile : undefined
         }
       },
-      async deploy(_zipB64: string, options: { checkOnly?: boolean } = {}) {
+      async deploy(zipB64: string, options: { checkOnly?: boolean } = {}) {
         const id = `deploy-${Date.now()}-${Math.random().toString(16).slice(2)}`
-        deployStatusById.set(id, {
-          id,
-          done: true,
-          success: true,
-          status: options.checkOnly ? 'Validated' : 'Succeeded',
-          errorMessage: ''
-        })
+        try {
+          const client = await resolveBridgeClient()
+          const result = await client.deployViaMetadataApi({
+            zipBase64: zipB64,
+            checkOnly: Boolean(options?.checkOnly)
+          })
+          deployStatusById.set(id, {
+            id: result.id || id,
+            done: true,
+            success: result.success,
+            status: result.status,
+            errorMessage: result.errorMessage,
+            details: result.details
+          })
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err || 'Deploy failed')
+          deployStatusById.set(id, {
+            id,
+            done: true,
+            success: false,
+            status: 'Failed',
+            errorMessage: message
+          })
+        }
         return { id }
       },
       async checkDeployStatus(id: string) {
@@ -636,10 +675,12 @@ export async function createBridgeConnectionContext({
         errorMessage: connectionRecord.errorMessage,
         aiBridgeClient: workbenchAiBridgeClient,
         getAiBridgeClient: () => workbenchAiBridgeClient,
+        resolveBridgeClient,
       }
     },
     refreshStatus,
     onHostEvent,
+    resolveBridgeClient,
     dispose() {
       if (disposed) {
         return

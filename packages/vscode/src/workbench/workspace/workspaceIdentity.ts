@@ -30,7 +30,7 @@ export function deriveWorkspaceBaseRoot(value = '/workspace/orgs') {
     if (normalized === '/workspace') {
         return '/workspace/orgs';
     }
-    const marker = '/orgs/';
+    const marker = '/workspaces/';
     if (normalized.includes(marker)) {
         return normalized.slice(0, normalized.indexOf(marker) + marker.length - 1);
     }

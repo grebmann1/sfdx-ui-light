@@ -36,15 +36,37 @@
                             splitter-position="30"
                             is-horizontal>
                             <div
-                                class="slds-flex-column slds-full-height slds-full-width slds-is-relativ slds-p-horizontal_x-small"
+                                class="slds-flex-column slds-full-height slds-full-width slds-is-relative left-panel"
                                 slot="left">
-                                <slds-menu
-                                    class="slds-flex-column slds-full-height min-height-200"
-                                    items={formattedMenuItems}
-                                    title="SObjects"
-                                    onmenuselection={handleItemSelection}
-                                    is-loading={isLoading}
-                                    keep-filter={keepFilter}></slds-menu>
+                                <div class="slds-tree_container">
+                                    <div class="panel-header slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                                        <h2 class="panel-title slds-truncate">{panelTitle}</h2>
+                                        <template lwc:if={isLoading}>
+                                            <slds-spinner
+                                                size="x-small"
+                                                variant="brand"
+                                                alternative-text="Loading"></slds-spinner>
+                                        </template>
+                                        <template lwc:else>
+                                            <lightning-button-icon
+                                                class="slds-p-right_small"
+                                                icon-name="utility:refresh"
+                                                variant="bare"
+                                                alternative-text="Refresh"
+                                                title="Refresh"
+                                                onclick={handleRefresh}></lightning-button-icon>
+                                        </template>
+                                    </div>
+                                    <div class="tree-wrapper">
+                                        <slds-file-tree
+                                            tree={computedTree}
+                                            selected-id={selectedId}
+                                            onselect={handleTreeSelect}
+                                            search-fields={searchFields}
+                                            min-search-length="1"
+                                            is-delete-disabled></slds-file-tree>
+                                    </div>
+                                </div>
                             </div>
                             <div
                                 class="slds-flex-column slds-full-height slds-full-width slds-is-relative slds-p-horizontal_xx-small"

@@ -16,6 +16,10 @@ export default class Header extends LightningElement {
 
     @api isIconDisabled = false;
 
+    @api isSalesforceMode = false;
+
+    @api isToggleVisible = false;
+
     @api placeholder = '';
 
     @api isComboboxDisplayed = false;
@@ -88,6 +92,18 @@ export default class Header extends LightningElement {
     get isIconDisplayed() {
         return !this.isIconDisabled;
     }
+
+    get toggleIconName() {
+        return this.isSalesforceMode ? 'utility:apps' : 'utility:salesforce1';
+    }
+
+    get toggleTitle() {
+        return this.isSalesforceMode ? 'Go to Apps' : 'Go to Salesforce view';
+    }
+
+    handleModeToggle = () => {
+        this.dispatchEvent(new CustomEvent('modetoggle', { bubbles: true, composed: true }));
+    };
 
     get filter_options() {
         return [

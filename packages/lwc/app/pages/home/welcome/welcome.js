@@ -3,8 +3,8 @@ import ToolkitElement from 'core/toolkitElement';
 import { NavigationContext, navigate } from 'lwr/navigation';
 import { isChromeExtension } from 'shared/utils';
 import { listOrgSessionsViaBackground } from 'core/connector';
-
-const GITHUB_ISSUES_URL = 'https://github.com/grebmann1/sf-toolkit-web/issues';
+import { loadLlmProviderConfigMapFromCache } from 'shared/cacheManager';
+import { GITHUB_DISCUSSIONS_URL, QUICK_TIPS, AI_DOC_URL } from './constants.js';
 
 export default class Welcome extends ToolkitElement {
     @wire(NavigationContext)
@@ -13,15 +13,24 @@ export default class Welcome extends ToolkitElement {
     sessions = [];
     isLoadingSessions = true;
 
+    latestRelease = null;
+    tips = QUICK_TIPS;
+
+    isAiConfigured = true; // default true to avoid flashing the setup card
+
     async connectedCallback() {
+        await Promise.all([
+            this._loadSessions(),
+            this._loadLatestRelease(),
+            this._checkAiConfiguration(),
+        ]);
+    }
+
+    async _loadSessions() {
         this.isLoadingSessions = true;
         try {
             const result = await listOrgSessionsViaBackground();
-            if (Array.isArray(result)) {
-                this.sessions = result;
-            } else {
-                this.sessions = [];
-            }
+            this.sessions = Array.isArray(result) ? result : [];
         } catch {
             this.sessions = [];
         } finally {
@@ -29,10 +38,56 @@ export default class Welcome extends ToolkitElement {
         }
     }
 
+    async _loadLatestRelease() {
+        try {
+            const url = isChromeExtension()
+                ? `${chrome.runtime.getURL('releaseNotes.json')}`
+                : '/public/releaseNotes.json';
+            const res = await fetch(url);
+            if (!res.ok) return;
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+                this.latestRelease = data[0];
+            }
+        } catch {
+            // Non-blocking.
+        }
+    }
+
+    async _checkAiConfiguration() {
+        try {
+            const configMap = await loadLlmProviderConfigMapFromCache();
+            this.isAiConfigured = Object.values(configMap).some(c => c?.apiKey);
+        } catch {
+            this.isAiConfigured = true; // assume configured on error to avoid nagging
+        }
+    }
+
     /** Getters */
 
     get hasSessions() {
         return this.sessions.length > 0;
+    }
+
+    get hasLatestRelease() {
+        return this.latestRelease != null;
+    }
+
+    get latestReleaseLabel() {
+        if (!this.latestRelease) return '';
+        return `v${this.latestRelease.version} — ${this.latestRelease.date}`;
+    }
+
+    get latestReleaseSummary() {
+        if (!this.latestRelease?.sections?.length) return '';
+        const first = this.latestRelease.sections[0];
+        const cats = first?.categories ?? [];
+        const total = cats.reduce((n, c) => n + (c.items?.length ?? 0), 0);
+        return `${first.title}: ${total} change${total !== 1 ? 's' : ''}`;
+    }
+
+    get showAiSetup() {
+        return !this.isAiConfigured;
     }
 
     /** Events */
@@ -53,11 +108,7 @@ export default class Welcome extends ToolkitElement {
 
         navigate(this.navContext, {
             type: 'application',
-            state: {
-                applicationName: 'home',
-                sessionId,
-                serverUrl,
-            },
+            state: { applicationName: 'home', sessionId, serverUrl },
         });
     };
 
@@ -69,22 +120,34 @@ export default class Welcome extends ToolkitElement {
     };
 
     handleGoToConnections = () => {
-        if (isChromeExtension()) {
-            const appUrl = new URL(chrome.runtime.getURL('/views/app.html'));
-            appUrl.searchParams.set('applicationName', 'connections');
-            window.location.assign(appUrl.toString());
-            return;
-        }
-
         navigate(this.navContext, {
             type: 'application',
-            state: {
-                applicationName: 'connections',
-            },
+            state: { applicationName: 'connections' },
+        });
+    };
+
+    handleGoToAiSettings = () => {
+        navigate(this.navContext, {
+            type: 'application',
+            state: { applicationName: 'settings' },
+        });
+    };
+
+    handleViewAiDoc = () => {
+        navigate(this.navContext, {
+            type: 'application',
+            state: { applicationName: AI_DOC_URL },
+        });
+    };
+
+    handleViewReleaseNotes = () => {
+        navigate(this.navContext, {
+            type: 'application',
+            state: { applicationName: 'release' },
         });
     };
 
     handleGitHub = () => {
-        window.open(GITHUB_ISSUES_URL, '_blank', 'noopener,noreferrer');
+        window.open(GITHUB_DISCUSSIONS_URL, '_blank', 'noopener,noreferrer');
     };
 }

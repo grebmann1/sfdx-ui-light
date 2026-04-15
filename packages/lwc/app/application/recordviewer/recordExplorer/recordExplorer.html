@@ -5,164 +5,198 @@
             <template lwc:if={isRecordIdAvailable}>
                 <!-- After loading -->
                 <template lwc:if={displayRecordHeader}>
-                    <div class="slds-grid">
-                        <div class="slds-col slds-size_5-of-6">
-                            <!-- Only if editing mode -->
-                        </div>
-                        <div class="slds-col slds-size_1-of-6">
-                            <lightning-button-group class="slds-float_right">
-                                <lightning-button-icon
+                    <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center slds-m-bottom_xx-small">
+                        <div class="slds-col slds-has-flexi-truncate"></div>
+                        <div class="toolbar">
+                            <button
+                                class="toolbar-btn"
+                                disabled={isLoading}
+                                onclick={handleRedirectDataExplorer}
+                                title="Open in SOQL Explorer">
+                                <slds-lucide-icon
+                                    name="database-search"
+                                    size="15"
+                                    stroke-width="1.75"></slds-lucide-icon>
+                            </button>
+                            <template lwc:if={isPanel}>
+                                <button
+                                    class="toolbar-btn"
                                     disabled={isLoading}
-                                    icon-name="utility:database"
-                                    onclick={handleRedirectDataExplorer}
-                                    title="Redirect to SOQL Explorer"
-                                    size={buttonSize}></lightning-button-icon>
-                                <template lwc:if={isPanel}>
-                                    <lightning-button-icon
-                                        disabled={isLoading}
-                                        icon-name="utility:new_window"
-                                        onclick={handleRedirectToApp}
-                                        title="Redirect to app"
-                                        size={buttonSize}></lightning-button-icon>
-                                </template>
-                                <lightning-button-icon-stateful
-                                    disabled={isLoading}
-                                    icon-name="utility:info_alt"
-                                    onclick={handleInfoToggle}
-                                    selected={isInfoDisplayed}
-                                    title="Info"
-                                    size={buttonSize}></lightning-button-icon-stateful>
-                                <lightning-button-icon
-                                    disabled={isLoading}
-                                    icon-name="utility:refresh"
-                                    onclick={handleRefreshClick}
-                                    title="Refresh"
-                                    size={buttonSize}></lightning-button-icon>
-                            </lightning-button-group>
+                                    onclick={handleRedirectToApp}
+                                    title="Open in app">
+                                    <slds-lucide-icon
+                                        name="external-link"
+                                        size="15"
+                                        stroke-width="1.75"></slds-lucide-icon>
+                                </button>
+                            </template>
+                            <button
+                                class={infoButtonClass}
+                                disabled={isLoading}
+                                onclick={handleInfoToggle}
+                                title="Toggle field info">
+                                <slds-lucide-icon
+                                    name="badge-info"
+                                    size="15"
+                                    stroke-width="1.75"></slds-lucide-icon>
+                            </button>
+                            <button
+                                class="toolbar-btn"
+                                disabled={isLoading}
+                                onclick={handleRefreshClick}
+                                title="Refresh">
+                                <slds-lucide-icon
+                                    name="refresh-cw"
+                                    size="15"
+                                    stroke-width="1.75"></slds-lucide-icon>
+                            </button>
                         </div>
                     </div>
-                    <!-- Object Info -->
-                    <!--
-                    <nav role="navigation" aria-label="Breadcrumbs">
-                        <ol class="slds-breadcrumb slds-list_horizontal slds-wrap">
-                            <li class="slds-breadcrumb__item">
-                                <span>SObject</span>
-                            </li>
-                            <li class="slds-breadcrumb__item">
+
+                    <!-- Record Info Card -->
+                    <div class="record-info-card">
+                        <div class="info-row">
+                            <slds-lucide-icon
+                                name="table-2"
+                                size="12"
+                                stroke-width="1.75"
+                                class="info-icon"></slds-lucide-icon>
+                            <span class="info-label">SObject</span>
+                            <span class="info-value">
                                 <a href={objectListLink}>{label}</a>
-                            </li>
-                        </ol>
-                    </nav>
-                    -->
-                    <!-- Quick Links & Info -->
-                    <dl class="slds-list_horizontal slds-wrap">
-                        <dt
-                            class="slds-item_label slds-text-color_weak slds-truncate"
-                            title="Record Id">
-                            SObject
-                        </dt>
-                        <dd class="slds-item_detail slds-truncate">
-                            <a href={objectListLink}>{label}</a>
-                            / {developerName}
-                            <lightning-button-icon
-                                alternative-text="copy"
-                                icon-name="utility:copy"
-                                onclick={handleCopy}
-                                data-value={developerName}
-                                data-label="DeveloperName exported to your clipboard"
-                                variant="bare"></lightning-button-icon>
-                        </dd>
-                        <dt
-                            class="slds-item_label slds-text-color_weak slds-truncate"
-                            title="Record Id">
-                            Record Id
-                        </dt>
-                        <dd class="slds-item_detail slds-truncate slds-flex-row">
-                            {keyPrefix} / {recordId}
-                            <lightning-button-icon
-                                alternative-text="copy"
-                                icon-name="utility:copy"
-                                onclick={handleCopy}
-                                data-value={recordId}
-                                data-label="RecordId exported to your clipboard"
-                                variant="bare"></lightning-button-icon>
-                        </dd>
-                        <dt
-                            class="slds-item_label slds-text-color_weak slds-truncate"
-                            title="Record Type">
-                            Record Type
-                        </dt>
-                        <dd class="slds-item_detail slds-truncate">{recordTypeName}</dd>
-                        <dt
-                            class="slds-item_label slds-text-color_weak slds-truncate"
-                            title="Links">
-                            Links
-                        </dt>
-                        <dd class="slds-item_detail">
-                            <div class="record-links slds-button-group" role="group">
+                                <span class="info-sep">/</span>
+                                <span>{developerName}</span>
+                                <button
+                                    class="icon-btn"
+                                    onclick={handleCopy}
+                                    data-value={developerName}
+                                    data-label="DeveloperName exported to your clipboard"
+                                    title="Copy API name">
+                                    <slds-lucide-icon
+                                        name="clipboard-copy"
+                                        size="11"
+                                        stroke-width="1.75"></slds-lucide-icon>
+                                </button>
+                            </span>
+                        </div>
+
+                        <div class="info-row">
+                            <slds-lucide-icon
+                                name="id-card"
+                                size="12"
+                                stroke-width="1.75"
+                                class="info-icon"></slds-lucide-icon>
+                            <span class="info-label">Record Id</span>
+                            <span class="info-value">
+                                <span class="info-id-prefix">{keyPrefix}</span>
+                                <span class="info-sep">/</span>
+                                <span class="slds-truncate">{recordId}</span>
+                                <button
+                                    class="icon-btn"
+                                    onclick={handleCopy}
+                                    data-value={recordId}
+                                    data-label="RecordId exported to your clipboard"
+                                    title="Copy Record Id">
+                                    <slds-lucide-icon
+                                        name="clipboard-copy"
+                                        size="11"
+                                        stroke-width="1.75"></slds-lucide-icon>
+                                </button>
+                            </span>
+                        </div>
+
+                        <template lwc:if={recordTypeName}>
+                            <div class="info-row">
+                                <slds-lucide-icon
+                                    name="layers-2"
+                                    size="12"
+                                    stroke-width="1.75"
+                                    class="info-icon"></slds-lucide-icon>
+                                <span class="info-label">Record Type</span>
+                                <span class="info-value">{recordTypeName}</span>
+                            </div>
+                        </template>
+
+                        <div class="info-row">
+                            <slds-lucide-icon
+                                name="link-2"
+                                size="12"
+                                stroke-width="1.75"
+                                class="info-icon"></slds-lucide-icon>
+                            <span class="info-label">Links</span>
+                            <div class="info-links">
                                 <a
-                                    class="slds-button slds-button_neutral"
+                                    class="info-link"
                                     href={objectSetupLink}
                                     target="_blank"
                                     rel="noopener noreferrer">
                                     Setup
                                 </a>
                                 <a
-                                    class="slds-button slds-button_neutral"
+                                    class="info-link"
                                     href={objectFieldsSetupLink}
                                     target="_blank"
                                     rel="noopener noreferrer">
                                     Fields
                                 </a>
                                 <a
-                                    class="slds-button slds-button_neutral"
+                                    class="info-link"
                                     href={recordTypesLink}
                                     target="_blank"
                                     rel="noopener noreferrer">
                                     Record Types
                                 </a>
                                 <a
-                                    class="slds-button slds-button_neutral"
+                                    class="info-link"
                                     href={objectListLink}
                                     target="_blank"
                                     rel="noopener noreferrer">
                                     List
                                 </a>
                             </div>
-                        </dd>
-                        <dt
-                            class="slds-item_label slds-text-color_weak slds-truncate"
-                            title="Documentation">
-                            Documentation
-                        </dt>
-                        <dd class="slds-item_detail slds-truncate">
-                            <a href={objectDocLink} onclick={redirectDoc} target="_blank">
-                                {docLinkTitle}
-                            </a>
-                        </dd>
+                        </div>
+
+                        <div class="info-row">
+                            <slds-lucide-icon
+                                name="book-open"
+                                size="12"
+                                stroke-width="1.75"
+                                class="info-icon"></slds-lucide-icon>
+                            <span class="info-label">Docs</span>
+                            <span class="info-value">
+                                <a href={objectDocLink} onclick={redirectDoc} target="_blank">
+                                    {docLinkTitle}
+                                </a>
+                            </span>
+                        </div>
 
                         <!-- Specific to Contacts -->
                         <template lwc:if={isNetworkMemberListDisplayed}>
-                            <dt
-                                class="slds-item_label slds-text-color_weak slds-truncate"
-                                title="Login as">
-                                Login as
-                            </dt>
-                            <dd class="slds-item_detail">
-                                <template iterator:item={networkMembers}>
-                                    <div class="slds-inline-flex" key={item.value.Id}>
-                                        <a href={item.value._redirectLink} target="_blank">
-                                            {item.value.Network.Name}
-                                        </a>
-                                        <template lwc:if={item.last}></template>
-                                        <template lwc:else>
-                                            <p class="slds-m-horizontal_x-small">|</p>
-                                        </template>
-                                    </div>
-                                </template>
-                            </dd>
+                            <div class="info-row">
+                                <slds-lucide-icon
+                                    name="log-in"
+                                    size="12"
+                                    stroke-width="1.75"
+                                    class="info-icon"></slds-lucide-icon>
+                                <span class="info-label">Login as</span>
+                                <span class="info-value">
+                                    <template iterator:item={networkMembers}>
+                                        <span class="slds-inline-flex" key={item.value.Id}>
+                                            <a
+                                                href={item.value._redirectLink}
+                                                target="_blank">
+                                                {item.value.Network.Name}
+                                            </a>
+                                            <template lwc:if={item.last}></template>
+                                            <template lwc:else>
+                                                <span class="info-sep">|</span>
+                                            </template>
+                                        </span>
+                                    </template>
+                                </span>
+                            </div>
                         </template>
-                    </dl>
+                    </div>
                 </template>
             </template>
             <template lwc:elseif={isPanel}>
@@ -190,10 +224,10 @@
                     size="small"></slds-spinner>
             </div>
         </template>
+
         <!-- Table -->
         <template lwc:if={isRecordIdAvailable}>
             <div class="full-page-body tableFixHead slds-p-horizontal_x-small" onscroll={handleScroll}>
-                <!--<div lwc:dom="manual" class="custom-table"></div>-->
                 <table
                     class="slds-table slds-table_cell slds-table_fixed-layout slds-table_bordered slds-table_resizable-cols slds-no-row-hover"
                     id="data-table"
@@ -208,11 +242,15 @@
                                 id="leftColumn"
                                 scope="col">
                                 <div class="slds-th__action slds-text-link_reset">
-                                    <lightning-button-icon
-                                        alternative-text="Switch Field &amp; Label"
-                                        icon-name="utility:change_record_type"
+                                    <button
+                                        class="icon-btn th-toggle-btn"
                                         onclick={handleToggleFieldName}
-                                        variant="bare"></lightning-button-icon>
+                                        title="Switch Field &amp; Label">
+                                        <slds-lucide-icon
+                                            name="columns-2"
+                                            size="13"
+                                            stroke-width="1.75"></slds-lucide-icon>
+                                    </button>
                                     <span
                                         class="slds-truncate slds-m-left_x-small"
                                         title={fieldLabel}>
@@ -221,20 +259,14 @@
                                 </div>
                             </th>
                             <th
-                                aria-label="Product Code"
+                                aria-label="Value"
                                 aria-sort="none"
                                 class="slds-is-sortable slds-is-resizable slds-text-title_caps"
                                 scope="col">
                                 <div class="slds-th__action slds-text-link_reset">
-                                    <span class="slds-truncate" title="Product Code">Value</span>
+                                    <span class="slds-truncate" title="Value">Value</span>
                                 </div>
                             </th>
-                            <th
-                                aria-label=""
-                                aria-sort="none"
-                                class=""
-                                scope="col"
-                                style="width: 30px"></th>
                         </tr>
                     </thead>
                     <tbody
@@ -242,11 +274,6 @@
                         id="data-toDisplay"
                         onenableeditmode={handleEnabledEditMode}
                         onfieldchange={handleRowInputChange}>
-                        <!--
-                            onregisterfielddependency={registerDependentField}
-                            onupdatedependentfields={updateDependentFields}
-                        -->
-                        <!-- DATA are going here -->
                         <template for:each={virtualList} for:item="item">
                             <recordviewer-record-explorer-row
                                 current-origin={currentOrigin}
@@ -259,13 +286,13 @@
                                 key={item.name}
                                 metadata={metadata}
                                 record={record}></recordviewer-record-explorer-row>
-                            <!-- is-edit-mode={isEditMode} -->
                         </template>
                     </tbody>
                 </table>
             </div>
         </template>
-        <!-- Only if editing mode -->
+
+        <!-- Edit mode footer -->
         <template lwc:if={isEditMode}>
             <div class="slds-editor-footer">
                 <template lwc:if={isChangeMessageDisplayed}>

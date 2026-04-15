@@ -227,24 +227,27 @@ function buildLwcExtensionConfig() {
                 'editor/context': [
                     {
                         command: 'salesforceMetadata.fetchCurrentFile',
+                        group: 'z_salesforce@1',
                     },
                     {
                         command: 'salesforceMetadata.diffCurrentFile',
+                        group: 'z_salesforce@1',
                     },
                     {
                         command: 'salesforceMetadata.deployCurrentFile',
-                        group: 'salesforce@1',
+                        group: 'z_salesforce@2',
                     },
                 ],
                 'explorer/context': [
                     {
                         command: 'salesforceMetadata.deployCurrentFile',
                         when: 'resourceScheme == file',
-                        group: 'salesforce@1',
+                        group: 'z_salesforce@2',
                     },
                     {
                         command: 'salesforceMetadata.createLightningComponent',
                         when: 'explorerResourceIsFolder && resourceFilename == lwc',
+                        group: 'z_salesforce@3',
                     },
                 ],
             },

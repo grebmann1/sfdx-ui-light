@@ -11,6 +11,15 @@
                         <span class="slds-context-bar__label-action slds-context-bar__app-name">
                             <span class="slds-truncate" title="Workbench">Workbench</span>
                         </span>
+                        <template lwc:if={isToggleVisible}>
+                            <lightning-button-icon
+                                class="mode-toggle-btn"
+                                icon-name={toggleIconName}
+                                variant="bare"
+                                size="small"
+                                title={toggleTitle}
+                                onclick={handleModeToggle}></lightning-button-icon>
+                        </template>
                     </div>
                 </div>
             </template>

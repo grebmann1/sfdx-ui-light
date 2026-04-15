@@ -42,9 +42,9 @@ async function applyExplorerExcludes(vscode) {
             (typeof filesConfig?.get === 'function' && filesConfig.get('exclude')) || {};
         const merged = {
             ...(current && typeof current === 'object' ? current : {}),
-            '**/.salesforce/**': true,
             '**/*.map': true,
         };
+        delete merged['**/.salesforce/**']; // just in case of caching issues.
         if (typeof filesConfig?.update === 'function') {
             try {
                 await filesConfig.update('exclude', merged, true);

@@ -782,7 +782,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                 const jsforceBridgeRuntime = createIframeJsforceBridgeRuntime({
                     getConnectionRecord: () => this._buildCurrentConnection(),
                     getConnector: () => this.connector,
-                    getWorkspaceBasePath: () => this.workspaceBasePath || this._workspaceRoot,
+                    getWorkspaceBasePath: () => this.workspaceBasePath,
                     getApiVersion: () => this.sfApiVersion,
                     onConnectionResolved: connection => {
                         this._applyActiveConnection(connection);
@@ -815,6 +815,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                 });
                 this._iframeAiBridgeHost.start();
                 this.initializationError = null;
+                this.vscodeInitialized = true;
             } catch (error) {
                 // eslint-disable-next-line no-console
                 console.error('[fullApp] Failed to initialize iframe bridge:', error);

@@ -2,7 +2,7 @@
   "name": "@sf-toolkit/docs",
   "private": true,
   "version": "1.0.0",
-  "description": "SF Toolkit documentation site",
+  "description": "Workbench documentation site",
   "scripts": {
     "dev": "DOCS_BASE_PATH=/ docusaurus start --port 27000 --host 0.0.0.0 --no-open",
     "build": "DOCS_BASE_PATH=/docs/ docusaurus build --out-dir ../../dist/docs",

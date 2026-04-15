@@ -71,7 +71,7 @@ function buildApexExtensionConfig() {
                     {
                         command: 'salesforceMetadata.executeAnonymous',
                         when: 'editorHasSelection',
-                        group: 'salesforce@1',
+                        group: 'z_salesforce@1',
                     },
                 ],
             },

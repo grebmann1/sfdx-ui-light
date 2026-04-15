@@ -25,6 +25,7 @@ cert/
 /packages/workers/dist/
 /packages/server/dist/
 /packages/shared/dist/
+/packages/vscode/dist/
 /packages/lwc/web-extension/**/*.js
 /packages/lwc/web-extension/**/*.js.map
 package-lock.json

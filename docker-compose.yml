@@ -5,10 +5,11 @@ services:
       dockerfile: Dockerfile
     image: sf-toolkit:latest
     ports:
-      - "3000:3000"   # packages/server  — Express API + LWR web app
-      - "4000:4000"   # apps/docs        — Docusaurus documentation
-      - "5000:5000"   # apps/ui          — Vite welcome SPA
-      - "5173:5173"   # packages/vscode  — Monaco/VS Code web IDE
+      - "80:80"       # nginx front door — domain-based routing (production)
+      - "3100:3000"   # packages/server  — Express API + LWR web app  (app.sf-toolkit.com)
+      - "4000:4000"   # apps/docs        — Docusaurus documentation   (doc.sf-toolkit.com)
+      - "5100:5000"   # apps/ui          — Vite welcome SPA            (sf-toolkit.com)
+      - "5173:5173"   # packages/vscode  — Monaco/VS Code web IDE      (vscode.sf-toolkit.com)
     env_file:
       - .env
     restart: unless-stopped

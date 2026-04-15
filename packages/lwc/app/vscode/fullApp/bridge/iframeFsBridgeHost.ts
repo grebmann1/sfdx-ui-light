@@ -36,11 +36,6 @@ function normalizeAbsolutePath(path: unknown) {
     return `/${parts.join('/')}`;
 }
 
-function isWithinWorkspaceRoot(path: string, workspaceRoot: string) {
-    const normalizedPath = normalizeAbsolutePath(path);
-    const normalizedRoot = normalizeAbsolutePath(workspaceRoot);
-    return normalizedPath === normalizedRoot || normalizedPath.startsWith(`${normalizedRoot}/`);
-}
 
 function toArrayBuffer(value: unknown) {
     if (value instanceof ArrayBuffer) {
@@ -303,18 +298,6 @@ class IframeFsBridgeHost {
         }
     }
 
-    private assertWorkspacePath(pathValue: unknown, workspaceRoot = this.getWorkspaceRoot()) {
-        const workspacePath = normalizeAbsolutePath(pathValue);
-        const normalizedRoot = normalizeAbsolutePath(workspaceRoot);
-        if (!isWithinWorkspaceRoot(workspacePath, normalizedRoot)) {
-            throw {
-                code: 'EACCESS',
-                message: `${workspacePath} is outside the workspace root ${normalizedRoot}.`,
-            };
-        }
-        return workspacePath;
-    }
-
     private async executeFsMethod(method: string, args: Record<string, unknown>) {
         const fs = await this.getFileSystem?.();
         if (!fs) {
@@ -323,19 +306,18 @@ class IframeFsBridgeHost {
                 message: 'Workspace filesystem is unavailable.',
             };
         }
-        const workspaceRoot = this.getWorkspaceRoot();
         let changes: IframeFsBridgeChange[] = [];
         let result: unknown = null;
 
         switch (method) {
             case 'stat': {
-                const path = this.assertWorkspacePath(args.path, workspaceRoot);
+                const path = normalizeAbsolutePath(args.path);
                 const stat = await fs.stat(path);
                 result = toStatPayload(stat);
                 break;
             }
             case 'readdir': {
-                const path = this.assertWorkspacePath(args.path, workspaceRoot);
+                const path = normalizeAbsolutePath(args.path);
                 const entries = await fs.readdirWithFileTypes(path);
                 result = Array.isArray(entries)
                     ? entries.map((entry: any) => ({
@@ -348,13 +330,13 @@ class IframeFsBridgeHost {
                 break;
             }
             case 'readFileBuffer': {
-                const path = this.assertWorkspacePath(args.path, workspaceRoot);
+                const path = normalizeAbsolutePath(args.path);
                 const bytes = await fs.readFileBuffer(path);
                 result = toArrayBuffer(bytes);
                 break;
             }
             case 'writeFile': {
-                const path = this.assertWorkspacePath(args.path, workspaceRoot);
+                const path = normalizeAbsolutePath(args.path);
                 const content = toUint8Array(args.content);
                 const fileExisted = await fs.exists(path);
                 await fs.writeFile(path, content, 'binary');
@@ -363,7 +345,7 @@ class IframeFsBridgeHost {
                 break;
             }
             case 'mkdir': {
-                const path = this.assertWorkspacePath(args.path, workspaceRoot);
+                const path = normalizeAbsolutePath(args.path);
                 const options = isRecord(args.options) ? args.options : {};
                 await fs.mkdir(path, { recursive: options.recursive !== false });
                 result = { path };
@@ -371,7 +353,7 @@ class IframeFsBridgeHost {
                 break;
             }
             case 'rm': {
-                const path = this.assertWorkspacePath(args.path, workspaceRoot);
+                const path = normalizeAbsolutePath(args.path);
                 const options = isRecord(args.options) ? args.options : {};
                 await fs.rm(path, {
                     recursive: Boolean(options.recursive),
@@ -382,8 +364,8 @@ class IframeFsBridgeHost {
                 break;
             }
             case 'mv': {
-                const fromPath = this.assertWorkspacePath(args.fromPath, workspaceRoot);
-                const toPath = this.assertWorkspacePath(args.toPath, workspaceRoot);
+                const fromPath = normalizeAbsolutePath(args.fromPath);
+                const toPath = normalizeAbsolutePath(args.toPath);
                 await fs.mv(fromPath, toPath);
                 result = { fromPath, toPath };
                 changes = [
@@ -393,7 +375,7 @@ class IframeFsBridgeHost {
                 break;
             }
             case 'exists': {
-                const path = this.assertWorkspacePath(args.path, workspaceRoot);
+                const path = normalizeAbsolutePath(args.path);
                 result = Boolean(await fs.exists(path));
                 break;
             }

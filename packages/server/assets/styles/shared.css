@@ -135,12 +135,12 @@
 }
 
 .sf-toolkit .full-page-body-builder {
-    height: calc(100% - 2rem);
+    height: 100%; /*calc(100% - 2rem);*/
     position: relative;
 }
 
 .sf-toolkit .full-page-body > .slds-card__body {
-    height: calc(100% - 2rem);
+    height: 100%; /*calc(100% - 2rem);*/
 }
 
 .sf-toolkit .slds-flex-column {

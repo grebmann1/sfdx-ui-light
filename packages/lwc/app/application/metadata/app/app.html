@@ -105,6 +105,30 @@
                                 </template>
                                 <div
                                     class="slds-is-relative slds-flex-column slds-fill-height slds-full-width">
+                                    <template lwc:if={isEditorDisplayed}>
+                                        <div
+                                            class="slds-m-around_x-small slds-scoped-notification slds-media slds-media_center slds-color__background_gray-3 slds-m-bottom_x-small"
+                                            role="status">
+                                            <div class="slds-media__figure">
+                                                <lightning-icon
+                                                    icon-name="utility:info"
+                                                    size="small"></lightning-icon>
+                                            </div>
+                                            <div class="slds-media__body">
+                                                <p>For the best editing experience, use the <strong>VS Code</strong> module to edit files directly in your IDE.</p>
+                                            </div>
+                                            <template lwc:if={hasVscodeEditor}>
+                                                <div class="slds-media__figure slds-media__figure_reverse">
+                                                    <lightning-button
+                                                        label="Open in VS Code"
+                                                        icon-name="utility:open"
+                                                        icon-position="right"
+                                                        variant="neutral"
+                                                        onclick={openVSCode}></lightning-button>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
                                     <editor-app
                                         lwc:ref="editor"
                                         class={editorClass}

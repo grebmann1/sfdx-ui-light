@@ -197,10 +197,21 @@ export default class OutputTable extends ToolkitElement {
             ? `<a href="#" class="sftk-cell-link" data-action="navigate" title="${this._escapeHtml(text)}">${this._escapeHtml(text)}</a>`
             : `<div class="slds-truncate sftk-cell-value" title="${this._escapeHtml(text)}">${this._escapeHtml(text)}</div>`;
 
+        const isLookupField = isIdLike && !isRecordIdField;
+
         const actions = [];
         if (isRecordIdField && recordId) {
             actions.push(
                 this._iconButtonHtml({ action: 'edit', iconName: 'edit', assistiveText: 'edit' })
+            );
+        }
+        if (isLookupField) {
+            actions.push(
+                this._iconButtonHtml({
+                    action: 'view',
+                    iconName: 'preview',
+                    assistiveText: 'view record',
+                })
             );
         }
         if (value != null && text !== '') {
@@ -257,6 +268,20 @@ export default class OutputTable extends ToolkitElement {
             e.stopPropagation();
             if (value == null) return;
             legacyStore.dispatch(store_application.navigate(String(value)));
+            return;
+        }
+
+        if (action === 'view') {
+            e.preventDefault();
+            e.stopPropagation();
+            if (value == null) return;
+            navigate(this.navContext, {
+                type: 'application',
+                state: {
+                    applicationName: 'recordviewer',
+                    recordId: String(value),
+                },
+            });
             return;
         }
 

@@ -4,6 +4,7 @@ import {
     classSet,
     isUndefinedOrNull,
     isNotUndefinedOrNull,
+    getVscodeEditorUrl,
     METADATA as METADATA_UTILS,
 } from 'shared/utils';
 import { CurrentPageReference, NavigationContext, navigate } from 'lwr/navigation';
@@ -28,7 +29,7 @@ export default class App extends ToolkitElement {
 
     //@track selection = {};
     //@track items = {}
-    isEditorDisplayed = false;
+    @track isEditorDisplayed = false;
 
     // Filters
     @track menuItems: Array<Record<string, any>> = [];
@@ -253,6 +254,11 @@ export default class App extends ToolkitElement {
         await store.dispatch(METADATA.cancelMetadataBackgroundSync());
     };
 
+    openVSCode = (): void => {
+        if (!this.vscodeEditorUrl) return;
+        window.open(this.vscodeEditorUrl);
+    };
+
     goToMetadata = e => {
         //this.hideEditor();
         //this.hideJsonViewer();
@@ -337,6 +343,18 @@ export default class App extends ToolkitElement {
         return classSet('slds-full-height')
             .add({ 'slds-hide': !this.isEditorDisplayed })
             .toString();
+    }
+
+    get vscodeEditorUrl() {
+        return getVscodeEditorUrl({
+            alias: this.connector?.configuration?.alias,
+            sessionId: this.connector?.conn?.accessToken,
+            serverUrl: this.connector?.conn?.instanceUrl,
+        });
+    }
+
+    get hasVscodeEditor() {
+        return Boolean(this.vscodeEditorUrl);
     }
 
     get isMetadataViewerDisplayed() {

@@ -263,7 +263,7 @@ export class BridgeFsAdapter implements IFileSystem {
     }
 
     async realpath(path: string): Promise<string> {
-        // No symlinks through bridge — path is already real
+        // No symlinks through bridge — path is already real.
         const exists = await this.exists(path);
         if (!exists) throw createFsError('ENOENT', 'No such file or directory', path);
         return path;

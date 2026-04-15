@@ -25,11 +25,9 @@
             <div class="l-container-whole-parent">
                 <!-- Full App Loading -->
                 <template lwc:if={isFullAppLoading}>
-                    <slds-spinner
-                        class="no-opacity"
-                        alternative-text="Loading"
-                        size="small"
-                        message={fullAppLoadingMessageFormatted}></slds-spinner>
+                    <skeleton-loading-overlay
+                        variant="light"
+                        message={fullAppLoadingMessageFormatted}></skeleton-loading-overlay>
                 </template>
                 <!-- Container & Header -->
                 <div class="home l-container-vertical">

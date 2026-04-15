@@ -32,10 +32,10 @@ module.exports = {
         asar: true,
         appBundleId: 'com.sftoolkit.desktop',
         appCategoryType: 'public.app-category.developer-tools',
-        executableName: 'SF Toolkit Desktop',
+        executableName: 'Workbench Desktop',
         extraResource: [packagedWebRoot, desktopResourcesRoot],
         ignore: [/^\/src($|\/)/, /^\/resources($|\/)/],
-        name: 'SF Toolkit Desktop',
+        name: 'Workbench Desktop',
         osxNotarize:
             process.env.APPLE_ID && process.env.APPLE_ID_PASSWORD && process.env.APPLE_TEAM_ID
                 ? {

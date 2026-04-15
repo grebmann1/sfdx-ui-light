@@ -21,7 +21,7 @@ This design means VS Code has full file-system semantics (watchers, saves, diffs
 
 - virtual workspace files are retained locally on your machine (browser IndexedDB storage)
 - this storage model supports offline-like editing and local persistence between sessions
-- the workspace snapshot is not automatically uploaded as raw files to a remote SF Toolkit server
+- the workspace snapshot is not automatically uploaded as raw files to a remote Workbench server
 
 ## Operational notes
 

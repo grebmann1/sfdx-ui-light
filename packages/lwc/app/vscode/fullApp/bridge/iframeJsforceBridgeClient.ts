@@ -180,11 +180,75 @@ export class IframeJsforceBridgeClient {
         });
     }
 
-    private async request(method: IframeJsforceBridgeMethod, args: Record<string, unknown> = {}) {
+    async deployViaToolingApi({
+        items,
+    }: {
+        items: Array<{
+            path: string;
+            sobject: string;
+            id: string;
+            field: string;
+            text: string;
+        }>;
+    }) {
+        return (await this.request(
+            'metadata.deployViaToolingApi',
+            { items },
+            { timeoutMs: 10 * 60 * 1000 }
+        )) as {
+            results: Array<{
+                ok: boolean;
+                path: string;
+                sobject: string;
+                id: string;
+                status?: number;
+                error?: string;
+            }>;
+            failures: Array<{
+                ok: false;
+                path: string;
+                sobject: string;
+                id: string;
+                error: string;
+            }>;
+        };
+    }
+
+    async deployViaMetadataApi({
+        zipBase64,
+        checkOnly = false,
+        pollIntervalMs,
+        timeoutMs,
+    }: {
+        zipBase64: string;
+        checkOnly?: boolean;
+        pollIntervalMs?: number;
+        timeoutMs?: number;
+    }) {
+        const requestTimeout = timeoutMs ? timeoutMs + 60_000 : 25 * 60 * 1000;
+        return (await this.request(
+            'metadata.deployViaMetadataApi',
+            { zipBase64, checkOnly, pollIntervalMs, timeoutMs },
+            { timeoutMs: requestTimeout }
+        )) as {
+            id: string;
+            success: boolean;
+            status: string;
+            errorMessage: string;
+            details: unknown;
+        };
+    }
+
+    private async request(
+        method: IframeJsforceBridgeMethod,
+        args: Record<string, unknown> = {},
+        options: { timeoutMs?: number } = {}
+    ) {
         if (!isIframeJsforceBridgeMethod(method)) {
             throw new Error(`Unsupported JSForce bridge method: ${String(method)}`);
         }
         const id = createRequestId();
+        const effectiveTimeoutMs = options.timeoutMs ?? this.requestTimeoutMs;
 
         return await new Promise((resolve, reject) => {
             const timer = window.setTimeout(() => {
@@ -194,10 +258,10 @@ export class IframeJsforceBridgeClient {
                 this.pending.delete(id);
                 reject(
                     new Error(
-                        `Bridge request timed out for method "${method}" after ${this.requestTimeoutMs}ms.`
+                        `Bridge request timed out for method "${method}" after ${effectiveTimeoutMs}ms.`
                     )
                 );
-            }, this.requestTimeoutMs);
+            }, effectiveTimeoutMs);
 
             this.pending.set(id, { resolve, reject, timer });
             this.port.postMessage({

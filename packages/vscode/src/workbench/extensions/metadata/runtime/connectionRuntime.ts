@@ -19,7 +19,7 @@ import {
 } from '../../../workbenchWorkspace';
 import { registerCommand } from '../../core/extensionRegistration';
 const OPEN_SALESFORCE_PANEL_COMMAND = 'salesforceMetadata.openSalesforcePanel';
-import { getWorkspaceRootPath, getWorkspaceUri } from '../core/workspacePaths';
+import { getWorkspaceUri } from '../core/workspacePaths';
 
 const INJECTED_CONNECTOR_REQUIRED_MESSAGE =
     'Salesforce connection is required to open this workbench. Launch it from a connected toolkit session.';
@@ -144,9 +144,8 @@ function setStatus(statusItem, conn) {
     }
 
     try {
-        const host = new URL(conn.instanceUrl).host;
-        const who = conn.username ? ` (${conn.username})` : '';
-        statusItem.text = `$(cloud) SF: ${host}${who} · Connected`;
+        const who = conn.username || new URL(conn.instanceUrl).host;
+        statusItem.text = `$(cloud) SF: ${who} · Connected`;
         const auth = conn.authType ? `Auth: ${conn.authType}` : 'Auth: injected';
         const ids = [
             conn.orgId ? `Org: ${conn.orgId}` : '',
@@ -196,10 +195,8 @@ async function applyWorkspaceApiVersion(conn, fallback = conn?.apiVersion) {
     };
 }
 
-function getConnectionResolutionOptions(vscode) {
-    return {
-        workspaceBasePath: getWorkspaceRootPath(vscode),
-    };
+function getConnectionResolutionOptions(_vscode) {
+    return {};
 }
 
 function loadStoredConn() {
@@ -319,6 +316,13 @@ export function createConnectionRuntime({ statusItem, vscode }) {
             return () => statusListeners.delete(listener);
         },
         withToolingClientAuthed,
+        async resolveBridgeClient() {
+            const context = getCurrentContext() as any;
+            if (typeof context?.resolveBridgeClient === 'function') {
+                return await context.resolveBridgeClient();
+            }
+            return null;
+        },
     };
 
     return runtime;

@@ -58,6 +58,11 @@ const SOQL_UI_REMOTE_ASSETS = [
         targetPath: `${SOQL_TARGET_ROOT}/dist/soql-data-view/icons/icon__save.svg`,
         mimeType: 'image/svg+xml',
     },
+    {
+        sourcePath: `${SOQL_SOURCE_ROOT}/grammars/soql.tmLanguage`,
+        targetPath: `${SOQL_TARGET_ROOT}/soql.tmLanguage`,
+        mimeType: 'application/xml',
+    }
 ];
 
 function buildSoqlExtensionConfig(): ReturnType<typeof buildSalesforceExtensionConfig> {

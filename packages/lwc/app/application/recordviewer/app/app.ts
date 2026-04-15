@@ -40,6 +40,10 @@ export default class App extends ToolkitElement {
     // Filter Input
     @track filterInputValue: string | null = null;
 
+    // Arrow-key history navigation state
+    _historyIndex: number = -1;
+    _searchDraft: string | null = null;
+
     // Recent
     @track isRecentToggled = false;
     recentRecordItems: Array<Record<string, any>> = [];
@@ -135,10 +139,9 @@ export default class App extends ToolkitElement {
     /** Events **/
 
     executeSearchClick = (e?: any): void => {
+        const rawInput = this.searchInputValue;
         // Extract the record id
-        const recordId = isSalesforceId(this.searchInputValue)
-            ? this.searchInputValue
-            : getRecordId(this.searchInputValue);
+        const recordId = isSalesforceId(rawInput) ? rawInput : getRecordId(rawInput);
         if (isUndefinedOrNull(recordId)) {
             Toast.show({
                 label: `No valid recordId`,
@@ -148,18 +151,60 @@ export default class App extends ToolkitElement {
         } else {
             const tab = RECORDVIEWER.formatTab({ id: recordId });
             store.dispatch(RECORDVIEWER.reduxSlice.actions.upsertTab({ tab }));
+            this._historyIndex = -1;
+            this._searchDraft = null;
             this.searchInputValue = null; // reset
         }
+    };
+
+    _navigateHistory = (direction: number): void => {
+        // Use the persisted store list (already deduped by recordId, most-recent first)
+        const history = this.recentRecordItems
+            .map((item: Record<string, any>) => item.extra?.recordId as string)
+            .filter(Boolean);
+
+        if (history.length === 0) return;
+
+        if (this._historyIndex === -1) {
+            // Save whatever is currently typed before entering history mode
+            this._searchDraft = this.searchInputValue;
+        }
+
+        const newIndex = this._historyIndex + direction;
+
+        if (newIndex < 0) {
+            // Navigated past the most recent entry → restore draft
+            this._historyIndex = -1;
+            this.searchInputValue = this._searchDraft;
+            this._searchDraft = null;
+        } else if (newIndex < history.length) {
+            this._historyIndex = newIndex;
+            this.searchInputValue = history[newIndex];
+        }
+        // Beyond the oldest entry: stay put
     };
 
     searchInput_handleChange = (e: any): void => {
         this.searchInputValue = e.detail.value;
     };
 
+    searchInput_handleKeyDown = (e: any): void => {
+        if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            this._navigateHistory(1);
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            this._navigateHistory(-1);
+        }
+    };
+
     searchInput_handleKeyUp = (e: any): void => {
         if (e.key === 'Enter' || e.code === 'Enter' || e.keyCode === 13) {
             e.preventDefault();
             this.executeSearchClick();
+        } else if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') {
+            // User typed a real character — exit history navigation mode
+            this._historyIndex = -1;
         }
     };
 

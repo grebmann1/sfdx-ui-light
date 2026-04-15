@@ -1,3 +1,6 @@
+const APP_URL = import.meta.env.VITE_APP_URL || '/app';
+const DOCS_URL = import.meta.env.VITE_DOCS_URL || '/docs';
+
 const featureCards = [
     {
         title: 'Org Exploration',
@@ -18,16 +21,16 @@ export default function App() {
         <div className="page">
             <header className="header">
                 <a className="brand" href="/welcome">
-                    SF Toolkit
+                    Workbench
                 </a>
                 <nav className="header-nav">
-                    <a className="header-link" href="/docs">
+                    <a className="header-link" href={DOCS_URL}>
                         Docs
                     </a>
-                    <a className="header-link" href="/app">
+                    <a className="header-link" href={APP_URL}>
                         Open App
                     </a>
-                    <a className="button button-small" href="/install">
+                    <a className="button button-small" href={`${DOCS_URL}/getting-started/installation`}>
                         Download
                     </a>
                 </nav>
@@ -39,17 +42,17 @@ export default function App() {
                         <p className="eyebrow">Salesforce Administration Toolkit</p>
                         <h1 id="welcome-title">Move from org questions to answers in minutes</h1>
                         <p className="hero-text">
-                            SF Toolkit gives admins one clear place to explore orgs, run data workflows,
+                            Workbench gives admins one clear place to explore orgs, run data workflows,
                             validate APIs, and keep delivery moving.
                         </p>
                         <div className="hero-actions">
-                            <a className="button" href="/install">
-                                Download Extension
+                            <a className="button" href={`${DOCS_URL}/getting-started/installation`}>
+                                Get Started
                             </a>
-                            <a className="button button-ghost" href="/app">
+                            <a className="button button-ghost" href={APP_URL}>
                                 Launch Web App
                             </a>
-                            <a className="button button-ghost" href="/docs">
+                            <a className="button button-ghost" href={DOCS_URL}>
                                 Read Documentation
                             </a>
                         </div>
@@ -86,10 +89,10 @@ export default function App() {
                         metadata, and API workflows from one interface.
                     </p>
                     <div className="hero-actions">
-                        <a className="button" href="/install">
-                            Install Now
+                        <a className="button" href={APP_URL}>
+                            Launch Web App
                         </a>
-                        <a className="button button-ghost" href="/docs/getting-started/installation">
+                        <a className="button button-ghost" href={`${DOCS_URL}/getting-started/installation`}>
                             Installation Guide
                         </a>
                     </div>
@@ -97,9 +100,9 @@ export default function App() {
             </main>
 
             <footer className="footer">
-                <span>SF Toolkit</span>
-                <a href="/docs">Documentation</a>
-                <a href="/app">Application</a>
+                <span>Workbench</span>
+                <a href={DOCS_URL}>Documentation</a>
+                <a href={APP_URL}>Application</a>
             </footer>
         </div>
     );

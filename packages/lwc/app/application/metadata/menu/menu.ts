@@ -3,14 +3,13 @@ import ToolkitElement from 'core/toolkitElement';
 import { isUndefinedOrNull, isNotUndefinedOrNull } from 'shared/utils';
 import { CurrentPageReference, NavigationContext } from 'lwr/navigation';
 import { store, connectStore, METADATA } from 'core/store';
-// Constants
+import { getMetadataTypeIcon, METADATA_RECORD_ICON } from './constants';
+
 export default class Menu extends ToolkitElement {
     @wire(NavigationContext) navContext;
 
-    // Trackable Properties
     @track metadata_global = null;
     @track metadata_records = null;
-    @track menuItems = [];
 
     @api sobject;
     @api param1;
@@ -18,24 +17,19 @@ export default class Menu extends ToolkitElement {
     @api label1;
     @api label2;
 
-    // Internal State
     currentMetadata;
     isLoading = false;
     loadingMessage;
     isGlobalMetadataLoaded = false;
     error;
 
-    // Cache
     _cache = {};
     _bypassCache = false;
 
-    // Page Reference
     @wire(CurrentPageReference)
     handlePageReference(pageRef) {
         if (!isUndefinedOrNull(pageRef) && pageRef?.state?.applicationName === 'metadata') {
-            // Check if the new pageRef is different
             if (this._hasRendered) {
-                // JSON.stringify(this._pageRef) !== JSON.stringify(pageRef)
                 this._pageRef = pageRef;
                 this.loadFromNavigation(pageRef);
             }
@@ -45,8 +39,7 @@ export default class Menu extends ToolkitElement {
     @wire(connectStore, { store })
     handleStoreChange({ metadata, application }) {
         if (!this.verifyIsActive(application.currentApplication)) return;
-        //Object.assign(this, metadata);
-        //this.currentLevel = metadata.currentLevel;
+
         const _hasParam1Changed = this.param1 != metadata.param1;
         this.param1 = metadata.param1;
         this.label1 = metadata.label1;
@@ -57,35 +50,28 @@ export default class Menu extends ToolkitElement {
 
         if (JSON.stringify(this.metadata_global) !== JSON.stringify(metadata.metadata_global)) {
             this.metadata_global = metadata.metadata_global;
-            this.setMenuItems();
         }
         if (
             JSON.stringify(this.metadata_records) !== JSON.stringify(metadata.metadata_records) ||
             _hasParam1Changed
         ) {
             this.metadata_records = metadata.metadata_records;
-            this.forceRefresh = false;
-            this.setMenuItems();
         }
     }
 
     connectedCallback() {
-        // Initialization logic here
         store.dispatch(METADATA.fetchGlobalMetadata());
     }
 
     renderedCallback() {
         if (!this._hasRendered) {
             this._hasRendered = true;
-            //this.loadFromNavigation(this._pageRef);
         }
     }
 
-    // Methods
-
     loadFromNavigation = async ({ state }) => {
         let { applicationName, sobject, param1, label1 } = state;
-        if (applicationName != 'metadata') return; // Only for metadata
+        if (applicationName != 'metadata') return;
         store.dispatch(async (dispatch, getState) => {
             await dispatch(METADATA.fetchSpecificMetadata({ sobject, force: true }));
             const params = { sobject, param1, label1 };
@@ -94,20 +80,6 @@ export default class Menu extends ToolkitElement {
                 this.dispatchSelectionEvent(params);
             }
         });
-        //store.dispatch(METADATA.reduxSlice.actions.setAttributes(state));
-    };
-
-    setMenuItems = () => {
-        const records = this.metadata_records
-            ? this.metadata_records.records
-            : this.metadata_global?.records || [];
-        this.menuItems =
-            records
-                .map(record => ({
-                    ...record,
-                    isSelected: this.selectedItem === record.key,
-                }))
-                .sort((a, b) => (a.label || '').localeCompare(b.label)) || [];
     };
 
     dispatchSelectionEvent = detail => {
@@ -116,50 +88,96 @@ export default class Menu extends ToolkitElement {
 
     /** Events */
 
-    handleMenuSelection = async e => {
-        //console.log('e.detail', e.detail);
-        const { name, label, _developerName } = e.detail;
-        if (this.currentLevel === 0) {
-            //this.currentMetadata = name;
-            store.dispatch(METADATA.fetchSpecificMetadata({ sobject: name }));
-        } else if (this.currentLevel === 1) {
-            //this.param1 = name;
-            //this.label1 = label;
-            const params = {
-                sobject: this.currentMetadata,
-                param1: name,
-                label1: label,
-                _developerName,
-            };
-            await store.dispatch(METADATA.reduxSlice.actions.setAttributes(params));
-            this.dispatchSelectionEvent(params);
-            /*store.dispatch(METADATA.reduxSlice.actions.setAttributes({
-                ...this.attributes,
-                param1: name,
-                label1: label
-            }));*/
-        }
+    handleTypeSelect = event => {
+        const item = event.detail?.item;
+        if (!item?.rawName) return;
+        store.dispatch(METADATA.fetchSpecificMetadata({ sobject: item.rawName }));
     };
 
-    handleMenuBack = () => {
-        this.keepFilter = false;
+    handleRecordSelect = async event => {
+        const item = event.detail?.item;
+        if (!item) return;
+        const { rawName: name, label, _developerName } = item;
+        const params = {
+            sobject: this.currentMetadata,
+            param1: name,
+            label1: label || name,
+            _developerName,
+        };
+        await store.dispatch(METADATA.reduxSlice.actions.setAttributes(params));
+        this.dispatchSelectionEvent(params);
+    };
+
+    handleRefresh = () => {
+        store.dispatch(METADATA.fetchGlobalMetadata());
+    };
+
+    handleGoBack = () => {
         store.dispatch(METADATA.reduxSlice.actions.goBack());
     };
 
-    // Getters
+    /** Getters */
 
-    get currentLevel() {
-        return isNotUndefinedOrNull(this.metadata_records) ? 1 : 0;
+    get computedTypesTree() {
+        const records = this.metadata_global?.records || [];
+        return records
+            .map(record => ({
+                id: record.key || record.name,
+                name: record.label || record.name,
+                title: record.label || record.name,
+                rawName: record.name,
+                icon: getMetadataTypeIcon(record.name),
+            }))
+            .sort((a, b) => (a.name || '').localeCompare(b.name));
     }
 
-    get menuBackTitle() {
-        if (this.currentLevel == 2) {
-            return this.label1;
-        } else if (this.currentLevel == 1) {
-            return this.currentMetadata;
-        } else if (this.currentLevel == 0) {
-            return '';
-        }
+    get computedRecordsTree() {
+        const records = this.metadata_records?.records || [];
+        return records
+            .map(record => ({
+                id: record.key || record.name,
+                name: record.label || record.name,
+                title: record.label || record.name,
+                rawName: record.name,
+                label: record.label || record.name,
+                _developerName: record._developerName,
+                icon: METADATA_RECORD_ICON,
+            }))
+            .sort((a, b) => (a.name || '').localeCompare(b.name));
+    }
+
+    get selectedTypeId() {
+        return this.currentMetadata || '';
+    }
+
+    get selectedRecordId() {
+        return this.param1 || '';
+    }
+
+    get isRecordsPanelVisible() {
+        return isNotUndefinedOrNull(this.metadata_records);
+    }
+
+    get recordCount() {
+        return this.metadata_records?.records?.length ?? 0;
+    }
+
+    get recordsPanelTitle() {
+        return this.isLoading
+            ? this.currentMetadata
+            : `${this.currentMetadata} (${this.recordCount})`;
+    }
+
+    get isLoadingTypes() {
+        return this.isLoading && !this.isRecordsPanelVisible;
+    }
+
+    get isLoadingRecords() {
+        return this.isLoading && this.isRecordsPanelVisible;
+    }
+
+    get searchFields() {
+        return ['name', 'id'];
     }
 
     get attributes() {
@@ -168,17 +186,5 @@ export default class Menu extends ToolkitElement {
             param1: this.param1,
             label1: this.label1,
         };
-    }
-
-    get isBackDisplayed() {
-        return this.currentLevel > 0;
-    }
-
-    get selectedItem() {
-        return this.currentLevel === 2
-            ? this.param2
-            : this.currentLevel === 1
-              ? this.param1
-              : this.currentMetadata;
     }
 }

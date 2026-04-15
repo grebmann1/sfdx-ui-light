@@ -21,7 +21,6 @@ export default class Salesforce extends ToolkitElement {
     @api currentOrigin;
 
     @api currentApplication = APPLICATIONS.RECORD_EXPLORER;
-    @api isBackButtonDisplayed = false;
     isConnectorLoaded = false;
 
     _recordId;
@@ -126,17 +125,6 @@ export default class Salesforce extends ToolkitElement {
             type: 'application',
             state: {
                 applicationName: 'assistant',
-            },
-        };
-
-        legacyStore.dispatch(store_application.fakeNavigate(params));
-    };
-
-    openDefaultPanel = () => {
-        const params = {
-            type: 'application',
-            state: {
-                applicationName: 'home',
             },
         };
 

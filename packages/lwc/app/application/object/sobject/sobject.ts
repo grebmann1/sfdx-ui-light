@@ -1,4 +1,4 @@
-import { api, wire } from 'lwc';
+import { api, wire, track } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import { NavigationContext, navigate } from 'lwr/navigation';
 import { ensureMermaidLoaded } from 'shared/loader';
@@ -8,6 +8,7 @@ import Toast from 'lightning/toast';
 /** Store */
 import { store, SOBJECT } from 'core/store';
 import { store as legacyStore, store_application } from 'shared/store';
+import { getFieldTypeIcon, API_COLORS } from './constants';
 
 const deepClone = (obj: Record<string, any>) => JSON.parse(JSON.stringify(obj));
 type AnyRecord = Record<string, any>;
@@ -20,11 +21,10 @@ export default class Sobject extends ToolkitElement {
     isLoading = false;
     isNoRecord = false;
 
-    fieldSearch = '';
-    relationshipSearch = '';
+    @track fieldSearch = '';
+    @track relationshipSearch = '';
+    @track expandedFieldKey: string | null = null;
     relationshipTab = 'lookups';
-
-    page = 'code';
 
     openSections = {
         availableApis: true,
@@ -72,6 +72,15 @@ export default class Sobject extends ToolkitElement {
         this.relationshipSearch = (e.detail?.value || '').trim();
     };
 
+    handleToggleFieldExpand = (e: any): void => {
+        const key = e.currentTarget.dataset.key;
+        this.expandedFieldKey = this.expandedFieldKey === key ? null : key;
+    };
+
+    handleCloseFieldDetail = (): void => {
+        this.expandedFieldKey = null;
+    };
+
     handleDisplayDiagram = (e: any): void => {
         this.isDiagramDisplayed = e.detail.checked;
         localStorage.setItem(`object-explorer-isDiagramDisplayed`, e.detail.checked);
@@ -81,13 +90,6 @@ export default class Sobject extends ToolkitElement {
         const value = e.target?.value;
         if (!isEmpty(value)) {
             this.relationshipTab = value;
-        }
-    };
-
-    handlePageSelect = (e: any): void => {
-        const page = e.currentTarget?.dataset?.page;
-        if (!isEmpty(page)) {
-            this.page = page;
         }
     };
 
@@ -177,7 +179,6 @@ export default class Sobject extends ToolkitElement {
         this.fieldSearch = '';
         this.relationshipSearch = '';
         this.relationshipTab = 'lookups';
-        this.page = 'code';
         this.openSections = {
             availableApis: true,
             relationships: true,
@@ -231,6 +232,9 @@ export default class Sobject extends ToolkitElement {
 
             field._isFormula = isFormula;
             field._isPicklist = isPicklist;
+            field._isRequired = field.nillable === false && field.createable === true && field.defaultedOnCreate !== true;
+            field._hasExtra = isFormula || isPicklist || field.unique === true || field.externalId === true || !isEmpty(field.inlineHelpText);
+            field._iconName = getFieldTypeIcon(field.type).replace('lucide:', '');
 
             // Type label
             field._type = isFormula ? `fx: ${field.type}` : field.type;
@@ -313,6 +317,43 @@ export default class Sobject extends ToolkitElement {
         );
     }
 
+    get filteredFieldsWithMeta() {
+        const expandedKey = this.expandedFieldKey;
+        return this.filteredFields.map(f => {
+            const isExpanded = f.name === expandedKey;
+            return {
+                ...f,
+                _isExpanded: isExpanded,
+                _rowClass: isExpanded ? 'row-expanded' : '',
+                _expandBtnClass: isExpanded ? 'extra-toggle-btn is-active' : 'extra-toggle-btn',
+            };
+        });
+    }
+
+    get expandedField(): AnyRecord | null {
+        if (!this.expandedFieldKey || !this.selectedDetails) return null;
+        return (this.selectedDetails.fields || []).find((f: AnyRecord) => f.name === this.expandedFieldKey) || null;
+    }
+
+    get expandedFieldCapabilities() {
+        const f = this.expandedField;
+        if (!f) return [];
+        const caps = [];
+        if (f.createable) caps.push({ key: 'createable', label: 'Createable', cls: 'cap-green' });
+        if (f.updateable) caps.push({ key: 'updateable', label: 'Updateable', cls: 'cap-green' });
+        if (f.filterable) caps.push({ key: 'filterable', label: 'Filterable', cls: 'cap-blue' });
+        if (f.sortable) caps.push({ key: 'sortable', label: 'Sortable', cls: 'cap-blue' });
+        if (f.groupable) caps.push({ key: 'groupable', label: 'Groupable', cls: 'cap-blue' });
+        if (f.unique) caps.push({ key: 'unique', label: 'Unique', cls: 'cap-purple' });
+        if (f.externalId) caps.push({ key: 'externalId', label: 'External ID', cls: 'cap-purple' });
+        if (!f.nillable) caps.push({ key: 'notnull', label: 'Not Null', cls: 'cap-red' });
+        return caps;
+    }
+
+    get expandedFieldHelpText(): string {
+        return this.expandedField?.inlineHelpText || '';
+    }
+
     get lookups() {
         if (!this.isDetailDisplayed) return [];
         const fields = this.selectedDetails.fields || [];
@@ -324,6 +365,7 @@ export default class Sobject extends ToolkitElement {
                     key: `${f.name}:${target}`,
                     label: f.label || f.name,
                     fieldName: f.name,
+                    relationshipName: f.relationshipName || '',
                     target,
                 };
             })
@@ -337,47 +379,9 @@ export default class Sobject extends ToolkitElement {
             x =>
                 this.checkIfPresent(x.label, search) ||
                 this.checkIfPresent(x.fieldName, search) ||
+                this.checkIfPresent(x.relationshipName, search) ||
                 this.checkIfPresent(x.target, search)
         );
-    }
-
-    get lookupsTree() {
-        return (this.lookups || []).map(rel => ({
-            id: rel.key,
-            name: `${rel.label} / ${rel.target}`,
-            title: `${rel.label} — ${rel.target} (${rel.fieldName})`,
-            rawName: rel.target,
-            icon: 'utility:record_lookup',
-        }));
-    }
-
-    get childrenTree() {
-        return (this.children || []).map(child => ({
-            id: child.key,
-            name: `${child.relationshipName} / ${child.childSObject}`,
-            title: `${child.relationshipName} — ${child.childSObject} (${child.field})`,
-            rawName: child.childSObject,
-            icon: 'utility:record_lookup',
-        }));
-    }
-
-    get fieldsTree() {
-        const fields = this.selectedDetails?.fields || [];
-        return fields.map(f => ({
-            id: f.name,
-            name: f.label || f.name,
-            title: `${f.label || f.name} — ${f._type}`,
-            rawName: f.name,
-            icon: 'utility:slack_channel',
-        }));
-    }
-
-    get explorerSearchFields() {
-        return ['name', 'title'];
-    }
-
-    get explorerMinSearchLength() {
-        return 1;
     }
 
     get children() {
@@ -437,19 +441,16 @@ export default class Sobject extends ToolkitElement {
             { key: 'updateable', label: 'Updateable' },
             { key: 'deletable', label: 'Deletable' },
         ];
-        return map.filter(x => this.selectedDetails?.[x.key] === true);
+        return map
+            .filter(x => this.selectedDetails?.[x.key] === true)
+            .map(x => ({
+                ...x,
+                colorClass: `api-badge ${API_COLORS[x.key] || 'badge-teal'}`,
+            }));
     }
 
     get availableApisCount() {
         return this.availableApis.length;
-    }
-
-    get isCodePage() {
-        return this.page === 'code';
-    }
-
-    get codeButtonVariant() {
-        return this.isCodePage ? 'brand' : 'neutral';
     }
 
     get isAvailableApisOpen() {

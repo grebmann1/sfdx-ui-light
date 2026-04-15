@@ -26,6 +26,14 @@
                 variant="bare"
                 alternative-text="edit"></lightning-button-icon>
         </template>
+        <template lwc:if={isLookupField}>
+            <lightning-button-icon
+                class="slds-cell-button"
+                onclick={handle_viewLookupClick}
+                icon-name="utility:preview"
+                variant="bare"
+                alternative-text="view record"></lightning-button-icon>
+        </template>
         <template lwc:if={isNotEmpty}>
             <lightning-button-icon
                 class="slds-cell-button"

@@ -6,6 +6,12 @@ export default defineConfig({
     server: {
         host: '0.0.0.0',
         port: 27100,
+        proxy: {
+            '/app': 'http://localhost:3000',
+            '/docs': 'http://localhost:3000',
+            '/api': 'http://localhost:3000',
+            '/oauth2': 'http://localhost:3000',
+        },
     },
     plugins: [react()],
     build: {

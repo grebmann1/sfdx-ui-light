@@ -6,32 +6,18 @@ import { DEFAULT_WORKSPACE_ROOT } from './constants';
 
 export { defaultKeybindingsRaw as defaultKeybindingsJson };
 
-export const buildUserConfiguration = (isChromeExtension: boolean) => ({
+export const buildCustomUserConfiguration = () => ({
     'workbench.colorTheme': LIGHT_COLOR_THEME,
-    'files.autoSave': 'off',
-    'window.menuBarVisibility': 'visible',
-    ...(isChromeExtension
-        ? {
-              'workbench.activity.showExtensions': false,
-              'workbench.activity.showSCM': false,
-              'workbench.activity.showTesting': false,
-              'workbench.activity.showDebug': false,
-          }
-        : {
-              'workbench.activity.showExtensions': true,
-          }),
-    'extensions.autoCheckUpdates': false,
-    'extensions.autoUpdate': false,
 });
 
 /**
  * Returns a JSON string suitable for initUserConfiguration.
  * Merges the base configuration.json defaults with workbench-specific overrides.
  */
-export function buildUserConfigurationJson(isChromeExtension: boolean): string {
+export function buildUserConfigurationJson(): string {
     const merged = {
         ...baseConfigurationJson,
-        ...buildUserConfiguration(isChromeExtension),
+        ...buildCustomUserConfiguration(),
     };
     return JSON.stringify(merged, null, 2);
 }
@@ -42,7 +28,6 @@ export function buildUserConfigurationJson(isChromeExtension: boolean): string {
  */
 export const buildWorkspaceConfig = (
     uriFile: (path: string) => unknown,
-    isChromeExtension: boolean,
     workspaceRoot = DEFAULT_WORKSPACE_ROOT
 ) => ({
     workspaceProvider: {
@@ -58,18 +43,6 @@ export const buildWorkspaceConfig = (
     productConfiguration: {
         nameShort: 'Salesforce Workbench',
         nameLong: 'Salesforce Workbench',
-        defaultChatAgent: buildWorkbenchDefaultChatAgent(),
-        ...(isChromeExtension
-            ? {}
-            : {
-                  extensionsGallery: {
-                      serviceUrl: 'https://open-vsx.org/vscode/gallery',
-                      itemUrl: 'https://open-vsx.org/vscode/item',
-                      resourceUrlTemplate:
-                          'https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{version}/{path}',
-                      controlUrl: '',
-                      nlsBaseUrl: '',
-                  },
-              }),
+        defaultChatAgent: buildWorkbenchDefaultChatAgent()
     },
 });

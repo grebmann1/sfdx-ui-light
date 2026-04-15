@@ -27,21 +27,81 @@ pre {
     margin: 0px;
 }
 
+/* ── Dirty / edit state ─────────────────────────────────────── */
+
 .slds-is-dirty {
-    background-color: antiquewhite;
+    background-color: #fdf4e7;
 }
 
 .slds-is-dirty > td {
-    background-color: antiquewhite;
+    background-color: #fdf4e7;
 }
 
 .slds-is-dirty:hover > td,
 .slds-is-dirty:focus-within > td {
-    background-color: #f7e3bf;
+    background-color: #fae8c6;
 }
 
-.right-actions,
-.cell-action {
-    opacity: 0.7;
+/* ── Row action icon buttons ───────────────────────────────── */
+
+.right-actions {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    flex-shrink: 0;
+    opacity: 0;
     transition: opacity 120ms ease;
+}
+
+tr:hover .right-actions,
+tr:focus-within .right-actions {
+    opacity: 1;
+}
+
+.row-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    padding: 3px;
+    cursor: pointer;
+    color: var(--slds-g-color-neutral-base-40, #5a5a5a);
+    transition: background-color 120ms ease, color 120ms ease;
+    vertical-align: middle;
+}
+
+.row-icon-btn:hover {
+    background-color: var(--slds-g-color-neutral-base-88, #e0e0e0);
+    color: var(--slds-g-color-neutral-base-10, #1a1a1a);
+}
+
+.row-icon-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Formula button — subtle teal accent */
+.row-icon-btn_formula {
+    color: var(--slds-g-color-success-base-50, #2e844a);
+}
+
+.row-icon-btn_formula:hover {
+    background-color: #e8f5ec;
+    color: var(--slds-g-color-success-base-40, #1b6336);
+}
+
+/* Lock icon — static, not a button */
+.row-icon-btn_locked {
+    cursor: default;
+    color: var(--slds-g-color-neutral-base-60, #a0a0a0);
+}
+
+/* ── Type badge (info mode) ────────────────────────────────── */
+
+.type-badge {
+    font-size: 11px;
+    color: var(--slds-g-color-neutral-base-40, #5a5a5a);
+    font-family: var(--slds-c-input-font-family, monospace);
 }

@@ -50,6 +50,19 @@ export default class OutputCell extends LightningElement {
         navigate(this.navContext, params);
     };
 
+    handle_viewLookupClick = e => {
+        e.preventDefault();
+        e.stopPropagation();
+        const params = {
+            type: 'application',
+            state: {
+                applicationName: 'recordviewer',
+                recordId: this.value,
+            },
+        };
+        navigate(this.navContext, params);
+    };
+
     handleRedirection = e => {
         e.preventDefault();
         e.stopPropagation();
@@ -60,6 +73,10 @@ export default class OutputCell extends LightningElement {
 
     get isRecordIdField() {
         return this.column === 'Id';
+    }
+
+    get isLookupField() {
+        return !isUndefinedOrNull(this.url) && !this.isRecordIdField;
     }
 
     get formattedValue() {

@@ -4,7 +4,7 @@ title: Architecture Overview
 
 # Architecture Overview
 
-SF Toolkit is a monorepo that builds the same core product across three deployment surfaces: a **web app**, a **browser extension**, and an **Electron desktop app**. All surfaces share a common LWC frontend and TypeScript library.
+Workbench is a monorepo that builds the same core product across three deployment surfaces: a **web app**, a **browser extension**, and an **Electron desktop app**. All surfaces share a common LWC frontend and TypeScript library.
 
 ## Monorepo layout
 

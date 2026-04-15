@@ -3,8 +3,8 @@ import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-    title: 'SF Toolkit Docs',
-    tagline: 'Documentation for SF Toolkit web app, extension, and workflows.',
+    title: 'Workbench Docs',
+    tagline: 'Documentation for Workbench web app, extension, and workflows.',
     url: 'https://sf-toolkit.com',
     baseUrl: process.env.DOCS_BASE_PATH || '/docs/',
     onBrokenLinks: 'warn',
@@ -32,7 +32,7 @@ const config: Config = {
     ],
     themeConfig: {
         navbar: {
-            title: 'SF Toolkit Docs',
+            title: 'Workbench Docs',
             items: [
                 {
                     type: 'docSidebar',
@@ -75,7 +75,7 @@ const config: Config = {
                     ],
                 },
             ],
-            copyright: `Copyright ${new Date().getFullYear()} SF Toolkit`,
+            copyright: `Copyright ${new Date().getFullYear()} Workbench`,
         },
         prism: {
             theme: prismThemes.github,

@@ -14,17 +14,16 @@
     <!-- Salesforce Panel -->
     <panels-salesforce
         class={salesforcePanelClass}
-        is-back-button-displayed={isBackButtonDisplayed}
         lwc:ref="salesforce"
-        onback={handleGoBack}
+        onmodetoggle={handleModeToggle}
         onchangepanel={handlePanelChange}
         record-id={recordId}></panels-salesforce>
     <!-- Default Panel -->
     <panels-default
         class={defaultPanelClass}
-        is-back-button-displayed={isBackButtonDisplayed}
+        is-toggle-visible={activeTabMatchesSalesforce}
         lwc:ref="default"
-        onback={handleGoBack}
+        onmodetoggle={handleModeToggle}
         onchangepanel={handlePanelChange}
         onapplicationchange={handleApplicationChange}></panels-default>
 </template>

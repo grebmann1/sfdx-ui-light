@@ -29,11 +29,13 @@
         "site:install": "npm-run-all ui:install docs:install",
         "ui:dev": "npm --prefix apps/ui run dev",
         "docs:dev": "npm --prefix apps/docs run dev",
+        "start:dev:ui": "npm-run-all --parallel start:dev:server ui:dev",
         "site:dev": "npm-run-all --parallel ui:dev docs:dev start:dev:web",
         "ui:build": "UI_BASE_PATH=/welcome/ npm --prefix apps/ui run build",
         "docs:build": "npm --prefix apps/docs run build",
         "site:build": "npm-run-all ui:build docs:build",
         "start:dev:server": "npm run build:server && NODE_ENV=development node -r dotenv/config packages/server/dist/server-dev.js",
+        "start:dev:server:full": "npm run clean && npm-run-all --parallel watch:shared start:dev:server start:dev:vscode",
         "start:dev:vscode": "npm --prefix packages/vscode run start",
         "start:dev:vscode:debug": "npm --prefix packages/vscode run start:debug",
         "start:dev:extension:vscode": "npm-run-all --parallel watch:extension start:dev:vscode",
@@ -69,7 +71,10 @@
         "build:vendor": "npm-run-all build:vendor:openai build:vendor:just-bash",
         "build:web:all": "npm-run-all site:build build:web",
         "build:all": "npm-run-all build:web:all build:workers build:extension build:desktop",
-        "validate": "npm-run-all check build:all"
+        "validate": "npm-run-all check build:all",
+        "docker:prebuild": "npm-run-all build:shared build:server build:web site:build && (cd packages/vscode && ./node_modules/.bin/vite --config vite.config.ts build)",
+        "docker:build": "npm run docker:prebuild && docker compose build",
+        "docker:up": "docker compose up"
     },
     "nx": {
         "targets": {

@@ -87,57 +87,8 @@ import {
   buildWorkspaceConfig,
   defaultKeybindingsJson
 } from './workbench/configuration/config'
-import {
-  ITerminalChildProcess,
-  SimpleTerminalBackend,
-  SimpleTerminalProcess
-} from '@codingame/monaco-vscode-terminal-service-override'
-import ansiColors from 'ansi-colors'
 import { registerIframeWorkspaceProvider } from 'vscode/bridge/registerIframeWorkspaceProvider'
 import 'vscode/localExtensionHost'
-
-const _SimpleTerminalBackend = SimpleTerminalBackend as any
-const _SimpleTerminalProcess = SimpleTerminalProcess as any
-
-class TerminalBackend extends _SimpleTerminalBackend {
-  getDefaultSystemShell = async (): Promise<string> => 'bash'
-  createProcess = async (): Promise<ITerminalChildProcess> => {
-    const dataEmitter = new vscode.EventEmitter<string>()
-    class SalesforceTerminalProcess extends _SimpleTerminalProcess {
-      private column = 0
-      async start(): Promise<undefined> {
-        ansiColors.enabled = true
-        dataEmitter.fire(`Salesforce Terminal\r\n${ansiColors.green('$')} `)
-        setTimeout(() => {
-          dataEmitter.fire('\u001B]0;Salesforce Terminal\u0007')
-        }, 0)
-        this.column = 2
-        return undefined
-      }
-      shutdown(_immediate: boolean): void {}
-      input(data: string): void {
-        for (const c of data) {
-          if (c.charCodeAt(0) === 13) {
-            dataEmitter.fire(`\r\n${ansiColors.green('$')} `)
-            this.column = 2
-          } else if (c.charCodeAt(0) === 127) {
-            if (this.column > 2) {
-              dataEmitter.fire('\b \b')
-              this.column--
-            }
-          } else {
-            dataEmitter.fire(c)
-            this.column++
-          }
-        }
-      }
-      resize(_cols: number, _rows: number): void {}
-      clearBuffer(): void {}
-      sendSignal(): void {}
-    }
-    return new SalesforceTerminalProcess(1, 1, '/workspace', dataEmitter.event) as ITerminalChildProcess
-  }
-}
 
 const url = new URL(document.location.href)
 const params = url.searchParams
@@ -230,13 +181,12 @@ window.MonacoEnvironment = {
 
 // Set configuration before initializing service so it's directly available (especially for the theme, to prevent a flicker)
 await Promise.all([
-  initUserConfiguration(buildUserConfigurationJson(useIframeWorkspaceBridge)),
+  initUserConfiguration(buildUserConfigurationJson()),
   initUserKeybindings(defaultKeybindingsJson)
 ])
 
 const workspaceConfig = buildWorkspaceConfig(
   monaco.Uri.file.bind(monaco.Uri),
-  useIframeWorkspaceBridge,
   workspaceRoot
 )
 
@@ -301,7 +251,7 @@ export const commonServices: IEditorOverrideServices = {
   ...getTitleBarServiceOverride(),
   ...getSnippetServiceOverride(),
   ...getOutputServiceOverride(),
-  ...getTerminalServiceOverride(new TerminalBackend()),
+  ...getTerminalServiceOverride(),
   ...getSearchServiceOverride(),
   ...getMarkersServiceOverride(),
   ...getAccessibilityServiceOverride(),

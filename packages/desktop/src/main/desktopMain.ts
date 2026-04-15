@@ -102,7 +102,7 @@ function registerWebContentsGuards(rendererUrl: string): void {
     });
 }
 
-app.setName('SF Toolkit Desktop');
+app.setName('Workbench Desktop');
 
 const windowManager = new WindowManager({ preloadPath, rendererUrl });
 

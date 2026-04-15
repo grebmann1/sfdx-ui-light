@@ -22,3 +22,16 @@
     font-weight: 300;
     font-size: 0.8125rem;
 }
+
+.provider-key-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.25rem;
+}
+
+/* Pushes the toggle button down to align with the input field
+   when the sibling lightning-input uses variant="label-stacked" */
+.provider-key-btn {
+    margin-top: 1.5rem;
+    flex-shrink: 0;
+}

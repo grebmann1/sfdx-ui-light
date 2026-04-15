@@ -44,7 +44,6 @@
                     style="min-height: 200px">
                     <slds-tabset variant="vertical" active-tab-value={activeTab}>
                         <slds-tab label="Session" value="session" lwc:if={isUserLoggedIn}>
-                            <!-- UI -->
                             <div class="slds-section slds-reverse slds-is-open">
                                 <h3 class="slds-section__title">
                                     <div class="slds-section__title-action slds-p-vertical_x-small">
@@ -55,8 +54,8 @@
                                 </h3>
                                 <div class="slds-p-vertical_small">
                                     <slds-information-block>
-                                        This settings are specific to the user {userName}. It will
-                                        be stored in the browser cache.
+                                        These settings are specific to the user {userName}. They
+                                        will be stored in the browser cache.
                                     </slds-information-block>
                                 </div>
                             </div>
@@ -126,16 +125,6 @@
                             </div>
                         </slds-tab>
                         <slds-tab label="UI Interface" value="ui">
-                            <!-- UI -->
-                            <div class="slds-section slds-reverse slds-is-open">
-                                <h3 class="slds-section__title">
-                                    <div class="slds-section__title-action slds-p-vertical_x-small">
-                                        <span class="slds-truncate" title="UI settings">
-                                            UI Settings
-                                        </span>
-                                    </div>
-                                </h3>
-                            </div>
                             <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
                                 <settings-card
                                     class="slds-col slds-size_1-of-2 slds-large-size_1-of-2 slds-p-horizontal_small"
@@ -149,7 +138,6 @@
                                             UI to optimize space for the main content.
                                         </p>
                                     </div>
-                                    <div slot="actions"></div>
                                     <lightning-input
                                         data-key="ui_isApplicationTabVisible"
                                         label="Display Application Tab"
@@ -168,15 +156,6 @@
                                 inputfield_change={inputfield_change}></settings-api-app-settings>
                         </slds-tab>
                         <slds-tab label="Shortcuts" value="shortcuts">
-                            <div class="slds-section slds-reverse slds-is-open">
-                                <h3 class="slds-section__title">
-                                    <div class="slds-section__title-action slds-p-vertical_x-small">
-                                        <span class="slds-truncate" title="Shortcuts">
-                                            Shortcuts
-                                        </span>
-                                    </div>
-                                </h3>
-                            </div>
                             <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
                                 <lightning-card
                                     class="settings slds-auto-height slds-col slds-size_1-of-1 slds-p-around_medium">
@@ -381,15 +360,6 @@
                             </div>
                         </slds-tab>
                         <slds-tab label="Metadata" value="metadata">
-                            <div class="slds-section slds-reverse slds-is-open">
-                                <h3 class="slds-section__title">
-                                    <div class="slds-section__title-action slds-p-vertical_x-small">
-                                        <span class="slds-truncate" title="Metadata settings">
-                                            Metadata Settings
-                                        </span>
-                                    </div>
-                                </h3>
-                            </div>
                             <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
                                 <lightning-card
                                     class="settings slds-col slds-size_1-of-1 slds-p-around_medium">
@@ -445,7 +415,6 @@
                                                     and background storage.
                                                 </p>
                                             </div>
-                                            <div slot="actions"></div>
                                             <lightning-dual-listbox
                                                 data-key="metadata_storage_types"
                                                 label="Metadata Types"
@@ -462,16 +431,6 @@
                             </div>
                         </slds-tab>
                         <slds-tab label="Integrations">
-                            <!-- Integrations -->
-                            <div class="slds-section slds-reverse slds-is-open">
-                                <h3 class="slds-section__title">
-                                    <div class="slds-section__title-action slds-p-vertical_x-small">
-                                        <span class="slds-truncate" title="Integrations">
-                                            Integrations
-                                        </span>
-                                    </div>
-                                </h3>
-                            </div>
                             <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
                                 <lightning-card
                                     class="settings slds-col slds-size_1-of-1 slds-large-size_1-of-1 slds-p-around_medium">
@@ -482,7 +441,6 @@
                                             for the AI agent.
                                         </p>
                                     </div>
-                                    <div slot="actions"></div>
                                     <div class="slds-grid slds-wrap">
                                         <settings-card
                                             class="slds-col slds-size_1-of-1 slds-p-horizontal_small"
@@ -495,29 +453,16 @@
                                             </div>
                                             <div slot="actions">
                                                 <lightning-badge
-                                                    lwc:if={googleConnected}
-                                                    label="Connected"
-                                                    class="slds-m-right_small"
-                                                    style="--slds-c-badge-color-background: #2e844a; --slds-c-badge-text-color: white;"></lightning-badge>
-                                                <lightning-badge
-                                                    lwc:else
-                                                    label="Not connected"
+                                                    label="Coming soon"
                                                     class="slds-m-right_small"></lightning-badge>
                                                 <lightning-button
-                                                    lwc:if={googleConnected}
-                                                    label="Disconnect"
-                                                    variant="destructive-text"
-                                                    onclick={handleDisconnectGoogle}></lightning-button>
-                                                <lightning-button
-                                                    lwc:else
                                                     label="Connect to Google"
                                                     variant="brand"
-                                                    onclick={handleConnectGoogle}></lightning-button>
+                                                    disabled></lightning-button>
                                             </div>
                                             <slds-information-block>
-                                                The agent will use this connection to read and write
-                                                Google Sheets on your behalf. You can revoke access
-                                                at any time from your Google account settings.
+                                                Google Sheets integration is temporarily unavailable.
+                                                Check back in a future release.
                                             </slds-information-block>
                                         </settings-card>
                                     </div>
@@ -525,60 +470,15 @@
                             </div>
                         </slds-tab>
                         <slds-tab label="AI">
-                            <!-- AI Settings -->
-                            <div class="slds-section slds-reverse slds-is-open">
-                                <h3 class="slds-section__title">
-                                    <div class="slds-section__title-action slds-p-vertical_x-small">
-                                        <span class="slds-truncate" title="AI settings">
-                                            AI Settings
-                                        </span>
-                                    </div>
-                                </h3>
-                            </div>
                             <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
                                 <lightning-card
-                                    class="settings slds-col slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
-                                    <div slot="title">
-                                        <h1>Restrict API calls</h1>
-                                        <p class="description slds-truncate">
-                                            Restrict the API calls for specific organization to
-                                            avoid triggering alert when using Salesforce Shield
-                                        </p>
-                                    </div>
-                                    <div slot="actions"></div>
-                                    <div class="slds-grid slds-wrap">
-                                        <!--
-										<settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small" is-first>
-											<div slot="title">
-												<h1>Exclusion List</h1>
-												<p class="description slds-truncate"> Enter username (1 per line)</p>
-											</div>
-											<div slot="actions">
-												<lightning-textarea class="slds-text-align-end" data-key="cache_exclusionList"
-													label="cache_exclusionList"
-													type="text"
-													step="1"
-													message-toggle-active=""
-													message-toggle-inactive=""
-													variant="label-hidden"
-													value={config.cache_exclusionList}
-													onchange={inputfield_change}
-												></lightning-textarea>
-											</div>
-										</settings-card>
-										-->
-                                    </div>
-                                </lightning-card>
-
-                                <lightning-card
-                                    class="settings slds-col slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
+                                    class="settings slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
                                     <div slot="title">
                                         <h1>LLM Settings</h1>
                                         <p class="description slds-truncate">
                                             Settings related to LLM integration.
                                         </p>
                                     </div>
-                                    <div slot="actions"></div>
                                     <div class="slds-grid slds-wrap">
                                         <settings-card
                                             class="slds-col slds-size_1-of-1 slds-p-horizontal_small"
@@ -590,7 +490,6 @@
                                                     Autocomplete feature.
                                                 </p>
                                             </div>
-                                            <div slot="actions"></div>
                                             <lightning-input
                                                 label="AI Provider"
                                                 value="Mistral"
@@ -601,273 +500,184 @@
                                     </div>
                                 </lightning-card>
                                 <lightning-card
-                                    class="settings slds-col slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
+                                    class="settings slds-col slds-size_1-of-1 slds-p-around_medium">
                                     <div slot="title">
-                                        <h1>Provider Keys</h1>
+                                        <h1>AI Providers</h1>
                                         <p class="description slds-truncate">
-                                            API keys for each supported LLM provider.
+                                            Configure API keys and endpoints for each LLM provider.
                                         </p>
                                     </div>
-                                    <div slot="actions"></div>
-                                    <div class="slds-grid slds-wrap">
-                                        <settings-card
-                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small"
-                                            is-first>
-                                            <div slot="title">
-                                                <h1>OpenAI Key</h1>
-                                                <p class="description slds-truncate">
-                                                    API key for OpenAI requests and gateway-backed
-                                                    model discovery.
-                                                </p>
+                                    <slds-tabset variant="vertical">
+                                        <slds-tab label="OpenAI" value="openai">
+                                            <div class="slds-grid slds-wrap slds-p-around_small">
+                                                <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-right_x-small">
+                                                    <div class="provider-key-row">
+                                                        <lightning-input
+                                                            data-key="openai_key"
+                                                            label="API Key"
+                                                            onchange={inputfield_change}
+                                                            type="password"
+                                                            value={config.openai_key}
+                                                            variant="label-stacked"
+                                                            class="slds-full-width"></lightning-input>
+                                                        <div class="provider-key-btn">
+                                                            <lightning-button-icon
+                                                                data-key="openai_key"
+                                                                alternative-text="Toggle visibility"
+                                                                icon-name="utility:preview"
+                                                                onclick={handleToggleVisibility}></lightning-button-icon>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-left_x-small">
+                                                    <lightning-input
+                                                        data-key="openai_url"
+                                                        label="Endpoint"
+                                                        onchange={inputfield_change}
+                                                        type="text"
+                                                        value={config.openai_url}
+                                                        variant="label-stacked"
+                                                        class="slds-full-width"></lightning-input>
+                                                </div>
                                             </div>
-                                            <div slot="actions"></div>
-                                            <div class="slds-flex-row">
-                                                <lightning-input
-                                                    data-key="openai_key"
-                                                    label="openai_key"
-                                                    onchange={inputfield_change}
-                                                    type="password"
-                                                    value={config.openai_key}
-                                                    variant="label-hidden"
-                                                    class="slds-full-width"></lightning-input>
-                                                <lightning-button-icon
-                                                    data-key="openai_key"
-                                                    alternative-text="copy"
-                                                    icon-name="utility:preview"
-                                                    onclick={handleToggleVisibility}></lightning-button-icon>
+                                        </slds-tab>
+                                        <slds-tab label="Anthropic" value="anthropic">
+                                            <div class="slds-grid slds-wrap slds-p-around_small">
+                                                <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-right_x-small">
+                                                    <div class="provider-key-row">
+                                                        <lightning-input
+                                                            data-key="anthropic_key"
+                                                            label="API Key"
+                                                            onchange={inputfield_change}
+                                                            type="password"
+                                                            value={config.anthropic_key}
+                                                            variant="label-stacked"
+                                                            class="slds-full-width"></lightning-input>
+                                                        <div class="provider-key-btn">
+                                                            <lightning-button-icon
+                                                                data-key="anthropic_key"
+                                                                alternative-text="Toggle visibility"
+                                                                icon-name="utility:preview"
+                                                                onclick={handleToggleVisibility}></lightning-button-icon>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-left_x-small">
+                                                    <lightning-input
+                                                        data-key="anthropic_url"
+                                                        label="Endpoint"
+                                                        onchange={inputfield_change}
+                                                        type="text"
+                                                        value={config.anthropic_url}
+                                                        variant="label-stacked"
+                                                        class="slds-full-width"></lightning-input>
+                                                </div>
                                             </div>
-                                        </settings-card>
-                                        <settings-card
-                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
-                                            <div slot="title">
-                                                <h1>Anthropic Key</h1>
-                                                <p class="description slds-truncate">
-                                                    API key for Anthropic provider configuration.
-                                                </p>
+                                        </slds-tab>
+                                        <slds-tab label="Gemini" value="gemini">
+                                            <div class="slds-grid slds-wrap slds-p-around_small">
+                                                <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-right_x-small">
+                                                    <div class="provider-key-row">
+                                                        <lightning-input
+                                                            data-key="gemini_key"
+                                                            label="API Key"
+                                                            onchange={inputfield_change}
+                                                            type="password"
+                                                            value={config.gemini_key}
+                                                            variant="label-stacked"
+                                                            class="slds-full-width"></lightning-input>
+                                                        <div class="provider-key-btn">
+                                                            <lightning-button-icon
+                                                                data-key="gemini_key"
+                                                                alternative-text="Toggle visibility"
+                                                                icon-name="utility:preview"
+                                                                onclick={handleToggleVisibility}></lightning-button-icon>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-left_x-small">
+                                                    <lightning-input
+                                                        data-key="gemini_url"
+                                                        label="Endpoint"
+                                                        onchange={inputfield_change}
+                                                        type="text"
+                                                        value={config.gemini_url}
+                                                        variant="label-stacked"
+                                                        class="slds-full-width"></lightning-input>
+                                                </div>
                                             </div>
-                                            <div slot="actions"></div>
-                                            <div class="slds-flex-row">
-                                                <lightning-input
-                                                    data-key="anthropic_key"
-                                                    label="anthropic_key"
-                                                    onchange={inputfield_change}
-                                                    type="password"
-                                                    value={config.anthropic_key}
-                                                    variant="label-hidden"
-                                                    class="slds-full-width"></lightning-input>
-                                                <lightning-button-icon
-                                                    data-key="anthropic_key"
-                                                    alternative-text="copy"
-                                                    icon-name="utility:preview"
-                                                    onclick={handleToggleVisibility}></lightning-button-icon>
+                                        </slds-tab>
+                                        <slds-tab label="Mistral" value="mistral">
+                                            <div class="slds-grid slds-wrap slds-p-around_small">
+                                                <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-right_x-small">
+                                                    <div class="provider-key-row">
+                                                        <lightning-input
+                                                            data-key="mistral_key"
+                                                            label="API Key"
+                                                            onchange={inputfield_change}
+                                                            type="password"
+                                                            value={config.mistral_key}
+                                                            variant="label-stacked"
+                                                            class="slds-full-width"></lightning-input>
+                                                        <div class="provider-key-btn">
+                                                            <lightning-button-icon
+                                                                data-key="mistral_key"
+                                                                alternative-text="Toggle visibility"
+                                                                icon-name="utility:preview"
+                                                                onclick={handleToggleVisibility}></lightning-button-icon>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-left_x-small">
+                                                    <lightning-input
+                                                        data-key="mistral_url"
+                                                        label="Endpoint"
+                                                        onchange={inputfield_change}
+                                                        type="text"
+                                                        value={config.mistral_url}
+                                                        variant="label-stacked"
+                                                        class="slds-full-width"></lightning-input>
+                                                </div>
                                             </div>
-                                        </settings-card>
-                                        <settings-card
-                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
-                                            <div slot="title">
-                                                <h1>Gemini Key</h1>
-                                                <p class="description slds-truncate">
-                                                    API key for Gemini provider configuration.
-                                                </p>
+                                        </slds-tab>
+                                        <slds-tab label="xAI Grok" value="grok">
+                                            <div class="slds-grid slds-wrap slds-p-around_small">
+                                                <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-right_x-small">
+                                                    <div class="provider-key-row">
+                                                        <lightning-input
+                                                            data-key="grok_key"
+                                                            label="API Key"
+                                                            onchange={inputfield_change}
+                                                            type="password"
+                                                            value={config.grok_key}
+                                                            variant="label-stacked"
+                                                            class="slds-full-width"></lightning-input>
+                                                        <div class="provider-key-btn">
+                                                            <lightning-button-icon
+                                                                data-key="grok_key"
+                                                                alternative-text="Toggle visibility"
+                                                                icon-name="utility:preview"
+                                                                onclick={handleToggleVisibility}></lightning-button-icon>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-left_x-small">
+                                                    <lightning-input
+                                                        data-key="grok_url"
+                                                        label="Endpoint"
+                                                        onchange={inputfield_change}
+                                                        type="text"
+                                                        value={config.grok_url}
+                                                        variant="label-stacked"
+                                                        class="slds-full-width"></lightning-input>
+                                                </div>
                                             </div>
-                                            <div slot="actions"></div>
-                                            <div class="slds-flex-row">
-                                                <lightning-input
-                                                    data-key="gemini_key"
-                                                    label="gemini_key"
-                                                    onchange={inputfield_change}
-                                                    type="password"
-                                                    value={config.gemini_key}
-                                                    variant="label-hidden"
-                                                    class="slds-full-width"></lightning-input>
-                                                <lightning-button-icon
-                                                    data-key="gemini_key"
-                                                    alternative-text="copy"
-                                                    icon-name="utility:preview"
-                                                    onclick={handleToggleVisibility}></lightning-button-icon>
-                                            </div>
-                                        </settings-card>
-                                        <settings-card
-                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
-                                            <div slot="title">
-                                                <h1>Mistral Key</h1>
-                                                <p class="description slds-truncate">
-                                                    API key for Mistral provider configuration and
-                                                    autocomplete support.
-                                                </p>
-                                            </div>
-                                            <div slot="actions"></div>
-                                            <div class="slds-flex-row">
-                                                <lightning-input
-                                                    data-key="mistral_key"
-                                                    label="mistral_key"
-                                                    onchange={inputfield_change}
-                                                    type="password"
-                                                    value={config.mistral_key}
-                                                    variant="label-hidden"
-                                                    class="slds-full-width"></lightning-input>
-                                                <lightning-button-icon
-                                                    data-key="mistral_key"
-                                                    alternative-text="copy"
-                                                    icon-name="utility:preview"
-                                                    onclick={handleToggleVisibility}></lightning-button-icon>
-                                            </div>
-                                        </settings-card>
-                                        <settings-card
-                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
-                                            <div slot="title">
-                                                <h1>xAI Grok Key</h1>
-                                                <p class="description slds-truncate">
-                                                    API key for xAI Grok provider configuration.
-                                                </p>
-                                            </div>
-                                            <div slot="actions"></div>
-                                            <div class="slds-flex-row">
-                                                <lightning-input
-                                                    data-key="grok_key"
-                                                    label="grok_key"
-                                                    onchange={inputfield_change}
-                                                    type="password"
-                                                    value={config.grok_key}
-                                                    variant="label-hidden"
-                                                    class="slds-full-width"></lightning-input>
-                                                <lightning-button-icon
-                                                    data-key="grok_key"
-                                                    alternative-text="copy"
-                                                    icon-name="utility:preview"
-                                                    onclick={handleToggleVisibility}></lightning-button-icon>
-                                            </div>
-                                        </settings-card>
-                                    </div>
-                                </lightning-card>
-                                <lightning-card
-                                    class="settings slds-col slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
-                                    <div slot="title">
-                                        <h1>Provider Endpoints</h1>
-                                        <p class="description slds-truncate">
-                                            Optional endpoint overrides for each provider. Leave the
-                                            default value if you want the hosted API.
-                                        </p>
-                                    </div>
-                                    <div slot="actions"></div>
-                                    <div class="slds-grid slds-wrap">
-                                        <settings-card
-                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small"
-                                            is-first>
-                                            <div slot="title">
-                                                <h1>OpenAI Endpoint</h1>
-                                                <p class="description slds-truncate">
-                                                    Base URL for the OpenAI provider or internal
-                                                    gateway.
-                                                </p>
-                                            </div>
-                                            <div slot="actions"></div>
-                                            <div class="slds-flex-row">
-                                                <lightning-input
-                                                    data-key="openai_url"
-                                                    label="openai_url"
-                                                    onchange={inputfield_change}
-                                                    type="text"
-                                                    value={config.openai_url}
-                                                    variant="label-hidden"
-                                                    class="slds-full-width"></lightning-input>
-                                            </div>
-                                        </settings-card>
-                                        <settings-card
-                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
-                                            <div slot="title">
-                                                <h1>Anthropic Endpoint</h1>
-                                                <p class="description slds-truncate">
-                                                    Base URL override for Anthropic requests.
-                                                </p>
-                                            </div>
-                                            <div slot="actions"></div>
-                                            <div class="slds-flex-row">
-                                                <lightning-input
-                                                    data-key="anthropic_url"
-                                                    label="anthropic_url"
-                                                    onchange={inputfield_change}
-                                                    type="text"
-                                                    value={config.anthropic_url}
-                                                    variant="label-hidden"
-                                                    class="slds-full-width"></lightning-input>
-                                            </div>
-                                        </settings-card>
-                                        <settings-card
-                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
-                                            <div slot="title">
-                                                <h1>Gemini Endpoint</h1>
-                                                <p class="description slds-truncate">
-                                                    Base URL override for Gemini requests.
-                                                </p>
-                                            </div>
-                                            <div slot="actions"></div>
-                                            <div class="slds-flex-row">
-                                                <lightning-input
-                                                    data-key="gemini_url"
-                                                    label="gemini_url"
-                                                    onchange={inputfield_change}
-                                                    type="text"
-                                                    value={config.gemini_url}
-                                                    variant="label-hidden"
-                                                    class="slds-full-width"></lightning-input>
-                                            </div>
-                                        </settings-card>
-                                        <settings-card
-                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
-                                            <div slot="title">
-                                                <h1>Mistral Endpoint</h1>
-                                                <p class="description slds-truncate">
-                                                    Base URL override for Mistral requests.
-                                                </p>
-                                            </div>
-                                            <div slot="actions"></div>
-                                            <div class="slds-flex-row">
-                                                <lightning-input
-                                                    data-key="mistral_url"
-                                                    label="mistral_url"
-                                                    onchange={inputfield_change}
-                                                    type="text"
-                                                    value={config.mistral_url}
-                                                    variant="label-hidden"
-                                                    class="slds-full-width"></lightning-input>
-                                            </div>
-                                        </settings-card>
-                                        <settings-card
-                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
-                                            <div slot="title">
-                                                <h1>xAI Grok Endpoint</h1>
-                                                <p class="description slds-truncate">
-                                                    Base URL override for xAI Grok requests.
-                                                </p>
-                                            </div>
-                                            <div slot="actions"></div>
-                                            <div class="slds-flex-row">
-                                                <lightning-input
-                                                    data-key="grok_url"
-                                                    label="grok_url"
-                                                    onchange={inputfield_change}
-                                                    type="text"
-                                                    value={config.grok_url}
-                                                    variant="label-hidden"
-                                                    class="slds-full-width"></lightning-input>
-                                            </div>
-                                        </settings-card>
-                                    </div>
+                                        </slds-tab>
+                                    </slds-tabset>
                                 </lightning-card>
                             </div>
                         </slds-tab>
                         <slds-tab label="Beta Feature" value="beta">
-                            <!-- Beta Features -->
-                            <div class="slds-section slds-reverse slds-is-open">
-                                <h3 class="slds-section__title">
-                                    <div class="slds-section__title-action slds-p-vertical_x-small">
-                                        <span class="slds-truncate" title="Beta features">
-                                            Beta Features
-                                        </span>
-                                    </div>
-                                </h3>
-                            </div>
                             <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
                                 <settings-card
                                     class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small"
@@ -880,7 +690,6 @@
                                             Enable the Smart Input tool (Beta).
                                         </p>
                                     </div>
-                                    <div slot="actions"></div>
                                     <lightning-input
                                         data-key="beta_smartinput_enabled"
                                         label="Enable Smart Input"
@@ -896,18 +705,6 @@
                         <!-- Chrome Extension -->
                         <template lwc:if={isChrome}>
                             <slds-tab label="Chrome Extension" value="chrome">
-                                <div class="slds-section slds-reverse slds-is-open">
-                                    <h3 class="slds-section__title">
-                                        <div
-                                            class="slds-section__title-action slds-p-vertical_x-small">
-                                            <span
-                                                class="slds-truncate"
-                                                title="Chrome Extension Settings">
-                                                Chrome Extension Settings
-                                            </span>
-                                        </div>
-                                    </h3>
-                                </div>
                                 <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
                                     <lightning-card
                                         class="settings slds-auto-height slds-col slds-size_1-of-1 slds-p-around_medium">
@@ -917,7 +714,6 @@
                                                 General settings specific to the Extension.
                                             </p>
                                         </div>
-                                        <div slot="actions"></div>
                                         <div class="slds-grid slds-wrap">
                                             <!-- LEFT -->
                                             <div
@@ -1039,37 +835,6 @@
                                             </div>
                                         </div>
                                     </lightning-card>
-
-                                    <!-- <lightning-card class="settings slds-auto-height slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">
-										<div slot="title">
-											<h1>Sync Settings</h1>
-											<p class="description slds-truncate">Synchronize settings and Orgs with Chrome Storage.</p>
-										</div>
-										<div slot="actions"></div>
-										<div class="slds-grid slds-wrap">
-											<settings-card class="slds-col slds-size_1-of-1 slds-p-horizontal_small" is-first>
-												<div slot="title">
-													<h1>Sync Storage</h1>
-													<p class="description slds-truncate">Settings are synced with Chrome Storage.</p>
-												</div>
-												<div slot="actions">
-													<lightning-input
-														label="Sync Storage"
-														message-toggle-active=""
-														message-toggle-inactive=""
-														type="toggle"
-														variant="label-hidden"
-														checked={isChromeSyncSettingsEnabled}
-														onchange={chromeSyncSettings_change}
-													></lightning-input>
-												</div>
-			
-												<slds-information-block class="slds-p-horizontal_small slds-flex-column">
-													<p>You don't need to save. This setting is stored differently and only affect the extension.</p>
-												</slds-information-block>
-											</settings-card>
-										</div>
-									</lightning-card> -->
                                 </div>
                             </slds-tab>
                         </template>

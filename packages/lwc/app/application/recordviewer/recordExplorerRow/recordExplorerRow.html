@@ -6,7 +6,7 @@
             <div class="slds-grid slds-grid_align-spread">
                 <template lwc:if={isInfoDisplayed}>
                     <!-- INFO Mode -->
-                    <span class="slds-scrollable_x" lwc:dom="manual" lwc:ref="type"></span>
+                    <span class="slds-scrollable_x type-badge" lwc:dom="manual" lwc:ref="type"></span>
                 </template>
                 <template lwc:else>
                     <!-- VALUE Mode -->
@@ -20,60 +20,77 @@
                 <!-- Actions -->
                 <div class="right-actions">
                     <template lwc:if={isDependentPicklistDisplayed}>
-                        <lightning-button-icon
-                            alternative-text="Dependent Picklist"
+                        <button
+                            class="row-icon-btn"
                             disabled={isLoading}
-                            icon-name="utility:crossfilter"
                             onclick={handleDependentPicklistClick}
-                            tooltip={tooltip_dependentPicklist}
-                            variant="bare"></lightning-button-icon>
+                            title={tooltip_dependentPicklist}>
+                            <slds-lucide-icon
+                                name="git-merge"
+                                size="13"
+                                stroke-width="1.75"></slds-lucide-icon>
+                        </button>
                     </template>
                     <template lwc:if={isInfoDisplayed}>
-                        <!-- Only for info displayed-->
+                        <!-- No extra actions in info mode -->
                     </template>
                     <template lwc:else>
-                        <!-- Default -->
+                        <!-- Default actions -->
                         <template lwc:if={isUndoDisplayed}>
-                            <lightning-button-icon
-                                alternative-text="undo"
-                                icon-name="utility:undo"
+                            <button
+                                class="row-icon-btn"
                                 onclick={handleUndoClick}
-                                variant="bare"></lightning-button-icon>
+                                title="Undo change">
+                                <slds-lucide-icon
+                                    name="rotate-ccw"
+                                    size="13"
+                                    stroke-width="1.75"></slds-lucide-icon>
+                            </button>
                         </template>
                         <template lwc:elseif={isEditButtonDisplayed}>
-                            <lightning-button-icon
-                                alternative-text="edit"
-                                icon-name="utility:edit"
+                            <button
+                                class="row-icon-btn"
                                 onclick={handleEditClick}
-                                variant="bare"></lightning-button-icon>
+                                title="Edit field">
+                                <slds-lucide-icon
+                                    name="pencil-line"
+                                    size="13"
+                                    stroke-width="1.75"></slds-lucide-icon>
+                            </button>
                         </template>
                         <template lwc:elseif={isFormula}>
-                            <lightning-button-icon
-                                alternative-text="formula"
-                                icon-name="utility:formula"
+                            <button
+                                class="row-icon-btn row-icon-btn_formula"
                                 onclick={handleFormulaClick}
-                                tooltip={tooltip_formula}
-                                variant="bare"></lightning-button-icon>
+                                title={tooltip_formula}>
+                                <slds-lucide-icon
+                                    name="function-square"
+                                    size="13"
+                                    stroke-width="1.75"></slds-lucide-icon>
+                            </button>
                         </template>
                         <template lwc:elseif={isNotEditable}>
-                            <lightning-button-icon
-                                alternative-text="lock"
-                                disabled
-                                icon-name="utility:lock"
-                                variant="bare"></lightning-button-icon>
+                            <span class="row-icon-btn row-icon-btn_locked" title="Read-only field">
+                                <slds-lucide-icon
+                                    name="lock-keyhole"
+                                    size="13"
+                                    stroke-width="1.75"></slds-lucide-icon>
+                            </span>
                         </template>
+                    </template>
+                    <template lwc:if={isCopyDisplayed}>
+                        <button
+                            class="row-icon-btn"
+                            onclick={handleCopyClick}
+                            title="Copy value">
+                            <slds-lucide-icon
+                                name="clipboard-copy"
+                                size="13"
+                                stroke-width="1.75"></slds-lucide-icon>
+                        </button>
                     </template>
                 </div>
             </div>
-        </td>
-        <td class="cell-action slds-cell-wrap">
-            <template lwc:if={isCopyDisplayed}>
-                <lightning-button-icon
-                    alternative-text="copy"
-                    icon-name="utility:copy"
-                    onclick={handleCopyClick}
-                    variant="bare"></lightning-button-icon>
-            </template>
         </td>
     </tr>
 </template>

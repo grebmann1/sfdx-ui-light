@@ -13,7 +13,6 @@ import { getWorkspacePath, getWorkspaceUri } from '../core/workspacePaths';
 import {
     buildChangedFileDeployQuickPickItems,
     buildCurrentFileWarningMessage,
-    buildDeployWorkerConnection,
     classifyDeployPath,
     classifyToolingCommandPath,
     DEPLOYABLE_TOOLING_TYPES,
@@ -159,18 +158,6 @@ export function createDeployAndSourceTracking({
         return await resolveCurrentPath(path, classifyDeployPath, { includeMetadataApi: true });
     }
 
-    function ensureDeployWorker() {
-        if (state.deployWorker) return state.deployWorker;
-        state.deployWorker = new Worker('/libs/extensions/salesforce-deploy/deploy.worker.js', {
-            type: 'module',
-            name: 'SF Deploy',
-        });
-        context.addDisposable({
-            dispose: () => state.deployWorker?.terminate?.(),
-        });
-        return state.deployWorker;
-    }
-
     function toDeployItemFromMapEntry(path, entry, text) {
         if (entry?.readOnly) return null;
         const type = entry?.type;
@@ -205,13 +192,9 @@ export function createDeployAndSourceTracking({
         const showProgress = Boolean(options?.showProgress);
         const textOverrides = options?.textOverrides || {};
         const title = options?.title;
-        const storedConnection = connectionRuntime.loadStoredConn();
-        const liveConnection =
-            typeof connectionRuntime.loadLiveConnection === 'function'
-                ? connectionRuntime.loadLiveConnection()
-                : storedConnection;
-        const deployConnection = buildDeployWorkerConnection(liveConnection, storedConnection);
-        if (!deployConnection.instanceUrl || !deployConnection.accessToken) {
+
+        const bridgeClient = await connectionRuntime.resolveBridgeClient();
+        if (!bridgeClient) {
             await vscode.window.showErrorMessage(
                 connectionRuntime.getInjectedConnectionRequiredMessage()
             );
@@ -246,86 +229,26 @@ export function createDeployAndSourceTracking({
             return { failures: [], results: [], skippedReadOnly };
         }
 
-        const worker = ensureDeployWorker();
-        const requestId = `deploy_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-        const results = [];
-        const run = () =>
-            new Promise<void>(resolve => {
-                const onMessage = event => {
-                    const message = event?.data;
-                    if (!message || message.requestId !== requestId) return;
-                    if (message.type === 'result') results.push(message);
-                    if (message.type === 'done') {
-                        try {
-                            worker.removeEventListener('message', onMessage);
-                        } catch {
-                            // ignore
-                        }
-                        resolve();
-                    }
-                };
-                worker.addEventListener('message', onMessage);
-                worker.postMessage({
-                    type: 'deploy',
-                    requestId,
-                    connection: deployConnection,
-                    items,
-                });
-            });
+        let results = [];
+        const runDeploy = async () => {
+            const bridgeResult = await bridgeClient.deployViaToolingApi({ items });
+            results = Array.isArray(bridgeResult?.results) ? bridgeResult.results : [];
+        };
 
         if (showProgress) {
             await vscode.window.withProgress(
                 {
                     location: vscode.ProgressLocation.Notification,
                     title: title || 'Deploying to Salesforce...',
-                    cancellable: true,
+                    cancellable: false,
                 },
-                async (progress, token) => {
-                    try {
-                        token?.onCancellationRequested?.(() => {
-                            try {
-                                worker.postMessage({ type: 'cancel', requestId });
-                            } catch {
-                                // ignore
-                            }
-                        });
-                    } catch {
-                        // ignore
-                    }
-
-                    let lastPercent = 0;
-                    const onMessage = event => {
-                        const message = event?.data;
-                        if (!message || message.requestId !== requestId) return;
-                        if (message.type === 'progress') {
-                            const total = message.total || 0;
-                            const done = message.done || 0;
-                            const percent = total
-                                ? Math.max(0, Math.min(100, Math.round((done / total) * 100)))
-                                : 0;
-                            progress.report({
-                                message: message.currentPath
-                                    ? `Deploying ${message.currentPath}`
-                                    : undefined,
-                                increment: Math.max(0, percent - lastPercent),
-                            });
-                            lastPercent = percent;
-                        }
-                    };
-                    worker.addEventListener('message', onMessage);
-                    try {
-                        await run();
-                    } finally {
-                        try {
-                            worker.removeEventListener('message', onMessage);
-                        } catch {
-                            // ignore
-                        }
-                    }
+                async progress => {
+                    progress.report({ message: `Deploying ${items.length} file(s) via bridge…` });
+                    await runDeploy();
                 }
             );
         } else {
-            await run();
+            await runDeploy();
         }
 
         const failures = results.filter(result => result && result.ok === false);
@@ -334,7 +257,7 @@ export function createDeployAndSourceTracking({
             context.logLines([
                 '',
                 `=== Deploy (${new Date().toLocaleString()}) ===`,
-                `Target: ${deployConnection.instanceUrl}`,
+                `Target: ${connectionRuntime.loadStoredConn()?.instanceUrl || 'bridge'}`,
                 `Items: ${results.length} • Success: ${successes.length} • Failed: ${failures.length}`,
                 '',
                 'Success:',
@@ -602,6 +525,13 @@ export function createDeployAndSourceTracking({
                 } catch {
                     // ignore
                 }
+            }
+        } catch (err) {
+            try {
+                const message = err instanceof Error ? err.message : 'Unknown error';
+                await vscode.window.showErrorMessage(`Auto deploy failed: ${message}`);
+            } catch {
+                // ignore
             }
         } finally {
             for (const path of paths) deployInFlight.delete(path);
@@ -1500,7 +1430,6 @@ export function createDeployAndSourceTracking({
 
 export const __testables = {
     buildCurrentFileWarningMessage,
-    buildDeployWorkerConnection,
     buildChangedFileDeployQuickPickItems,
     classifyDeployPath,
     classifyToolingCommandPath,

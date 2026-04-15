@@ -1,0 +1,530 @@
+/* ─── Host ──────────────────────────────────────────────────────────────── */
+
+:host {
+    position: absolute;
+    inset: 0;
+    z-index: 9999;
+    display: block;
+}
+
+/* ─── Keyframes ─────────────────────────────────────────────────────────── */
+
+@keyframes bg-shift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes spin-cw {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes spin-ccw {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to   { transform: translate(-50%, -50%) rotate(-360deg); }
+}
+
+/* Orbit arm rotations (margin-centered, no translate) */
+@keyframes orbit-cw {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+@keyframes orbit-ccw {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(-360deg); }
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow:
+            0 0 20px rgba(21, 137, 238, 0.5),
+            0 0 40px rgba(21, 137, 238, 0.2),
+            inset 0 0 20px rgba(21, 137, 238, 0.15);
+    }
+    50% {
+        box-shadow:
+            0 0 35px rgba(21, 137, 238, 0.8),
+            0 0 70px rgba(21, 137, 238, 0.4),
+            0 0 100px rgba(6, 182, 212, 0.2),
+            inset 0 0 30px rgba(21, 137, 238, 0.25);
+    }
+}
+
+@keyframes shimmer {
+    0%   { background-position: -300% center; }
+    100% { background-position: 300% center; }
+}
+
+@keyframes progress-slide {
+    0%   { transform: translateX(-150%); }
+    100% { transform: translateX(400%); }
+}
+
+@keyframes float-up {
+    0%   { transform: translateY(0) scale(1); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 0.6; }
+    100% { transform: translateY(-100vh) scale(0.5); opacity: 0; }
+}
+
+@keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glow-ring {
+    0%, 100% { opacity: 0.25; transform: translate(-50%, -50%) scale(1); }
+    50%       { opacity: 0.55; transform: translate(-50%, -50%) scale(1.08); }
+}
+
+@keyframes logo-appear {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+    to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes icon-glow-einstein {
+    0%, 100% { box-shadow: 0 0 10px rgba(6, 182, 212, 0.4), 0 0 20px rgba(6, 182, 212, 0.2); }
+    50%       { box-shadow: 0 0 18px rgba(6, 182, 212, 0.7), 0 0 36px rgba(6, 182, 212, 0.3); }
+}
+
+@keyframes icon-glow-cloud {
+    0%, 100% { box-shadow: 0 0 10px rgba(21, 137, 238, 0.5), 0 0 20px rgba(21, 137, 238, 0.2); }
+    50%       { box-shadow: 0 0 18px rgba(21, 137, 238, 0.8), 0 0 36px rgba(21, 137, 238, 0.4); }
+}
+
+/* ─── Overlay ───────────────────────────────────────────────────────────── */
+
+.overlay {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: linear-gradient(135deg, #060d1f 0%, #0a1628 30%, #0d1f3c 60%, #060d1f 100%);
+    background-size: 400% 400%;
+    animation: bg-shift 10s ease infinite;
+}
+
+/* ─── Grid overlay ──────────────────────────────────────────────────────── */
+
+.grid-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(21, 137, 238, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(21, 137, 238, 0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 30%, transparent 100%);
+}
+
+/* ─── Floating particles ────────────────────────────────────────────────── */
+
+.particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.particle {
+    position: absolute;
+    border-radius: 50%;
+    animation: float-up linear infinite;
+}
+
+.p1 { width: 4px;  height: 4px;  left: 12%; bottom: -10px; background: rgba(21, 137, 238, 0.6);  animation-duration: 9s;   animation-delay: 0s; }
+.p2 { width: 6px;  height: 6px;  left: 28%; bottom: -10px; background: rgba(6, 182, 212, 0.5);   animation-duration: 13s;  animation-delay: 2s; }
+.p3 { width: 3px;  height: 3px;  left: 45%; bottom: -10px; background: rgba(21, 137, 238, 0.7);  animation-duration: 10s;  animation-delay: 4s; }
+.p4 { width: 5px;  height: 5px;  left: 62%; bottom: -10px; background: rgba(6, 182, 212, 0.4);   animation-duration: 7s;   animation-delay: 1s; }
+.p5 { width: 4px;  height: 4px;  left: 77%; bottom: -10px; background: rgba(21, 137, 238, 0.5);  animation-duration: 11s;  animation-delay: 3s; }
+.p6 { width: 3px;  height: 3px;  left: 88%; bottom: -10px; background: rgba(6, 182, 212, 0.6);   animation-duration: 8s;   animation-delay: 5.5s; }
+.p7 { width: 5px;  height: 5px;  left: 55%; bottom: -10px; background: rgba(255,255,255, 0.2);   animation-duration: 14s;  animation-delay: 0.5s; }
+.p8 { width: 3px;  height: 3px;  left: 35%; bottom: -10px; background: rgba(255,255,255, 0.15);  animation-duration: 12s;  animation-delay: 6s; }
+
+/* ─── Stage ─────────────────────────────────────────────────────────────── */
+
+.stage {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 36px;
+    animation: fade-in-up 0.6s ease both;
+}
+
+/* ─── Rings wrapper ─────────────────────────────────────────────────────── */
+
+.rings-wrapper {
+    position: relative;
+    width: 200px;
+    height: 200px;
+}
+
+/* Base ring: centered via translate */
+.ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border-radius: 50%;
+    border-style: solid;
+}
+
+/* Outer ring – 200px, slow clockwise, cyan accent */
+.ring-outer {
+    width: 200px;
+    height: 200px;
+    border-width: 2px;
+    border-color: rgba(6, 182, 212, 0.15) rgba(6, 182, 212, 0.15) rgba(6, 182, 212, 0.15) rgba(6, 182, 212, 0.85);
+    animation: spin-cw 8s linear infinite;
+}
+
+/* Middle ring – 142px, counter-clockwise, brand blue */
+.ring-middle {
+    width: 142px;
+    height: 142px;
+    border-width: 2px;
+    border-color: rgba(21, 137, 238, 0.15) rgba(21, 137, 238, 0.85) rgba(21, 137, 238, 0.15) rgba(21, 137, 238, 0.15);
+    animation: spin-ccw 5s linear infinite;
+}
+
+/* Inner ring – 84px, fast clockwise, white accent with a small dot */
+.ring-inner {
+    width: 84px;
+    height: 84px;
+    border-width: 1.5px;
+    border-color: rgba(255, 255, 255, 0.08) rgba(255, 255, 255, 0.08) rgba(255, 255, 255, 0.65) rgba(255, 255, 255, 0.08);
+    animation: spin-cw 2.5s linear infinite;
+}
+
+.ring-inner::after {
+    content: '';
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    bottom: -2.5px;
+    left: calc(50% - 2.5px);
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+}
+
+/* ─── Orbit arms ────────────────────────────────────────────────────────── */
+
+/*
+ * Each arm is a square matching the ring diameter, centered on the rings-wrapper.
+ * Rotating the arm moves the icon along the ring's circumference.
+ * The icon itself counter-rotates to stay upright.
+ */
+
+.orbit-arm {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: center center;
+    pointer-events: none;
+}
+
+/* Outer arm: 200px, clockwise 8s (matches ring-outer) */
+.orbit-arm-outer {
+    width: 200px;
+    height: 200px;
+    margin-top: -100px;
+    margin-left: -100px;
+    animation: orbit-cw 8s linear infinite;
+}
+
+/* Middle arm: 142px, counter-clockwise 5s (matches ring-middle) */
+.orbit-arm-middle {
+    width: 142px;
+    height: 142px;
+    margin-top: -71px;
+    margin-left: -71px;
+    animation: orbit-ccw 5s linear infinite;
+}
+
+/* Icon bubble: sits at the top-center of the arm */
+.orbit-icon {
+    position: absolute;
+    top: -16px;
+    left: calc(50% - 16px);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(8, 16, 36, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    overflow: hidden;
+}
+
+/* Counter-rotate icons to keep them facing up */
+.orbit-icon-counter-outer {
+    animation: orbit-ccw 8s linear infinite;
+    animation: icon-glow-einstein 2.5s ease-in-out infinite, orbit-ccw 8s linear infinite;
+}
+
+.orbit-icon-counter-middle {
+    animation: icon-glow-cloud 2s ease-in-out infinite, orbit-cw 5s linear infinite;
+}
+
+/* SVG icons */
+.orbit-svg {
+    width: 22px;
+    height: 22px;
+    display: block;
+}
+
+/* Einstein utility icon – tint it cyan */
+.orbit-svg-einstein {
+    fill: #06B6D4;
+    filter: drop-shadow(0 0 4px rgba(6, 182, 212, 0.8));
+}
+
+/* Salesforce1 cloud utility icon – tint it brand blue */
+.orbit-svg-cloud {
+    fill: #1589EE;
+    filter: drop-shadow(0 0 4px rgba(21, 137, 238, 0.7));
+}
+
+/* ─── Ambient glow ──────────────────────────────────────────────────────── */
+
+.glow-pulse {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(21, 137, 238, 0.12) 0%, transparent 70%);
+    animation: glow-ring 3s ease-in-out infinite;
+    pointer-events: none;
+}
+
+/* ─── Center logo ───────────────────────────────────────────────────────── */
+
+.logo-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(145deg, #112244 0%, #0a1628 100%);
+    border: 1px solid rgba(21, 137, 238, 0.35);
+    animation: pulse-glow 2.5s ease-in-out infinite, logo-appear 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.logo-letters {
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #fff;
+    text-shadow: 0 0 12px rgba(21, 137, 238, 0.9), 0 0 24px rgba(21, 137, 238, 0.4);
+    user-select: none;
+}
+
+/* ─── Branding ──────────────────────────────────────────────────────────── */
+
+.brand-area {
+    text-align: center;
+    line-height: 1;
+}
+
+.brand-name {
+    margin: 0 0 6px;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    background: linear-gradient(90deg,
+        rgba(255,255,255,0.5) 0%,
+        #fff 25%,
+        #1589EE 50%,
+        #06B6D4 65%,
+        #fff 80%,
+        rgba(255,255,255,0.5) 100%
+    );
+    background-size: 300% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 4s linear infinite;
+}
+
+.brand-sub {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(6, 182, 212, 0.7);
+}
+
+/* ─── Status area ───────────────────────────────────────────────────────── */
+
+.status-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.status-message {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 1.5px;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    text-align: center;
+    min-height: 18px;
+    transition: opacity 0.4s ease;
+}
+
+.progress-track {
+    width: 200px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 1px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 45%;
+    background: linear-gradient(90deg, transparent 0%, #1589EE 40%, #06B6D4 60%, transparent 100%);
+    border-radius: 1px;
+    animation: progress-slide 2.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LIGHT MODE OVERRIDES  (.overlay-light)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes bg-shift-light {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ─── Background ────────────────────────────────────────────────────────── */
+
+.overlay-light {
+    background: linear-gradient(135deg, #f0f7ff 0%, #e8f2fd 30%, #eef5ff 60%, #f0f7ff 100%);
+    background-size: 400% 400%;
+    animation: bg-shift-light 10s ease infinite;
+}
+
+.overlay-light .grid-overlay {
+    background-image:
+        linear-gradient(rgba(21, 137, 238, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(21, 137, 238, 0.07) 1px, transparent 1px);
+}
+
+/* ─── Particles ─────────────────────────────────────────────────────────── */
+
+.overlay-light .p1 { background: rgba(21, 137, 238, 0.35); }
+.overlay-light .p2 { background: rgba(6, 182, 212, 0.3); }
+.overlay-light .p3 { background: rgba(21, 137, 238, 0.4); }
+.overlay-light .p4 { background: rgba(6, 182, 212, 0.25); }
+.overlay-light .p5 { background: rgba(21, 137, 238, 0.3); }
+.overlay-light .p6 { background: rgba(6, 182, 212, 0.35); }
+.overlay-light .p7 { background: rgba(16, 185, 129, 0.2); }
+.overlay-light .p8 { background: rgba(21, 137, 238, 0.15); }
+
+/* ─── Rings ─────────────────────────────────────────────────────────────── */
+
+.overlay-light .ring-grand {
+    border-color: rgba(16, 185, 129, 0.18) rgba(16, 185, 129, 0.18) rgba(16, 185, 129, 0.75) rgba(16, 185, 129, 0.18);
+}
+
+.overlay-light .ring-outer {
+    border-color: rgba(6, 182, 212, 0.22) rgba(6, 182, 212, 0.22) rgba(6, 182, 212, 0.22) rgba(6, 182, 212, 0.9);
+}
+
+.overlay-light .ring-middle {
+    border-color: rgba(21, 137, 238, 0.22) rgba(21, 137, 238, 0.9) rgba(21, 137, 238, 0.22) rgba(21, 137, 238, 0.22);
+}
+
+.overlay-light .ring-inner {
+    border-color: rgba(21, 137, 238, 0.15) rgba(21, 137, 238, 0.15) rgba(21, 137, 238, 0.6) rgba(21, 137, 238, 0.15);
+}
+
+.overlay-light .ring-inner::after {
+    background: #1589EE;
+    box-shadow: 0 0 6px rgba(21, 137, 238, 0.7);
+}
+
+/* ─── Orbit icon bubbles ─────────────────────────────────────────────────── */
+
+.overlay-light .orbit-icon {
+    background: rgba(255, 255, 255, 0.88);
+    border-color: rgba(21, 137, 238, 0.18);
+    box-shadow: 0 1px 4px rgba(21, 137, 238, 0.12);
+}
+
+/* ─── Ambient glow ──────────────────────────────────────────────────────── */
+
+.overlay-light .glow-pulse {
+    background: radial-gradient(circle, rgba(21, 137, 238, 0.08) 0%, transparent 70%);
+}
+
+/* ─── Center logo ───────────────────────────────────────────────────────── */
+
+.overlay-light .logo-center {
+    background: linear-gradient(145deg, #ddeeff 0%, #c8e0ff 100%);
+    border-color: rgba(21, 137, 238, 0.4);
+    box-shadow:
+        0 0 20px rgba(21, 137, 238, 0.25),
+        0 0 40px rgba(21, 137, 238, 0.1),
+        inset 0 0 16px rgba(21, 137, 238, 0.08);
+}
+
+.overlay-light .logo-letters {
+    color: #0070d2;
+    text-shadow: 0 0 10px rgba(21, 137, 238, 0.4), 0 0 20px rgba(21, 137, 238, 0.15);
+}
+
+/* ─── Branding ──────────────────────────────────────────────────────────── */
+
+.overlay-light .brand-name {
+    background: linear-gradient(90deg,
+        rgba(10, 22, 40, 0.6) 0%,
+        #0a1628 20%,
+        #0070d2 50%,
+        #06B6D4 65%,
+        #0a1628 80%,
+        rgba(10, 22, 40, 0.6) 100%
+    );
+    background-size: 300% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 4s linear infinite;
+}
+
+.overlay-light .brand-sub {
+    color: rgba(0, 112, 210, 0.75);
+}
+
+/* ─── Status area ───────────────────────────────────────────────────────── */
+
+.overlay-light .status-message {
+    color: rgba(10, 22, 40, 0.45);
+}
+
+.overlay-light .progress-track {
+    background: rgba(21, 137, 238, 0.1);
+}

@@ -7,7 +7,7 @@ type DesktopMenuOptions = {
 export function registerDesktopMenu(options: DesktopMenuOptions): void {
     const template: Electron.MenuItemConstructorOptions[] = [
         {
-            label: 'SF Toolkit Desktop',
+            label: 'Workbench Desktop',
             submenu: [
                 { role: 'about' },
                 { type: 'separator' },
@@ -70,7 +70,7 @@ export function registerDesktopMenu(options: DesktopMenuOptions): void {
             label: 'Help',
             submenu: [
                 {
-                    label: 'SF Toolkit Web',
+                    label: 'Workbench Web',
                     click: () => {
                         void shell.openExternal('https://sf-toolkit.com');
                     },

@@ -8,7 +8,7 @@ import { isAuthError, refreshConnectionRecord, resolveConnectionRecord } from '.
 async function resolveAppConnection(app) {
     const current = app?._requireCurrentConnection?.();
     const resolved = await resolveConnectionRecord(current, {
-        workspaceBasePath: app.workspaceBasePath || app._workspaceRoot,
+        workspaceBasePath: app.workspaceBasePath,
     }).catch(() => current);
     app._applyActiveConnection?.(resolved);
     return resolved;
@@ -37,7 +37,7 @@ async function withAuthedToolingClient(app, fn) {
             throw error;
         }
         const refreshed = await refreshConnectionRecord(current, {
-            workspaceBasePath: app.workspaceBasePath || app._workspaceRoot,
+            workspaceBasePath: app.workspaceBasePath,
         }).catch(() => null);
         if (!refreshed) {
             throw error;

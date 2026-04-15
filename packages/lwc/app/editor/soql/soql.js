@@ -137,7 +137,21 @@ export default class Soql extends ToolkitElement {
                 );
             }
         });
-        this.editor.focus();
+        // Defer focus so Monaco's SuggestController finishes initializing before the
+        // first focus event fires. Calling focus() synchronously right after create()
+        // causes quickSuggestions to be inactive until the user manually blurs and
+        // re-focuses the editor.
+        requestAnimationFrame(() => {
+            if (this.editor) {
+                this.editor.focus();
+                const editorModel = this.editor.getModel();
+                if (editorModel) {
+                    const lastLine = editorModel.getLineCount();
+                    const lastColumn = editorModel.getLineMaxColumn(lastLine);
+                    this.editor.setPosition({ lineNumber: lastLine, column: lastColumn });
+                }
+            }
+        });
     };
 
     loadMonacoEditor = async () => {

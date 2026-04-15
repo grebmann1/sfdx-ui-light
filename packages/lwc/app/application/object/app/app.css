@@ -1,3 +1,41 @@
 :host {
     height: 100%;
 }
+
+.left-panel {
+    padding: 0 0.25rem;
+}
+
+.slds-tree_container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.panel-header {
+    padding: 0.5rem 0.5rem 0.5rem 1rem;
+    flex-shrink: 0;
+}
+
+.panel-title {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.tree-wrapper {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    margin-top: 0.5rem;
+}
+
+.tree-wrapper slds-file-tree {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}

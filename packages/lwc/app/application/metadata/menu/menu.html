@@ -1,32 +1,65 @@
 <template>
-    <slds-menu
-        class="slds-flex-column slds-full-height"
-        items={menuItems}
-        title={menuBackTitle}
-        is-back-displayed={isBackDisplayed}
-        level={currentLevel}
-        is-loading={isLoading}
-        loading-message={loadingMessage}
-        keep-filter={keepFilter}
-        namespace-filtering-value="Default"
-        is-refresh-available={isRefreshButtonDisplayed}
-        onmenuselection={handleMenuSelection}
-        onback={handleMenuBack}
-        onrefresh={handleRefresh}>
-        <template lwc:if={isSelectAllDisplayedAdvanced}>
-            <div slot="listmenu" class="slds-float_right">
-                <lightning-button
-                    variant="base"
-                    label="Select All"
-                    onclick={selectAll_handleClick}
-                    tab-index="-1"></lightning-button>
-                /
-                <lightning-button
-                    variant="base"
-                    label="Unselect All"
-                    onclick={unselectAll_handleClick}
-                    tab-index="-1"></lightning-button>
+    <div class="menu-container">
+        <div class="tree-panel">
+            <div class="panel-header slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                <h2 class="panel-title slds-truncate">Metadata Types</h2>
+                <template lwc:if={isLoadingTypes}>
+                    <slds-spinner
+                        size="x-small"
+                        variant="brand"
+                        alternative-text="Loading"></slds-spinner>
+                </template>
+                <template lwc:else>
+                    <lightning-button-icon
+                        class="slds-p-right_small"
+                        icon-name="utility:refresh"
+                        variant="bare"
+                        alternative-text="Refresh"
+                        title="Refresh"
+                        onclick={handleRefresh}></lightning-button-icon>
+                </template>
+            </div>
+            <div class="tree-wrapper">
+                <slds-file-tree
+                    tree={computedTypesTree}
+                    selected-id={selectedTypeId}
+                    onselect={handleTypeSelect}
+                    search-fields={searchFields}
+                    min-search-length="1"
+                    is-delete-disabled></slds-file-tree>
+            </div>
+        </div>
+
+        <template lwc:if={isRecordsPanelVisible}>
+            <div class="panel-divider"></div>
+            <div class="tree-panel">
+                <div class="panel-header slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+                    <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                        <lightning-button-icon
+                            icon-name="utility:back"
+                            variant="bare"
+                            alternative-text="Back to types"
+                            title="Back to types"
+                            onclick={handleGoBack}></lightning-button-icon>
+                        <h2 class="panel-title slds-truncate slds-m-left_x-small">{recordsPanelTitle}</h2>
+                    </div>
+                    <template lwc:if={isLoadingRecords}>
+                        <slds-spinner
+                            size="x-small"
+                            variant="brand"
+                            alternative-text="Loading"></slds-spinner>
+                    </template>
+                </div>
+                <div class="tree-wrapper">
+                    <slds-file-tree
+                        tree={computedRecordsTree}
+                        selected-id={selectedRecordId}
+                        onselect={handleRecordSelect}
+                        search-fields={searchFields}
+                        min-search-length="1"
+                        is-delete-disabled></slds-file-tree>
+                </div>
             </div>
         </template>
-    </slds-menu>
+    </div>
 </template>

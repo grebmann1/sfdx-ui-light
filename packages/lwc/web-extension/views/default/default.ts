@@ -32,7 +32,6 @@ export default class Default extends LightningElement {
     @api activeTabMatchesSalesforce = false;
 
     previousPanel;
-    isBackButtonDisplayed = false;
     betaSmartInputEnabled = false;
 
     /** Getters **/
@@ -87,11 +86,8 @@ export default class Default extends LightningElement {
     /** Events **/
 
     handlePanelChange = e => {
-        //console.log('handlePanelChange',e.detail);
-        //this.previousPanel = this.panel;
         if (this.panel !== e.detail.panel) {
             this.panel = e.detail.panel;
-            this.isBackButtonDisplayed = e.detail.isBackButtonDisplayed;
             if (this.isSalesforcePanel) {
                 this.notifyBackgroundApplicationChange('salesforce');
             }
@@ -108,17 +104,24 @@ export default class Default extends LightningElement {
         this.notifyBackgroundApplicationChange(applicationName);
     };
 
-    handleGoBack = () => {
-        //console.log('handleGoBack');
-        //this.panel = this.previousPanel;
-        this.panel = PANELS.SALESFORCE; // For now only salesforce is returned with go back, In the futur, store the navigation events to go back !
-        this.isBackButtonDisplayed = false;
-        //this.previousPanel = null;
+    handleModeToggle = () => {
+        if (this.isSalesforcePanel) {
+            this.panel = PANELS.DEFAULT;
+            this.notifyBackgroundApplicationChange(
+                store.getState()?.application?.currentApplication || 'connection'
+            );
+        } else {
+            this.panel = PANELS.SALESFORCE;
+            this.notifyBackgroundApplicationChange('salesforce');
+        }
+        // Temporary solution to force refresh of connection list
+        if (this.refs.default) {
+            (this.refs.default as any).connection_refresh();
+        }
     };
 
     handleBackToAppsPanel = () => {
         this.panel = PANELS.DEFAULT;
-        this.isBackButtonDisplayed = false;
         const app = store.getState()?.application?.currentApplication || 'connection';
         this.notifyBackgroundApplicationChange(app);
     };
@@ -248,7 +251,6 @@ export default class Default extends LightningElement {
             this.handlePanelChange({
                 detail: {
                     panel: PANELS.DEFAULT,
-                    isBackButtonDisplayed: true,
                 },
             });
         }

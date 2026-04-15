@@ -4,7 +4,7 @@ title: VS Code Workflows
 
 # VS Code Workflows
 
-SF Toolkit embeds a full VS Code workbench inside a sandboxed `<iframe>`. The workbench connects back to the parent app through typed `MessageChannel` bridges, giving it access to the virtual file system, the active Salesforce session, and the configured AI provider — without managing its own credentials.
+Workbench embeds a full VS Code workbench inside a sandboxed `<iframe>`. The workbench connects back to the parent app through typed `MessageChannel` bridges, giving it access to the virtual file system, the active Salesforce session, and the configured AI provider — without managing its own credentials.
 
 ## How it works
 

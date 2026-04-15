@@ -1,0 +1,69 @@
+<template>
+    <div class={overlayClass}>
+        <!-- Floating background particles -->
+        <div class="particles" aria-hidden="true">
+            <div class="particle p1"></div>
+            <div class="particle p2"></div>
+            <div class="particle p3"></div>
+            <div class="particle p4"></div>
+            <div class="particle p5"></div>
+            <div class="particle p6"></div>
+            <div class="particle p7"></div>
+            <div class="particle p8"></div>
+        </div>
+
+        <!-- Grid overlay -->
+        <div class="grid-overlay" aria-hidden="true"></div>
+
+        <!-- Center stage -->
+        <div class="stage">
+            <!-- Animated rings -->
+            <div class="rings-wrapper" aria-hidden="true">
+                <div class="ring ring-outer"></div>
+                <div class="ring ring-middle"></div>
+                <div class="ring ring-inner"></div>
+
+                <!-- Einstein (utility) orbiting the outer ring (clockwise 8s) -->
+                <div class="orbit-arm orbit-arm-outer">
+                    <div class="orbit-icon orbit-icon-counter-outer">
+                        <svg class="orbit-svg orbit-svg-einstein" viewBox="0 0 52 52">
+                            <use
+                                xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#einstein"></use>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Salesforce1 cloud orbiting the middle ring (counter-clockwise 5s) -->
+                <div class="orbit-arm orbit-arm-middle">
+                    <div class="orbit-icon orbit-icon-counter-middle">
+                        <svg class="orbit-svg orbit-svg-cloud" viewBox="0 0 52 52">
+                            <use
+                                xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#salesforce1"></use>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="glow-pulse"></div>
+
+                <!-- Center logo -->
+                <div class="logo-center">
+                    <span class="logo-letters">SF</span>
+                </div>
+            </div>
+
+            <!-- Branding -->
+            <div class="brand-area">
+                <p class="brand-name">Workbench</p>
+                <p class="brand-sub">The swiss army knife for Salesforce</p>
+            </div>
+
+            <!-- Status message + progress bar -->
+            <div class="status-area">
+                <p class="status-message">{currentMessage}</p>
+                <div class="progress-track" role="progressbar" aria-label={currentMessage}>
+                    <div class="progress-fill"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

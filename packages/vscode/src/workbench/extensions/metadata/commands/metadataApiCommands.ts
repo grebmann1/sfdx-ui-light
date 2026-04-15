@@ -127,11 +127,25 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
         }
     }
 
+    function zipBytesToBase64(bytes: Uint8Array): string {
+        const chunkSize = 0x8000;
+        let binary = '';
+        for (let i = 0; i < bytes.length; i += chunkSize) {
+            binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+        }
+        return btoa(binary);
+    }
+
     async function deployPathsViaMetadataApi(
         conn,
         filePaths: string[],
         options: { showProgress?: boolean; title?: string; checkOnly?: boolean } = {}
     ) {
+        const bridgeClient = await connectionRuntime.resolveBridgeClient();
+        if (!bridgeClient) {
+            throw new Error(connectionRuntime.getInjectedConnectionRequiredMessage());
+        }
+
         const metadataApiMap = await loadMetadataApiMapCached();
         const membersByKey = new Map<string, { type: string; fullName: string; paths: string[] }>();
         const allDeployPaths = new Set<string>();
@@ -163,8 +177,9 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
             member: m.fullName,
         }));
 
+        const storedConn = connectionRuntime.loadStoredConn();
         const apiVersion =
-            String(conn?.apiVersion || '').replace(/[^0-9.]/g, '') || '60.0';
+            String(conn?.apiVersion || storedConn?.apiVersion || '').replace(/[^0-9.]/g, '') || '60.0';
         const packageXmlText = buildTargetedPackageXml(types, apiVersion);
 
         const root = getWorkspaceDefaultRootUri(vscode);
@@ -188,49 +203,12 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
         }
 
         const zipBytes = zipUnpackagedFiles(pathToBytes);
-        const { effectiveConn, id } = await retrieveRuntime.withMetadataApiClientAuthed(
-            conn,
-            async (client, activeConn) => {
-                const response = await client.deploy(zipBytes, {
-                    checkOnly: Boolean(options?.checkOnly),
-                });
-                return { id: response.id, effectiveConn: activeConn };
-            }
-        );
-
-        const startedAt = Date.now();
-        let lastStatus = '';
+        const zipBase64 = zipBytesToBase64(zipBytes);
         const checkOnly = Boolean(options?.checkOnly);
-        const progressTitle =
-            options?.title || (checkOnly ? 'Validating deploy…' : 'Deploying…');
+        const progressTitle = options?.title || (checkOnly ? 'Validating deploy…' : 'Deploying…');
 
-        const pollStatus = async progress => {
-            for (;;) {
-                // eslint-disable-next-line no-await-in-loop
-                const nextStatus = await retrieveRuntime.withMetadataApiClientAuthed(
-                    effectiveConn || conn,
-                    async client =>
-                        await client.checkDeployStatus(id, { includeDetails: true })
-                );
-                const message =
-                    nextStatus.status ||
-                    (nextStatus.done
-                        ? nextStatus.success
-                            ? 'Succeeded'
-                            : 'Failed'
-                        : 'In progress');
-                if (message && message !== lastStatus) {
-                    lastStatus = message;
-                    progress?.report?.({ message });
-                }
-                if (nextStatus.done) return nextStatus;
-                if (Date.now() - startedAt > 20 * 60 * 1000) {
-                    throw new Error('Deploy timed out (20 minutes).');
-                }
-                // eslint-disable-next-line no-await-in-loop
-                await new Promise(resolve => setTimeout(resolve, 2000));
-            }
-        };
+        const runDeploy = async () =>
+            await bridgeClient.deployViaMetadataApi({ zipBase64, checkOnly });
 
         const status =
             options?.showProgress !== false
@@ -240,9 +218,12 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
                           title: progressTitle,
                           cancellable: false,
                       },
-                      pollStatus
+                      async progress => {
+                          progress.report({ message: 'Sending to Salesforce via bridge…' });
+                          return await runDeploy();
+                      }
                   )
-                : await pollStatus(null);
+                : await runDeploy();
 
         if (!status.success) {
             throw new Error(
@@ -296,6 +277,11 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
         conn,
         { checkOnly, packageXmlText }: { checkOnly?: boolean; packageXmlText?: string } = {}
     ) {
+        const bridgeClient = await connectionRuntime.resolveBridgeClient();
+        if (!bridgeClient) {
+            throw new Error(connectionRuntime.getInjectedConnectionRequiredMessage());
+        }
+
         const root = getWorkspaceDefaultRootUri(vscode);
         const { files } = await listFilesAndDirsRecursive(vscode, root);
         const pathToBytes = {
@@ -315,16 +301,8 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
         }
 
         const zipBytes = zipUnpackagedFiles(pathToBytes);
-        const { effectiveConn, id } = await retrieveRuntime.withMetadataApiClientAuthed(
-            conn,
-            async (client, activeConn) => {
-                const response = await client.deploy(zipBytes, { checkOnly: Boolean(checkOnly) });
-                return { id: response.id, effectiveConn: activeConn };
-            }
-        );
+        const zipBase64 = zipBytesToBase64(zipBytes);
 
-        const startedAt = Date.now();
-        let lastStatus = '';
         const status = await vscode.window.withProgress(
             {
                 location: vscode.ProgressLocation.Notification,
@@ -332,30 +310,11 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
                 cancellable: false,
             },
             async progress => {
-                for (;;) {
-                    // eslint-disable-next-line no-await-in-loop
-                    const nextStatus = await retrieveRuntime.withMetadataApiClientAuthed(
-                        effectiveConn || conn,
-                        async client => await client.checkDeployStatus(id, { includeDetails: true })
-                    );
-                    const message =
-                        nextStatus.status ||
-                        (nextStatus.done
-                            ? nextStatus.success
-                                ? 'Succeeded'
-                                : 'Failed'
-                            : 'In progress');
-                    if (message && message !== lastStatus) {
-                        lastStatus = message;
-                        progress.report({ message });
-                    }
-                    if (nextStatus.done) return nextStatus;
-                    if (Date.now() - startedAt > 20 * 60 * 1000) {
-                        throw new Error('Deploy timed out (20 minutes).');
-                    }
-                    // eslint-disable-next-line no-await-in-loop
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                }
+                progress.report({ message: 'Sending to Salesforce via bridge…' });
+                return await bridgeClient.deployViaMetadataApi({
+                    zipBase64,
+                    checkOnly: Boolean(checkOnly),
+                });
             }
         );
         if (!status.success) {

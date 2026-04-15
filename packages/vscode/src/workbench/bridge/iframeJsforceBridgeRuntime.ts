@@ -447,6 +447,10 @@ class IframeJsforceBridgeRuntime {
                 return await this.retrieveToolingTypes(args);
             case 'schema.describeCustomObject':
                 return await this.describeCustomObject(args);
+            case 'metadata.deployViaToolingApi':
+                return await this.deployViaToolingApi(args);
+            case 'metadata.deployViaMetadataApi':
+                return await this.deployViaMetadataApi(args);
             default:
                 throw {
                     code: 'EMETHOD',
@@ -1048,6 +1052,208 @@ class IframeJsforceBridgeRuntime {
         return await this.toolingRequestJson(
             `/sobjects/${encodeURIComponent(objectName)}/describe`
         );
+    }
+
+    private async deployApexViaMetadataContainer(
+        item: Record<string, unknown>
+    ): Promise<{ ok: boolean; path: string; sobject: string; id: string; status?: number; error?: string }> {
+        const path = String(item.path || '');
+        const sobject = String(item.sobject || '');
+        const id = String(item.id || '');
+        const text = String(item.text ?? '');
+
+        const ts = (Date.now() % 1_000_000_000).toString(36);
+        const rnd = Math.random().toString(16).slice(2, 8);
+        const containerName = `sfwb_${ts}_${rnd}`.slice(0, 32);
+
+        const containerRes = (await this.toolingRequestJson(
+            '/tooling/sobjects/MetadataContainer',
+            { method: 'POST', body: { Name: containerName } }
+        )) as Record<string, unknown>;
+
+        const containerId = String(containerRes?.id || '').trim();
+        if (!containerId) {
+            throw new Error('Failed to create MetadataContainer.');
+        }
+
+        try {
+            const memberSObject = sobject === 'ApexClass' ? 'ApexClassMember' : 'ApexTriggerMember';
+            await this.toolingRequestJson(`/tooling/sobjects/${memberSObject}`, {
+                method: 'POST',
+                body: { MetadataContainerId: containerId, ContentEntityId: id, Body: text },
+            });
+
+            const asyncRes = (await this.toolingRequestJson(
+                '/tooling/sobjects/ContainerAsyncRequest',
+                {
+                    method: 'POST',
+                    body: { MetadataContainerId: containerId, IsCheckOnly: false },
+                }
+            )) as Record<string, unknown>;
+
+            const asyncId = String(asyncRes?.id || '').trim();
+            if (!asyncId) {
+                throw new Error('Failed to create ContainerAsyncRequest.');
+            }
+
+            const maxAttempts = 60;
+            let lastState = '';
+            let lastError = '';
+
+            for (let i = 0; i < maxAttempts; i++) {
+                // eslint-disable-next-line no-await-in-loop
+                await sleep(500);
+                // eslint-disable-next-line no-await-in-loop
+                const statusRes = (await this.toolingRequestJson(
+                    `/tooling/sobjects/ContainerAsyncRequest/${encodeURIComponent(asyncId)}`
+                )) as Record<string, unknown>;
+
+                lastState = String(statusRes?.State || statusRes?.state || '');
+                lastError = String(statusRes?.ErrorMsg || statusRes?.errorMsg || '');
+                const lower = lastState.toLowerCase();
+                if (lower === 'completed') break;
+                if (lower === 'failed') {
+                    throw new Error(lastError || 'Apex deploy failed (ContainerAsyncRequest).');
+                }
+            }
+
+            if (lastState.toLowerCase() !== 'completed') {
+                throw new Error(`Apex deploy timed out (state=${lastState || 'unknown'}).`);
+            }
+
+            return { ok: true, path, sobject, id, status: 200 };
+        } finally {
+            try {
+                await this.toolingRequestJson(
+                    `/tooling/sobjects/MetadataContainer/${encodeURIComponent(containerId)}`,
+                    { method: 'DELETE' }
+                );
+            } catch {
+                // cleanup best-effort
+            }
+        }
+    }
+
+    private async deployViaToolingApi(args: Record<string, unknown>) {
+        const rawItems = Array.isArray(args.items) ? args.items : [];
+        const SUPPORTED_SOBJECTS = new Set([
+            'ApexClass',
+            'ApexTrigger',
+            'LightningComponentBundle',
+            'AuraDefinitionBundle',
+        ]);
+
+        const results: Array<Record<string, unknown>> = [];
+
+        for (const rawItem of rawItems) {
+            if (!isRecord(rawItem)) continue;
+            const item = rawItem as Record<string, unknown>;
+            const path = String(item.path || '');
+            const sobject = String(item.sobject || '');
+            const id = String(item.id || '');
+            const field = String(item.field || '');
+            const text = String(item.text ?? '');
+
+            if (!sobject || !id || !SUPPORTED_SOBJECTS.has(sobject)) {
+                results.push({
+                    ok: false,
+                    path,
+                    sobject,
+                    id,
+                    error: `Unsupported or missing sobject type: "${sobject}"`,
+                });
+                continue;
+            }
+
+            try {
+                if (sobject === 'ApexClass' || sobject === 'ApexTrigger') {
+                    // eslint-disable-next-line no-await-in-loop
+                    const result = await this.deployApexViaMetadataContainer(item);
+                    results.push(result as Record<string, unknown>);
+                } else {
+                    // eslint-disable-next-line no-await-in-loop
+                    await this.toolingRequestJson(
+                        `/tooling/sobjects/${encodeURIComponent(sobject)}/${encodeURIComponent(id)}`,
+                        { method: 'PATCH', body: { [field]: text } }
+                    );
+                    results.push({ ok: true, path, sobject, id, status: 204 });
+                }
+            } catch (err) {
+                const message = err instanceof Error ? err.message : String(err || 'Unknown error');
+                results.push({
+                    ok: false,
+                    path,
+                    sobject,
+                    id,
+                    error: `${sobject}/${id}: ${message}`,
+                });
+            }
+        }
+
+        const failures = results.filter(r => !r.ok);
+        return { results, failures };
+    }
+
+    private async deployViaMetadataApi(args: Record<string, unknown>) {
+        const zipBase64 = String(args.zipBase64 || '').trim();
+        if (!zipBase64) {
+            throw {
+                code: 'EINVAL',
+                message: 'deployViaMetadataApi requires a non-empty zipBase64 string.',
+            };
+        }
+
+        const checkOnly = args.checkOnly === true;
+        const timeoutMs = normalizeTimeoutMs(args.timeoutMs, 20 * 60 * 1000);
+        const pollIntervalMs = normalizePollInterval(args.pollIntervalMs);
+
+        // Convert base64 → Uint8Array in LWC host context
+        const binaryString = globalThis.atob(zipBase64);
+        const zipBytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+            zipBytes[i] = binaryString.charCodeAt(i);
+        }
+
+        const deployStart = await this.withMetadataApiClientAuthed(
+            async client => await client.deploy(zipBytes, { checkOnly })
+        );
+        const deployId = String((deployStart as Record<string, unknown>)?.id || '').trim();
+        if (!deployId) {
+            throw {
+                code: 'EMETADATA',
+                message: 'Metadata deploy did not return an async id.',
+            };
+        }
+
+        const startedAt = Date.now();
+        let latestStatus: unknown = null;
+
+        for (;;) {
+            // eslint-disable-next-line no-await-in-loop
+            await sleep(pollIntervalMs);
+            // eslint-disable-next-line no-await-in-loop
+            latestStatus = await this.withMetadataApiClientAuthed(
+                async client =>
+                    await client.checkDeployStatus(deployId, { includeDetails: true })
+            );
+            const status = isRecord(latestStatus) ? latestStatus : {};
+            if (status.done) {
+                return {
+                    id: deployId,
+                    success: Boolean(status.success),
+                    status: typeof status.status === 'string' ? status.status : '',
+                    errorMessage:
+                        typeof status.errorMessage === 'string' ? status.errorMessage : '',
+                    details: status.details ?? null,
+                };
+            }
+            if (Date.now() - startedAt > timeoutMs) {
+                throw {
+                    code: 'ETIMEOUT',
+                    message: `Metadata deploy timed out after ${timeoutMs}ms.`,
+                };
+            }
+        }
     }
 }
 
