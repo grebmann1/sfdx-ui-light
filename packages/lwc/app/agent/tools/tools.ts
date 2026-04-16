@@ -8,3 +8,5 @@ export const tools = {
 export const openaiBuiltInTools = OPENAI_BUILT_IN_TOOLS;
 export { filterToolsByModel } from './modules/modelToolSupport';
 export { createBashTools } from './modules/shell';
+export { askUserTool } from './modules/agentTools';
+export { resolveQuestion, rejectQuestion } from './modules/askUserBridge';

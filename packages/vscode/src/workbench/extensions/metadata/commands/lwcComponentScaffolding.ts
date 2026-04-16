@@ -111,17 +111,29 @@ export function registerLwcComponentScaffolding({ connectionRuntime, context }) 
                     await writeTextFile(vscode, fileUri, contents);
                 }
 
+                const mainFile = vscode.Uri.joinPath(componentDir, `${normalizedName}.js`);
                 try {
-                    const mainFile = vscode.Uri.joinPath(componentDir, `${normalizedName}.js`);
                     const doc = await vscode.workspace.openTextDocument(mainFile);
                     await vscode.window.showTextDocument(doc, { preview: false });
                 } catch {
                     // ignore
                 }
 
-                await vscode.window.showInformationMessage(
-                    `Created Lightning component "${normalizedName}".`
+                const action = await vscode.window.showInformationMessage(
+                    `Created Lightning component "${normalizedName}". Deploy it to Salesforce now?`,
+                    'Deploy to Org',
+                    'Later'
                 );
+                if (action === 'Deploy to Org') {
+                    try {
+                        await vscode.commands.executeCommand(
+                            'salesforceMetadata.deployCurrentFile',
+                            mainFile
+                        );
+                    } catch {
+                        // ignore — command will surface its own errors
+                    }
+                }
             }
         )
     );

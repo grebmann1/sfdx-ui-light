@@ -11,9 +11,12 @@ import {
     toWorkspaceRelativeLabel,
 } from '../core/workspacePaths';
 import { createManifestGenerationRuntime } from '../runtime/manifestGenerationRuntime';
+import { inferMetadataMemberFromRelativePath } from '../runtime/metadataPathInference';
 import { createMetadataRetrieveRuntime } from '../runtime/metadataRetrieveRuntime';
 import { TOOLING_METADATA_TYPES } from '../runtime/metadataRetrieveRuntimeHelpers';
 import { fetchAndPopulateWorkspace } from '../runtime/workspaceSync';
+
+const NEW_BUNDLE_TYPES = new Set(['LightningComponentBundle', 'AuraDefinitionBundle']);
 
 const METADATA_API_MAP_PATH = '.salesforce/metadata-api-map.json';
 
@@ -99,7 +102,7 @@ export function parsePackageXml(xmlText) {
 }
 
 export function registerMetadataApiCommands({ connectionRuntime, context, deployTools }) {
-    const { state, vscode } = context;
+    const { output, state, vscode } = context;
     const retrieveRuntime = createMetadataRetrieveRuntime({
         connectionRuntime,
         state,
@@ -124,6 +127,48 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
             return next;
         } catch {
             return { items: {}, members: {} };
+        }
+    }
+
+    function logMetadataApiDeployResult(status: Record<string, unknown> | null | undefined) {
+        try {
+            const details = (status?.details ?? null) as Record<string, unknown> | null;
+            const failures = Array.isArray(details?.componentFailures)
+                ? (details.componentFailures as Record<string, unknown>[])
+                : [];
+            const successes = Array.isArray(details?.componentSuccesses)
+                ? (details.componentSuccesses as Record<string, unknown>[])
+                : [];
+
+            const lines: string[] = [
+                '',
+                `=== Metadata API Deploy (${new Date().toLocaleString()}) ===`,
+                `Target: ${connectionRuntime.loadStoredConn()?.instanceUrl || 'bridge'}`,
+                `Deploy ID: ${status?.id || 'unknown'}`,
+                `Status: ${status?.status || (status?.success ? 'Succeeded' : 'Failed')}`,
+            ];
+            if (status?.errorMessage) lines.push(`Error: ${status.errorMessage}`);
+            if (failures.length) {
+                lines.push('', 'Failures:');
+                for (const f of failures) {
+                    const loc = f.lineNumber ? ` (line ${f.lineNumber}, col ${f.columnNumber})` : '';
+                    lines.push(
+                        `  FAIL  ${f.fileName}${loc} • ${f.problem || f.problemType || 'Unknown error'}`
+                    );
+                }
+            }
+            if (successes.length) {
+                lines.push('', 'Success:');
+                for (const s of successes) {
+                    lines.push(`  OK    ${s.fileName}`);
+                }
+            }
+            context.logLines(lines);
+            if (!status?.success && output) {
+                output.show(true);
+            }
+        } catch {
+            // ignore logging errors
         }
     }
 
@@ -225,6 +270,7 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
                   )
                 : await runDeploy();
 
+        logMetadataApiDeployResult(status);
         if (!status.success) {
             throw new Error(
                 status.errorMessage || `Deploy failed: ${status.status || 'Unknown error'}`
@@ -233,11 +279,138 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
         return status;
     }
 
+    async function deployAndRetrieveNewBundle(
+        conn,
+        filePaths: string[],
+        options: { showProgress?: boolean; title?: string } = {}
+    ) {
+        const bridgeClient = await connectionRuntime.resolveBridgeClient();
+        if (!bridgeClient) {
+            throw new Error(connectionRuntime.getInjectedConnectionRequiredMessage());
+        }
+
+        const storedConn = connectionRuntime.loadStoredConn();
+        const apiVersion =
+            String(conn?.apiVersion || storedConn?.apiVersion || '').replace(/[^0-9.]/g, '') ||
+            '60.0';
+        const root = getWorkspaceDefaultRootUri(vscode);
+        const rootPath = `${root.path.replace(/\/+$/, '')}/`;
+
+        // Infer bundle members from file paths
+        const membersByKey = new Map<
+            string,
+            { type: string; fullName: string; bundleDirPath: string }
+        >();
+        for (const filePath of Array.isArray(filePaths) ? filePaths : []) {
+            const relativePath = filePath.startsWith(rootPath)
+                ? filePath.slice(rootPath.length)
+                : null;
+            if (!relativePath) continue;
+            const member = inferMetadataMemberFromRelativePath(relativePath);
+            if (!member || !NEW_BUNDLE_TYPES.has(member.type)) continue;
+            const key = `${member.type}::${member.fullName}`;
+            if (membersByKey.has(key)) continue;
+            const lastSlash = filePath.lastIndexOf('/');
+            const bundleDirPath = lastSlash > 0 ? filePath.slice(0, lastSlash) : filePath;
+            membersByKey.set(key, { type: member.type, fullName: member.fullName, bundleDirPath });
+        }
+
+        if (membersByKey.size === 0) {
+            throw new Error(
+                'No LWC or Aura bundles could be inferred from the selected file(s). Make sure the file is inside an lwc or aura folder.'
+            );
+        }
+
+        const types = Array.from(membersByKey.values()).map(m => ({
+            xmlName: m.type,
+            member: m.fullName,
+        }));
+        const packageXmlText = buildTargetedPackageXml(types, apiVersion);
+        const pathToBytes: Record<string, Uint8Array> = {
+            'unpackaged/package.xml': new TextEncoder().encode(packageXmlText),
+        };
+
+        for (const { bundleDirPath } of membersByKey.values()) {
+            const bundleDirUri = vscode.Uri.file(bundleDirPath);
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                const entries = await vscode.workspace.fs.readDirectory(bundleDirUri);
+                for (const [name, fileType] of entries) {
+                    if (fileType !== 1 /* FileType.File */) continue;
+                    const fileUri = vscode.Uri.joinPath(bundleDirUri, name);
+                    const absolutePath = fileUri.path;
+                    const relPath = absolutePath.startsWith(rootPath)
+                        ? absolutePath.slice(rootPath.length)
+                        : null;
+                    if (!relPath) continue;
+                    try {
+                        // eslint-disable-next-line no-await-in-loop
+                        const bytes = await vscode.workspace.fs.readFile(fileUri);
+                        pathToBytes[`unpackaged/${relPath}`] = bytes;
+                    } catch {
+                        // skip unreadable files
+                    }
+                }
+            } catch {
+                // skip if dir is unreadable
+            }
+        }
+
+        const zipBytes = zipUnpackagedFiles(pathToBytes);
+        const zipBase64 = zipBytesToBase64(zipBytes);
+        const progressTitle = options?.title || 'Deploying new component to Salesforce…';
+
+        const runDeploy = async () =>
+            await bridgeClient.deployViaMetadataApi({ zipBase64, checkOnly: false });
+
+        const status =
+            options?.showProgress !== false
+                ? await vscode.window.withProgress(
+                      {
+                          location: vscode.ProgressLocation.Notification,
+                          title: progressTitle,
+                          cancellable: false,
+                      },
+                      async progress => {
+                          progress.report({ message: 'Sending to Salesforce via bridge…' });
+                          return await runDeploy();
+                      }
+                  )
+                : await runDeploy();
+
+        logMetadataApiDeployResult(status);
+        if (!status.success) {
+            throw new Error(
+                status.errorMessage || `Deploy failed: ${status.status || 'Unknown error'}`
+            );
+        }
+
+        // Retrieve the bundles to populate tooling-map.json so subsequent deploys use Tooling API
+        const typesMap = new Map<string, Set<string>>();
+        for (const { type, fullName } of membersByKey.values()) {
+            if (!typesMap.has(type)) typesMap.set(type, new Set());
+            typesMap.get(type)!.add(fullName);
+        }
+        try {
+            await retrieveRuntime.retrieveToolingTypes(conn, typesMap);
+            if (deployTools && typeof deployTools.invalidateToolingMap === 'function') {
+                deployTools.invalidateToolingMap();
+            }
+        } catch {
+            // Non-fatal: deploy succeeded; tooling-map update failed
+        }
+
+        return status;
+    }
+
     // Expose so that deployAndSourceTracking can call it for metadataApi-mapped files
     if (deployTools && typeof deployTools === 'object') {
         deployTools.deployPathsViaMetadataApi = deployPathsViaMetadataApi;
         if (typeof deployTools.setMetadataApiDeploy === 'function') {
             deployTools.setMetadataApiDeploy(deployPathsViaMetadataApi);
+        }
+        if (typeof deployTools.setNewBundleDeploy === 'function') {
+            deployTools.setNewBundleDeploy(deployAndRetrieveNewBundle);
         }
     }
 
@@ -317,6 +490,7 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
                 });
             }
         );
+        logMetadataApiDeployResult(status);
         if (!status.success) {
             throw new Error(
                 status.errorMessage || `Deploy failed: ${status.status || 'Unknown error'}`

@@ -424,6 +424,8 @@ async function runAgentRequest({
     references = [],
     onText,
     onThinking,
+    onToolCall,
+    onToolResult,
     token,
     source,
 }) {
@@ -459,8 +461,15 @@ async function runAgentRequest({
                 onText(chunk.content);
             } else if (chunk.type === 'reasoning' && typeof onThinking === 'function') {
                 onThinking(chunk.content);
+            } else if (chunk.type === 'tool_calls' && typeof onToolCall === 'function') {
+                const toolCalls = Array.isArray(chunk.toolCalls) ? chunk.toolCalls : [];
+                for (const tc of toolCalls) {
+                    onToolCall(tc);
+                }
             } else if (chunk.type === 'tool_result') {
-                if (typeof onText === 'function') {
+                if (typeof onToolResult === 'function') {
+                    onToolResult(chunk.toolCall, chunk.toolResult);
+                } else if (typeof onText === 'function') {
                     onText(formatToolResultMessage(chunk.toolCall, chunk.toolResult));
                 }
             } else if (chunk.type === 'error' && typeof onText === 'function') {
@@ -505,6 +514,17 @@ function createChatResponseHandlers(response) {
                 });
             }
         },
+        onToolCall(toolCall) {
+            const name = toolCall?.toolName || 'tool';
+            response.progress(`Running \`${name}\`…`);
+        },
+        onToolResult(toolCall, toolResult) {
+            const { status, details } = summarizeToolResult(toolResult);
+            const name = toolCall?.toolName || 'tool';
+            const icon = status === 'failed' ? '$(error)' : '$(check)';
+            const label = details ? `${icon} \`${name}\`: ${details}` : `${icon} \`${name}\` ${status}`;
+            response.progress(label);
+        },
     };
 }
 
@@ -519,6 +539,16 @@ function createProviderResponseHandlers(vscode, progress) {
             if (text) {
                 progress.report(new vscode.LanguageModelThinkingPart(text, THINKING_PROGRESS_ID));
             }
+        },
+        onToolCall(toolCall) {
+            const name = toolCall?.toolName || 'tool';
+            progress.report(new vscode.LanguageModelTextPart(`\n[tool: ${name}]\n`));
+        },
+        onToolResult(toolCall, toolResult) {
+            const { status, details } = summarizeToolResult(toolResult);
+            const name = toolCall?.toolName || 'tool';
+            const line = details ? `[${name} ${status}: ${details}]\n` : `[${name} ${status}]\n`;
+            progress.report(new vscode.LanguageModelTextPart(line));
         },
     };
 }
@@ -559,7 +589,7 @@ export function createWorkbenchAgentBridge(vscodeBundle, vscodeApi) {
             const historyLength = Array.isArray(context?.history) ? context.history.length : 0;
             const requestPayload = {
                 prompt: request?.prompt || '',
-                modelId: request?.model?.id,
+                modelId: resolveModelId(request?.model?.id),
                 conversationKey: 'chat-participant',
                 resetConversation: historyLength === 0,
                 references: request?.references || [],

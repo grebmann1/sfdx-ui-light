@@ -444,7 +444,6 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                 workspaceRoot: this._workspaceRoot,
                 apiVersion: this.sfApiVersion,
             });
-            this._persistResolvedWorkspaceIdentity(activeConnection);
         }
         await this._syncWorkbenchConnectionUi();
         this._emitIframeConnectionState('connection.applied', { force: true });
@@ -528,38 +527,6 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         return this._getPersistedBootstrapValue(SESSION_BOOTSTRAP_STORAGE_KEYS.serverUrl);
     }
 
-    _getBootstrapOrgId() {
-        const persistedOrgId = this._getPersistedBootstrapValue(
-            SESSION_BOOTSTRAP_STORAGE_KEYS.orgId
-        );
-        if (!persistedOrgId) {
-            return null;
-        }
-
-        const explicitAlias = String(this.bootstrapAlias || '').trim();
-        if (explicitAlias) {
-            return null;
-        }
-
-        const explicitSessionId = String(this.sessionId || '').trim();
-        const explicitServerUrl = String(this.serverUrl || '').trim();
-        if (!explicitSessionId || !explicitServerUrl) {
-            return persistedOrgId;
-        }
-
-        const persistedSessionId = this._getPersistedBootstrapValue(
-            SESSION_BOOTSTRAP_STORAGE_KEYS.sessionId
-        );
-        const persistedServerUrl = this._getPersistedBootstrapValue(
-            SESSION_BOOTSTRAP_STORAGE_KEYS.serverUrl
-        );
-        if (persistedSessionId !== explicitSessionId || persistedServerUrl !== explicitServerUrl) {
-            return null;
-        }
-
-        return persistedOrgId;
-    }
-
     _clearConnectionBootstrapParams({ clearPersistedSeed = false } = {}) {
         this.bootstrapAlias = null;
         this.sessionId = null;
@@ -573,19 +540,6 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         try {
             window.sessionStorage?.removeItem?.(SESSION_BOOTSTRAP_STORAGE_KEYS.sessionId);
             window.sessionStorage?.removeItem?.(SESSION_BOOTSTRAP_STORAGE_KEYS.serverUrl);
-            window.sessionStorage?.removeItem?.(SESSION_BOOTSTRAP_STORAGE_KEYS.orgId);
-        } catch {
-            // ignore
-        }
-    }
-
-    _persistResolvedWorkspaceIdentity(connection = this._buildCurrentConnection()) {
-        const orgId = String(connection?.orgId || '').trim();
-        if (!orgId) {
-            return;
-        }
-        try {
-            window.sessionStorage?.setItem?.(SESSION_BOOTSTRAP_STORAGE_KEYS.orgId, orgId);
         } catch {
             // ignore
         }
@@ -602,20 +556,14 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     }
 
     _getBootstrapWorkspaceRoot() {
-        const orgId = this._getBootstrapOrgId();
         const serverUrl = this._getBootstrapServerUrl();
-        if (!orgId && !serverUrl) {
+        if (!serverUrl) {
             return null;
         }
-        const normalizedServerUrl = serverUrl
-            ? String(serverUrl).startsWith('http')
-                ? serverUrl
-                : `https://${serverUrl}`
-            : null;
-        return this._deriveConnectionWorkspaceRoot({
-            orgId,
-            instanceUrl: normalizedServerUrl,
-        });
+        const normalizedServerUrl = String(serverUrl).startsWith('http')
+            ? serverUrl
+            : `https://${serverUrl}`;
+        return this._deriveConnectionWorkspaceRoot({ instanceUrl: normalizedServerUrl });
     }
 
     _resolvePreferredWorkspaceRoot(candidate) {
@@ -633,7 +581,6 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         const workspaceRoot = this._resolvePreferredWorkspaceRoot(
             this._workspaceRoot || this.workspaceBasePath
         );
-        const orgId = this._getBootstrapOrgId();
         const serverUrl = this._getBootstrapServerUrl();
         const normalizedServerUrl = serverUrl
             ? String(serverUrl).startsWith('http')
@@ -641,7 +588,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                 : `https://${serverUrl}`
             : null;
         const seededBootstrap = await buildWorkspaceBootstrap(
-            orgId || normalizedServerUrl ? { orgId, instanceUrl: normalizedServerUrl } : null,
+            normalizedServerUrl ? { instanceUrl: normalizedServerUrl } : null,
             this.workspaceBasePath || DEFAULT_WORKSPACE_ROOT
         );
         const sourceRoot = seededBootstrap.workspaceRoot;

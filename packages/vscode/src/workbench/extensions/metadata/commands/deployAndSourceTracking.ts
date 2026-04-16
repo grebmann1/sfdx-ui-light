@@ -45,6 +45,7 @@ export function createDeployAndSourceTracking({
     const registeredCommandGroups = new Set();
     const toolingMapStore = createToolingMapStore(vscode, state);
     let metadataApiDeployFn: ((conn: unknown, paths: string[], options?: Record<string, unknown>) => Promise<unknown>) | null = null;
+    let newBundleDeployFn: ((conn: unknown, paths: string[], options?: Record<string, unknown>) => Promise<unknown>) | null = null;
 
     function loadAutoDeployOnSave() {
         try {
@@ -933,6 +934,36 @@ export function createDeployAndSourceTracking({
                     return;
                 }
 
+                if (
+                    resolution?.status === 'missing' &&
+                    typeof newBundleDeployFn === 'function'
+                ) {
+                    const conn = connectionRuntime.loadStoredConn();
+                    if (!conn.instanceUrl || !conn.accessToken) {
+                        await vscode.window.showErrorMessage(
+                            connectionRuntime.getInjectedConnectionRequiredMessage()
+                        );
+                        return;
+                    }
+                    const choice = await vscode.window.showWarningMessage(
+                        'This file is not yet in Salesforce. Deploy the component to the org now?',
+                        'Deploy to Org',
+                        'Cancel'
+                    );
+                    if (choice !== 'Deploy to Org') return;
+                    try {
+                        await newBundleDeployFn(conn, [path], { showProgress: true });
+                        await vscode.window.showInformationMessage(
+                            'Component deployed and registered successfully.'
+                        );
+                    } catch (error) {
+                        await vscode.window.showErrorMessage(
+                            error instanceof Error ? error.message : 'Deploy failed.'
+                        );
+                    }
+                    return;
+                }
+
                 await vscode.window.showWarningMessage(
                     buildCurrentFileWarningMessage(resolution, 'Deploy current file')
                 );
@@ -1422,6 +1453,11 @@ export function createDeployAndSourceTracking({
         setMetadataApiDeploy(fn) {
             if (typeof fn === 'function') {
                 metadataApiDeployFn = fn;
+            }
+        },
+        setNewBundleDeploy(fn) {
+            if (typeof fn === 'function') {
+                newBundleDeployFn = fn;
             }
         },
         updateSourceTrackingForPaths,

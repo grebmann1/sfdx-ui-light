@@ -1,3 +1,11 @@
+function instanceUrlHost(instanceUrl: unknown): string {
+    try {
+        return new URL(String(instanceUrl || '')).host;
+    } catch {
+        return '';
+    }
+}
+
 function sanitizeSegment(value: unknown) {
     const raw = String(value || '').trim();
     if (!raw) {
@@ -42,14 +50,7 @@ export function deriveWorkspaceRootFromConnection(
     workspaceBasePath = '/workspace/orgs'
 ) {
     const baseRoot = deriveWorkspaceBaseRoot(workspaceBasePath);
-    let segment = sanitizeSegment(connection?.orgId);
-    if (!segment) {
-        try {
-            segment = sanitizeSegment(new URL(String(connection?.instanceUrl || '')).host);
-        } catch {
-            segment = '';
-        }
-    }
+    let segment = sanitizeSegment(instanceUrlHost(connection?.instanceUrl));
     if (!segment) {
         segment = 'org';
     }
@@ -76,5 +77,5 @@ export function resolveWorkspaceRootForConnection({
     if (!currentWorkspaceRoot || currentWorkspaceRoot === normalizedDefaultRoot) {
         return derivedRoot;
     }
-    return sanitizeSegment(connection?.orgId) ? derivedRoot : currentWorkspaceRoot;
+    return instanceUrlHost(connection?.instanceUrl) ? derivedRoot : currentWorkspaceRoot;
 }

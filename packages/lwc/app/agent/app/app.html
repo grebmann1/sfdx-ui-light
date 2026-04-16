@@ -421,6 +421,21 @@
                             </div>
                         </div>
                     </section>
+                    <!-- Pending questions from ask_user tool -->
+                    <template lwc:if={hasPendingQuestions}>
+                        <div class="slds-grid slds-wrap slds-grid_align-center">
+                            <div class="slds-col slds-size_1-of-1 slds-large-size_2-of-3 slds-p-horizontal_small slds-p-top_x-small">
+                                <template for:each={pendingQuestionsWithKeys} for:item="q">
+                                    <agent-question-prompt
+                                        key={q.key}
+                                        question-id={q.id}
+                                        question={q.question}
+                                        options={q.options}
+                                        onquestionanswered={handleQuestionAnswered}></agent-question-prompt>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
                     <!-- Prompt Entry -->
                     <div class="slds-grid slds-wrap slds-grid_align-center">
                         <agent-publisher

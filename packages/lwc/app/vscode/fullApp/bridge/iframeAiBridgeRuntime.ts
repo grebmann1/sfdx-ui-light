@@ -11,6 +11,8 @@ import {
     normalizeModelSelection,
     getDefaultModelForProvider,
     getProviderModelOptions,
+    buildAvailableAgentModelOptions,
+    resolveAgentProviderBaseUrl,
 } from 'shared/llm';
 import {
     getAiProviderFromConfig,
@@ -18,7 +20,7 @@ import {
     loadExtensionConfigFromCache,
     resolveLlmProviderConfigMap,
 } from 'shared/cacheManager';
-import type { IframeAiBridgeChunk, IframeAiBridgeMessage, IframeAiBridgeModelConfig, IframeAiBridgeModelInfo, IframeAiBridgeToolSchema } from 'vscode/bridge/iframeAiBridgeContract';
+import type { IframeAiBridgeChunk, IframeAiBridgeMessage, IframeAiBridgeModelConfig, IframeAiBridgeModelInfo, IframeAiBridgeToolSchema } from './iframeAiBridgeContract';
 
 const DEFAULT_MAX_STEPS = 1;
 
@@ -31,7 +33,11 @@ type RuntimeConfig = {
     reasoning?: string;
 };
 
-async function readRuntimeConfig(): Promise<RuntimeConfig> {
+type FullRuntimeConfig = RuntimeConfig & {
+    providerConfigs?: ReturnType<typeof resolveLlmProviderConfigMap>;
+};
+
+async function readRuntimeConfig(): Promise<FullRuntimeConfig> {
     try {
         const cachedConfig = await loadExtensionConfigFromCache(getLlmProviderConfigCacheKeys());
         const providerConfigs = resolveLlmProviderConfigMap(cachedConfig);
@@ -41,6 +47,7 @@ async function readRuntimeConfig(): Promise<RuntimeConfig> {
             provider,
             apiKey: providerConfig?.apiKey || undefined,
             baseUrl: providerConfig?.baseUrl || undefined,
+            providerConfigs,
         };
     } catch {
         return {};
@@ -65,10 +72,11 @@ async function* streamCompletionViaProvider(
         String(modelConfig.provider || storedConfig.provider || 'openai')
     );
     const apiKey = String(modelConfig.apiKey || storedConfig.apiKey || '').trim();
-    const baseUrl = String(modelConfig.baseUrl || storedConfig.baseUrl || '').trim() || undefined;
+    const rawBaseUrl = String(modelConfig.baseUrl || storedConfig.baseUrl || '').trim();
+    const baseUrl = resolveAgentProviderBaseUrl(provider, rawBaseUrl) || undefined;
     const selectedModel = normalizeModelSelection(
         String(modelConfig.modelId || storedConfig.modelId || ''),
-        provider,
+        getProviderModelOptions(provider),
         getDefaultModelForProvider(provider) || 'gpt-4o'
     );
     const reasoning = String(modelConfig.reasoning || storedConfig.reasoning || 'none');
@@ -167,6 +175,20 @@ async function* streamCompletionViaProvider(
                     break;
             }
         }
+
+        // Yield the full AI SDK response messages so the VSCode agent can use them verbatim
+        // for the next round's conversation history. This preserves provider-specific metadata
+        // such as Gemini's thought_signature on reasoning parts, enabling correct multi-turn
+        // tool use with thinking models without disabling the thinking feature.
+        try {
+            const response = await result.response;
+            if (Array.isArray(response?.messages) && response.messages.length > 0) {
+                yield { type: 'complete_messages', messages: response.messages };
+            }
+        } catch {
+            // response metadata is best-effort — swallow errors
+        }
+
         yield { type: 'done' };
     } catch (error) {
         if (signal.aborted) {
@@ -185,14 +207,25 @@ async function* streamCompletionViaProvider(
 async function* buildConfigStream(): AsyncGenerator<IframeAiBridgeChunk> {
     const storedConfig = await readRuntimeConfig();
     const provider = normalizeLlmProvider(storedConfig.provider || 'openai');
-    const providerModels = getProviderModelOptions(provider);
+    const providerConfigs = storedConfig.providerConfigs ?? {};
     const defaultModel = getDefaultModelForProvider(provider);
-    const models: IframeAiBridgeModelInfo[] = providerModels.map(m => ({
-        id: m.value,
-        label: m.label,
-        provider,
-        isDefault: m.value === defaultModel,
-    }));
+
+    const allModels = buildAvailableAgentModelOptions({ providerConfigs });
+    const models: IframeAiBridgeModelInfo[] =
+        allModels.length > 0
+            ? allModels.map(m => ({
+                  id: m.value,
+                  label: m.label,
+                  provider: m.provider,
+                  isDefault: m.value === defaultModel,
+              }))
+            : getProviderModelOptions(provider).map(m => ({
+                  id: m.value,
+                  label: m.label,
+                  provider,
+                  isDefault: m.value === defaultModel,
+              }));
+
     yield { type: 'ai_config', provider, models, isConfigured: !!storedConfig.apiKey };
     yield { type: 'done' };
 }

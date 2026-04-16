@@ -25,6 +25,7 @@ export const IFRAME_AI_BRIDGE_CHUNK_TYPES = {
     TEXT_DELTA: 'text_delta',
     REASONING_DELTA: 'reasoning_delta',
     TOOL_CALL: 'tool_call',
+    COMPLETE_MESSAGES: 'complete_messages',
     AI_CONFIG: 'ai_config',
     DONE: 'done',
     ERROR: 'error',
@@ -72,6 +73,7 @@ export type IframeAiBridgeChunk =
     | { type: 'text_delta'; text: string }
     | { type: 'reasoning_delta'; text: string }
     | { type: 'tool_call'; toolCallId: string; toolName: string; args: unknown }
+    | { type: 'complete_messages'; messages: unknown[] }
     | { type: 'ai_config'; provider: string; models: IframeAiBridgeModelInfo[]; isConfigured: boolean }
     | { type: 'done'; finishReason?: string }
     | { type: 'error'; code: string; message: string };

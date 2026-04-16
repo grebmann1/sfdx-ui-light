@@ -2,7 +2,7 @@ import {
     getOrgHost,
     normalizeScratchValue,
     normalizeSandboxValue,
-} from 'core/connector';
+} from './connector';
 
 export const ORG_ENVIRONMENT_TYPES = {
     production: 'production',

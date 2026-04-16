@@ -1,7 +1,6 @@
 export const SESSION_BOOTSTRAP_STORAGE_KEYS = {
     sessionId: 'sfSessionId',
     serverUrl: 'sfServerUrl',
-    orgId: 'sfOrgId',
 } as const;
 
 function normalizeText(value: unknown): string {

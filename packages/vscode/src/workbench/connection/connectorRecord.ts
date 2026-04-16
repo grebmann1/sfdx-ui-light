@@ -1,4 +1,4 @@
-import { buildConnectionFromConnector } from 'core/connector';
+import { buildConnectionFromConnector } from './connector';
 
 import {
     deriveWorkspaceRootFromConnection,

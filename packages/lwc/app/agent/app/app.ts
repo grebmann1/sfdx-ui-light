@@ -29,6 +29,7 @@ import { persistPromptImageFiles } from 'agent/utils';
 import { getIndexedDbFileSystem } from 'core/fs';
 import { Agent } from 'agent/Agent';
 import { browserAgentInstructions } from 'agent/agents';
+import { askUserTool, resolveQuestion, rejectQuestion } from 'agent/tools';
 import type { ModelMessage, UIMessage } from 'ai';
 
 export default class App extends ToolkitElement {
@@ -76,6 +77,8 @@ export default class App extends ToolkitElement {
     @track debugMessages = [];
     @track debugStreamHistory = [];
     debugLastRunDebug = null;
+
+    @track pendingQuestions: Array<{ id: string; question: string; options: string[] }> = [];
 
     _lastScrolledMessageCount = 0;
     _lastActiveConversationId = null;
@@ -178,10 +181,15 @@ export default class App extends ToolkitElement {
         Analytics.trackAppOpen('agent', { alias: this.alias });
         store.dispatch(AGENT.loadCacheSettingsAsync());
         store.dispatch(AGENT.loadConversationsFromCache());
+        window.addEventListener('agent:ask_user', this._handleAskUserEvent);
     }
 
     disconnectedCallback() {
         this._teardownStreamingSubscription();
+        window.removeEventListener('agent:ask_user', this._handleAskUserEvent);
+        // Reject any outstanding questions so the tool's promise doesn't leak.
+        this.pendingQuestions.forEach(q => rejectQuestion(q.id));
+        this.pendingQuestions = [];
     }
 
     renderedCallback() {
@@ -202,6 +210,36 @@ export default class App extends ToolkitElement {
     }
 
     /** Methods **/
+
+    /** Ask-user question handling **/
+
+    _handleAskUserEvent = (event: CustomEvent) => {
+        const { id, question, options } = event.detail || {};
+        if (!id || !question) return;
+        this.pendingQuestions = [
+            ...this.pendingQuestions,
+            { id, question, options: Array.isArray(options) ? options : [] },
+        ];
+    };
+
+    handleQuestionAnswered = (event: CustomEvent) => {
+        const { id, answer } = event.detail || {};
+        if (!id) return;
+        this.pendingQuestions = this.pendingQuestions.filter(q => q.id !== id);
+        if (answer) {
+            resolveQuestion(id, answer);
+        } else {
+            rejectQuestion(id);
+        }
+    };
+
+    get hasPendingQuestions() {
+        return this.pendingQuestions.length > 0;
+    }
+
+    get pendingQuestionsWithKeys() {
+        return this.pendingQuestions.map(q => ({ ...q, key: q.id }));
+    }
 
     resetError = () => {
         this.error_title = null;
@@ -274,6 +312,7 @@ export default class App extends ToolkitElement {
                 systemPrompt: browserAgentInstructions,
                 isStoreEnabled: true,
                 store,
+                extraTools: [askUserTool],
             },
         };
     }

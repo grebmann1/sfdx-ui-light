@@ -2,12 +2,11 @@
 import { Bash } from 'just-bash';
 import { connectIframeFsBridgeClient } from 'vscode/bridge/iframeFsBridgeClient';
 import { getIframeBridgeWorkspaceRoot, isIframeFsBridgeEnabled } from 'vscode/bridge/bootstrapIframeBridge';
-import { getApexExecutionExitCode } from 'core/bash';
 import { buildSalesforceExtensionConfig } from '../core/extensionManifest';
 import { registerSalesforceExtension } from '../core/extensionRegistration';
 import { resolveCoreServices, type CoreServices } from '../core/coreServices';
 // LWC version: handles --file flag and other args via ctx.fs (backed by BridgeFsAdapter)
-import { registerSalesforceShellCommands } from '../../../../../lwc/app/core/bash/salesforceShellCommands';
+import { registerSalesforceShellCommands, getApexExecutionExitCode } from '../core/bash';
 import { BridgeFsAdapter } from './bridgeFsAdapter';
 
 const ANSI = {

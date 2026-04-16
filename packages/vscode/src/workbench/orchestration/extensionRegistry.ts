@@ -15,8 +15,8 @@ type Disposable = { dispose(): void };
 const EXTENSION_REGISTRARS: Array<
     (vscodeBundle: VscodeBundle, ctx?: RegisterContext) => Promise<Disposable | void>
 > = [
-    (vscodeBundle, ctx) => registerUnifiedSoqlExtension(vscodeBundle, ctx),
     (vscodeBundle, ctx) => registerMetadata(vscodeBundle, ctx),
+    (vscodeBundle, ctx) => registerUnifiedSoqlExtension(vscodeBundle, ctx),
     (vscodeBundle, ctx) => registerOrgBrowser(vscodeBundle, ctx),
     (vscodeBundle, ctx) => registerApex(vscodeBundle, ctx),
     (vscodeBundle, ctx) => registerLwc(vscodeBundle, ctx),

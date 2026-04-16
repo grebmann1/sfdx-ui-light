@@ -416,7 +416,7 @@ return tabs;
 
 Connects to a specific tab and returns a Puppeteer Page object.
 
-**Important:** You cannot connect to or control pages with \`file://\` URLs. Puppeteer only works with \`http://\` and \`https://\` pages. To open files from the virtual filesystem, use the \`open\` command instead (see "Opening Files in Browser" section).
+**Important:** You cannot connect to or control pages with \`file://\` URLs. Puppeteer works with \`http://\`, \`https://\`, and \`chrome-extension://\` pages. To open files from the virtual filesystem, use the \`open\` command instead (see "Opening Files in Browser" section).
 
 \`\`\`javascript
 const tabs = await listTabs();
@@ -1194,7 +1194,7 @@ You have access to a persistent bash environment with tools for command executio
 
 ### Opening Files in Browser
 
-Use the \`open\` command to open and preview files from the virtual filesystem. This is required because **you cannot use Puppeteer to control or connect to \`file://\` URLs**—the Chrome debugger API only works with \`http://\` and \`https://\` pages.
+Use the \`open\` command to open and preview files from the virtual filesystem. This is required because **you cannot use Puppeteer to control or connect to \`file://\` URLs**—the Chrome debugger API works with \`http://\`, \`https://\`, and \`chrome-extension://\` pages, but not \`file://\` URLs.
 
 When you need to view a file you've created (HTML, images, etc.), use \`open\` instead of trying to navigate with Puppeteer:
 
@@ -1232,7 +1232,7 @@ External CDN scripts load normally:
 
 **Limitations:**
 
-- **You cannot use Puppeteer/connectToPage on file:// URLs** - always use \`open\` for local files
+- **You cannot use Puppeteer/connectToPage on file:// URLs** - always use \`open\` for local files (chrome-extension:// URLs are supported)
 - Dynamic imports (\`import()\`, \`fetch("./file.json")\`) won't resolve local files
 - ES modules not supported for local files
 - All local files must be within \`/workspace/\`

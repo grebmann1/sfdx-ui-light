@@ -12,7 +12,6 @@ const ANSI = {
 };
 import { ensureDir, writeTextFile } from '../core/workspaceCache';
 import { getWorkspacePath, getWorkspaceRootPath, getWorkspaceUri } from '../core/workspacePaths';
-
 import { createWorkbenchShellService, getShellOutputLines } from './workbenchShellService';
 
 function colorize(value, ...styles) {

@@ -232,6 +232,18 @@ export const AGENT_TOOL_CONFIG = {
         continueWithReasonPrefix: 'Continue with the next steps: ',
         continueWithoutReason: 'Continue with the next steps.',
     },
+    askUser: {
+        name: 'ask_user',
+        description: `Ask the user a clarifying question before proceeding.
+Use this tool when you need more information or a decision from the user to complete the task correctly.
+Provide clear answer options when the choices are bounded; omit options for open-ended questions.
+Wait for the user's answer before continuing.`,
+        questionDescription: 'The question to present to the user.',
+        optionsDescription:
+            'Optional list of predefined answer choices shown as selectable options. Omit for open-ended questions.',
+        skippedAnswer: 'The user skipped this question.',
+        answerPrefix: "User's answer: ",
+    },
 } as const;
 
 export const TOOL_APP_NAMES = {

@@ -104,7 +104,7 @@ export class Connector {
             _errorMessage: e.message,
         });
 
-        if (!isElectronApp()) {
+        if (!isElectronApp() && this.configuration.credentialType !== OAUTH_TYPES.SESSION) {
             await saveConfiguration(this.configuration.alias, this.configuration);
         }
 

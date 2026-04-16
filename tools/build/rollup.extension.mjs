@@ -303,7 +303,7 @@ const vscodePureAliasEntries = [
     { find: 'vscode/toolingApi', replacement: r('../../packages/shared/modules/toolingApi/toolingApi.ts') },
     { find: 'vscode/sourceTracking', replacement: r('../../packages/shared/modules/sourceTracking/sourceTracking.ts') },
     // workbench modules (consumed by fullApp.ts via module aliases)
-    { find: 'vscode/workbench/iframeAiBridgeRuntime', replacement: r('../../packages/vscode/src/workbench/bridge/iframeAiBridgeRuntime.ts') },
+    { find: 'vscode/workbench/iframeAiBridgeRuntime', replacement: r('../../packages/lwc/app/vscode/fullApp/bridge/iframeAiBridgeRuntime.ts') },
     { find: 'vscode/workbench/iframeJsforceBridgeRuntime', replacement: r('../../packages/vscode/src/workbench/bridge/iframeJsforceBridgeRuntime.ts') },
     { find: 'vscode/workbench/workbenchConnection', replacement: r('../../packages/vscode/src/workbench/workbenchConnection.ts') },
     { find: 'vscode/workbench/workbenchWorkspace', replacement: r('../../packages/vscode/src/workbench/workbenchWorkspace.ts') },
@@ -443,6 +443,7 @@ const modules = [
     { name: 'vscode/toolingApi', path: r('../../packages/shared/modules/toolingApi/toolingApi.ts') },
     { name: 'vscode/sourceTracking', path: r('../../packages/shared/modules/sourceTracking/sourceTracking.ts') },
     // vscode workbench modules (consumed by fullApp.ts via module aliases)
+    { name: 'vscode/workbench/iframeAiBridgeRuntime', path: r('../../packages/lwc/app/vscode/fullApp/bridge/iframeAiBridgeRuntime.ts') },
     { name: 'vscode/workbench/iframeJsforceBridgeRuntime', path: r('../../packages/vscode/src/workbench/bridge/iframeJsforceBridgeRuntime.ts') },
     { name: 'vscode/workbench/workbenchConnection', path: r('../../packages/vscode/src/workbench/workbenchConnection.ts') },
     { name: 'vscode/workbench/workbenchWorkspace', path: r('../../packages/vscode/src/workbench/workbenchWorkspace.ts') },

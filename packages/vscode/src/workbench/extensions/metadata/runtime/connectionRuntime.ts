@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import { buildConnectionFromConnector, getConnectionAuthType, OAUTH_TYPES } from 'core/connector';
+import { buildConnectionFromConnector, getConnectionAuthType, OAUTH_TYPES } from '../../../connection/connector';
 import { createToolingClient } from 'vscode/toolingApi';
 
 import {

@@ -1,17 +1,6 @@
-/* eslint-disable import/no-unresolved */
-import {
-    createProviderInstance,
-    getReasoningConfigFromSelection,
-    resolveProviderModelInstance,
-    resolveProviderOptions,
-} from 'agent/utils';
-import { jsonSchema, stepCountIs, streamText, tool as createAiSdkTool } from 'ai';
-import { guid } from 'shared/utils';
-import { z } from 'zod';
+import { isAbortLikeError, resolveWorkbenchAgentSettings } from './agentConfig';
 
 const MAX_STORED_MESSAGES = 24;
-
-import { isAbortLikeError, resolveWorkbenchAgentSettings } from './agentConfig';
 
 const conversationsByKey = new Map();
 
@@ -51,7 +40,7 @@ export function formatWorkbenchRuntimeError(error) {
 
 function createConversationState() {
     return {
-        conversationId: guid(),
+        conversationId: crypto.randomUUID(),
         messages: [],
     };
 }
@@ -77,40 +66,6 @@ function buildModelMessage(role, text) {
         role,
         content: [{ type: 'text', text: typeof text === 'string' ? text : String(text ?? '') }],
     };
-}
-
-function normalizeToolInputSchema(schema) {
-    if (schema == null) {
-        return z.object({});
-    }
-    if (typeof schema?.safeParse === 'function' || typeof schema?._def === 'object') {
-        return schema;
-    }
-    return jsonSchema(schema);
-}
-
-function toAiSdkTools(tools, extraContext = {}) {
-    const result = {};
-    (Array.isArray(tools) ? tools : []).forEach(rawTool => {
-        if (
-            !rawTool ||
-            typeof rawTool !== 'object' ||
-            typeof rawTool.name !== 'string' ||
-            typeof rawTool.execute !== 'function'
-        ) {
-            return;
-        }
-        result[rawTool.name] = createAiSdkTool({
-            description: rawTool.description || '',
-            inputSchema: normalizeToolInputSchema(rawTool.parameters),
-            execute: async input =>
-                rawTool.execute({
-                    ...(input && typeof input === 'object' ? input : {}),
-                    ...extraContext,
-                }),
-        });
-    });
-    return result;
 }
 
 function finalizeMessageForStorage(message) {
@@ -146,14 +101,6 @@ function appendConversationMessages(conversation, newMessages) {
 
 function buildSystemPrompt(systemPrompt, conversationId) {
     return `### Conversation ID: ${conversationId}\n\n${systemPrompt || ''}`;
-}
-
-function toToolCall(part) {
-    return {
-        toolCallId: part.toolCallId,
-        toolName: part.toolName,
-        input: part.input ?? part.args ?? {},
-    };
 }
 
 // AI SDK v6 ToolResultOutput must be: { type: 'text' | 'json' | 'error-text' | 'execution-denied', ... }
@@ -203,6 +150,11 @@ async function* streamViaBridge(bridgeClient, options) {
         }
         roundCount++;
         const collectedToolCalls = [];
+        // complete_messages carries the full AI SDK response messages from the LWC runtime,
+        // including any provider-specific metadata (e.g. Gemini thought_signature on reasoning
+        // parts). When present, these are used verbatim for the next round so the provider can
+        // correctly reconstruct signed thinking content in the next API call.
+        let completeResponseMessages: unknown[] | null = null;
 
         for await (const chunk of bridgeClient.complete(currentMessages, {
             systemPrompt,
@@ -223,6 +175,9 @@ async function* streamViaBridge(bridgeClient, options) {
                     collectedToolCalls.push(chunk);
                     yield { type: 'tool-call', toolCallId: chunk.toolCallId, toolName: chunk.toolName, input: chunk.args ?? {} };
                     break;
+                case 'complete_messages':
+                    completeResponseMessages = Array.isArray(chunk.messages) ? chunk.messages : null;
+                    break;
                 case 'error':
                     yield { type: 'error', error: { message: chunk.message, code: chunk.code } };
                     return;
@@ -237,14 +192,21 @@ async function* streamViaBridge(bridgeClient, options) {
             break;
         }
 
-        // Build assistant message with tool calls (AI SDK v6: 'input' not 'args')
-        const assistantContent = collectedToolCalls.map(tc => ({
-            type: 'tool-call',
-            toolCallId: tc.toolCallId,
-            toolName: tc.toolName,
-            input: tc.args ?? {},
-        }));
-        currentMessages = [...currentMessages, { role: 'assistant', content: assistantContent }];
+        if (completeResponseMessages) {
+            // Use the AI SDK response messages verbatim — they carry thought_signature and other
+            // provider metadata that would be lost if we reconstructed the message manually.
+            currentMessages = [...currentMessages, ...completeResponseMessages];
+        } else {
+            // Fallback for runtimes that don't send complete_messages: build the assistant
+            // message from the individual tool-call chunks (no provider metadata).
+            const assistantContent = collectedToolCalls.map(tc => ({
+                type: 'tool-call',
+                toolCallId: tc.toolCallId,
+                toolName: tc.toolName,
+                input: tc.args ?? {},
+            }));
+            currentMessages = [...currentMessages, { role: 'assistant', content: assistantContent }];
+        }
 
         // Execute tools locally and build tool result messages
         for (const tc of collectedToolCalls) {
@@ -260,7 +222,6 @@ async function* streamViaBridge(bridgeClient, options) {
                 rawResult = { error: execError instanceof Error ? execError.message : String(execError) };
             }
 
-            // AI SDK v6: tool result uses 'output: ToolResultOutput' not 'result: unknown'
             currentMessages = [...currentMessages, {
                 role: 'tool',
                 content: [{
@@ -284,13 +245,13 @@ export async function createWorkbenchAgentRequest({
     tools = [],
     aiBridgeClient = null,
 }) {
-    const settings = await resolveWorkbenchAgentSettings({ modelId });
-
-    if (!aiBridgeClient && !settings.providerKey) {
+    if (!aiBridgeClient) {
         throw new Error(
-            `Workbench AI is not configured. Add a ${settings.providerLabel} API key before using the workbench agent.`
+            'Workbench AI bridge is not available. Please reload the extension.'
         );
     }
+
+    const settings = resolveWorkbenchAgentSettings({ modelId });
 
     const conversation = getOrCreateConversationState(conversationKey, resetConversation);
     const conversationId = conversation.conversationId;
@@ -306,118 +267,30 @@ export async function createWorkbenchAgentRequest({
         },
         async *stream() {
             let assistantText = '';
-
-            if (aiBridgeClient) {
-                // Bridge-backed path: proxy LLM calls to the parent frame
-                const toolsByName = {};
-                (Array.isArray(tools) ? tools : []).forEach(t => {
-                    if (t?.name) {
-                        toolsByName[t.name] = t;
-                    }
-                });
-
-                try {
-                    const bridgeStream = streamViaBridge(aiBridgeClient, {
-                        messages,
-                        toolsByName,
-                        maxToolRounds: settings.maxToolRounds,
-                        systemPrompt: buildSystemPrompt(settings.systemPrompt, conversationId),
-                        modelConfig: {
-                            modelId: settings.selectedModel,
-                            provider: settings.provider,
-                            reasoning: settings.selectedReasoning,
-                        },
-                        conversationId,
-                        abortSignal: abortController.signal,
-                    });
-
-                    for await (const part of bridgeStream) {
-                        if (abortController.signal.aborted) {
-                            yield { type: 'content', content: '\n\n[Cancelled]' };
-                            yield { type: 'done' };
-                            return;
-                        }
-
-                        switch (part?.type) {
-                            case 'text-delta':
-                                assistantText += part.text || '';
-                                yield { type: 'content', content: part.text };
-                                break;
-                            case 'reasoning-delta':
-                                yield { type: 'reasoning', content: part.text };
-                                break;
-                            case 'tool-call':
-                                yield { type: 'tool_calls', toolCalls: [{ toolCallId: part.toolCallId, toolName: part.toolName, input: part.input ?? {} }] };
-                                break;
-                            case 'tool-result': {
-                                const toolCallInfo = { toolCallId: part.toolCallId, toolName: part.toolName, input: {} };
-                                yield { type: 'tool_result', toolCall: toolCallInfo, toolResult: toToolResult(part.output) };
-                                break;
-                            }
-                            case 'error':
-                                yield { type: 'error', content: `Error: ${part.error?.message || 'Unknown error'}`, errorCode: part.error?.code };
-                                yield { type: 'done' };
-                                return;
-                            default:
-                                break;
-                        }
-                    }
-
-                    if (!abortController.signal.aborted) {
-                        const storedMessages = [userMessage];
-                        if (assistantText.trim().length > 0) {
-                            storedMessages.push(buildModelMessage('assistant', assistantText));
-                        }
-                        appendConversationMessages(conversation, storedMessages);
-                    }
-                    yield { type: 'done' };
-                } catch (error) {
-                    if (isAbortLikeError(error) || abortController.signal.aborted) {
-                        yield { type: 'content', content: '\n\n[Cancelled]' };
-                        yield { type: 'done' };
-                        return;
-                    }
-                    const formattedError = formatWorkbenchRuntimeError(error);
-                    yield {
-                        type: 'error',
-                        content: `Error: ${formattedError.message}`,
-                        details: formattedError.details,
-                        errorCode: formattedError.code,
-                    };
-                    yield { type: 'done' };
+            const toolsByName = {};
+            (Array.isArray(tools) ? tools : []).forEach(t => {
+                if (t?.name) {
+                    toolsByName[t.name] = t;
                 }
-                return;
-            }
-
-            // Direct provider path: call the LLM provider directly via AI SDK
-            const reasoningConfig = getReasoningConfigFromSelection(settings.selectedReasoning);
-            const providerInstance = createProviderInstance({
-                provider: settings.provider,
-                apiKey: settings.providerKey,
-                baseUrl: settings.providerBaseUrl,
-            });
-
-            const result = streamText({
-                model: resolveProviderModelInstance(providerInstance, {
-                    provider: settings.provider,
-                    modelId: settings.selectedModel,
-                    isInternal: settings.isInternal,
-                }),
-                system: buildSystemPrompt(settings.systemPrompt, conversationId),
-                messages,
-                tools: toAiSdkTools(tools, { conversationId }),
-                stopWhen: stepCountIs(settings.maxToolRounds),
-                maxRetries: 0,
-                abortSignal: abortController.signal,
-                providerOptions: resolveProviderOptions({
-                    provider: settings.provider,
-                    reasoningConfig,
-                    isInternal: settings.isInternal,
-                }),
             });
 
             try {
-                for await (const part of result.fullStream) {
+                console.log('[agentRuntime] streamViaBridge', {settings})
+                const bridgeStream = streamViaBridge(aiBridgeClient, {
+                    messages,
+                    toolsByName,
+                    maxToolRounds: settings.maxToolRounds,
+                    systemPrompt: buildSystemPrompt(settings.systemPrompt, conversationId),
+                    modelConfig: {
+                        modelId: settings.selectedModel,
+                        provider: settings.provider,
+                        reasoning: settings.selectedReasoning,
+                    },
+                    conversationId,
+                    abortSignal: abortController.signal,
+                });
+
+                for await (const part of bridgeStream) {
                     if (abortController.signal.aborted) {
                         yield { type: 'content', content: '\n\n[Cancelled]' };
                         yield { type: 'done' };
@@ -433,26 +306,15 @@ export async function createWorkbenchAgentRequest({
                             yield { type: 'reasoning', content: part.text };
                             break;
                         case 'tool-call':
-                            yield { type: 'tool_calls', toolCalls: [toToolCall(part)] };
+                            yield { type: 'tool_calls', toolCalls: [{ toolCallId: part.toolCallId, toolName: part.toolName, input: part.input ?? {} }] };
                             break;
                         case 'tool-result': {
-                            const toolCall = {
-                                toolCallId: part.toolCallId,
-                                toolName: part.toolName,
-                                input: part.input ?? {},
-                            };
-                            yield {
-                                type: 'tool_result',
-                                toolCall,
-                                toolResult: toToolResult(part.output),
-                            };
+                            const toolCallInfo = { toolCallId: part.toolCallId, toolName: part.toolName, input: {} };
+                            yield { type: 'tool_result', toolCall: toolCallInfo, toolResult: toToolResult(part.output) };
                             break;
                         }
                         case 'error':
-                            yield { type: 'error', content: String(part.error || 'Unknown error') };
-                            break;
-                        case 'abort':
-                            yield { type: 'content', content: '\n\n[Cancelled]' };
+                            yield { type: 'error', content: `Error: ${part.error?.message || 'Unknown error'}`, errorCode: part.error?.code };
                             yield { type: 'done' };
                             return;
                         default:
@@ -460,7 +322,6 @@ export async function createWorkbenchAgentRequest({
                     }
                 }
 
-                await result.response;
                 if (!abortController.signal.aborted) {
                     const storedMessages = [userMessage];
                     if (assistantText.trim().length > 0) {

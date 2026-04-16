@@ -1,10 +1,9 @@
-/* eslint-disable import/no-unresolved */
 import {
     createBashInstance,
     createShellRunner,
     getApexExecutionExitCode,
     registerSalesforceShellCommands,
-} from 'core/bash';
+} from '../../core/bash';
 
 import { ensureDir, writeTextFile } from '../core/workspaceCache';
 import { getWorkspaceRootPath, getWorkspaceUri } from '../core/workspacePaths';

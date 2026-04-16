@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved -- Rollup resolves core/connector alias */
-import { buildConnectionFromConnector } from 'core/connector';
+import { buildConnectionFromConnector } from './connector';
 
 import { DEFAULT_WORKSPACE_ROOT } from '../configuration/constants';
 import {

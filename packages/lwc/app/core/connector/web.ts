@@ -2,6 +2,7 @@ import { getConnectionsFromCache, saveConnectionsToCache } from 'shared/cacheMan
 import { isNotUndefinedOrNull, isEmpty } from 'shared/utils';
 
 import { extractName, normalizeConfiguration } from './base';
+import { OAUTH_TYPES } from './credentialStrategies/oauthTypes';
 
 const formatConfigurationItem = item => {
     return item; // Keep for now
@@ -25,6 +26,9 @@ export async function getConfiguration(alias) {
 }
 
 export async function saveConfiguration(alias, configuration) {
+    if (configuration?.credentialType === OAUTH_TYPES.SESSION) {
+        return;
+    }
     let configurations = await getConnectionsFromCache();
     let index = configurations.findIndex(x => x.alias === alias);
     const existing = index >= 0 ? configurations[index] : null;

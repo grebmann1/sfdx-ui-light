@@ -7,6 +7,7 @@ export const OAUTH_TYPES = {
 
 type ConnectorLike = {
   conn?: Record<string, unknown>
+  configuration?: Record<string, unknown>
 }
 
 function toStringValue(value: unknown) {
@@ -79,15 +80,33 @@ export function buildConnectionFromConnector(
     return null
   }
 
-  const instanceUrl = toStringValue(liveConnection.instanceUrl)
-  const accessToken = toStringValue(liveConnection.accessToken || liveConnection.sessionId)
-  const username = toStringValue(liveConnection.username)
-  const orgId = toStringValue(liveConnection.orgId)
-  const userId = toStringValue(liveConnection.userId)
-  const organizationName = toStringValue(liveConnection.organizationName)
-  const organizationType = normalizeOrganizationType(liveConnection.organizationType)
-  const apiVersion = toStringValue(liveConnection.version || liveConnection.apiVersion || fallbackApiVersion)
+  // Identity fields like orgId, username, userId, organizationName are written to
+  // connector.configuration by _enrichConnector (via identity() call), not to connector.conn.
+  // Always prefer conn values first, then fall back to configuration so that post-enrichment
+  // identity data is not silently dropped.
+  const configuration = (connector?.configuration as Record<string, unknown>) ?? {}
+  const userInfo = ((configuration.userInfo ?? liveConnection.userInfo) as Record<string, unknown>) ?? {}
+
+  const instanceUrl = toStringValue(liveConnection.instanceUrl || configuration.instanceUrl)
+  const accessToken = toStringValue(liveConnection.accessToken || liveConnection.sessionId || configuration.accessToken)
+  const username = toStringValue(liveConnection.username || configuration.username || userInfo.username)
+  const orgId = toStringValue(liveConnection.orgId || configuration.orgId || userInfo.organization_id)
+  const userId = toStringValue(liveConnection.userId || userInfo.user_id || userInfo.id || configuration.userId)
+  const organizationName = toStringValue(
+    liveConnection.organizationName ||
+    configuration.organizationName ||
+    (configuration.orgName as unknown) ||
+    userInfo.organization_name
+  )
+  const organizationType = normalizeOrganizationType(
+    liveConnection.organizationType || configuration.organizationType || configuration.orgType
+  )
+  const apiVersion = toStringValue(liveConnection.version || liveConnection.apiVersion || configuration.version || fallbackApiVersion)
   const authType = getConnectionAuthType(liveConnection)
+
+  // isSandbox / isScratch are also resolved during enrichment and stored on configuration.
+  const isSandbox = inferSandboxValue(liveConnection) ?? normalizeSandboxValue(configuration.isSandbox ?? configuration.sandbox)
+  const isScratch = inferScratchValue(liveConnection) ?? normalizeScratchValue(configuration.isScratch ?? configuration.scratch)
 
   return {
     instanceUrl,
@@ -100,8 +119,8 @@ export function buildConnectionFromConnector(
     orgId,
     organizationName,
     organizationType,
-    isSandbox: inferSandboxValue(liveConnection),
-    isScratch: inferScratchValue(liveConnection),
+    isSandbox,
+    isScratch,
     hasConnection: Boolean(instanceUrl && accessToken),
     sessionHasExpired: Boolean(liveConnection.sessionHasExpired),
     hasError: Boolean(liveConnection.hasError),
