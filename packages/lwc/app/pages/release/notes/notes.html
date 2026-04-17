@@ -1,57 +1,65 @@
 <template>
-    <div class="release-notes-split slds-grid slds-full-height">
-        <!-- Left: Release List -->
-        <div
-            class="release-list slds-size_1-of-3 slds-box slds-scrollable_y slds-full-height slds-flex-column">
-            <ul>
+    <div class="rn-layout">
+        <!-- Left: Version List -->
+        <div class="rn-sidebar">
+            <div class="rn-sidebar__header">Versions</div>
+            <ul class="rn-version-list">
                 <template for:each={formattedReleases} for:item="release">
                     <li
                         key={release.key}
                         class={release.className}
                         data-version={release.version}
                         onclick={handleSelect}>
-                        <span class="slds-text-title_bold">v{release.version}</span>
-                        <span class="slds-text-body_small slds-m-left_x-small">
-                            ({release.date})
-                        </span>
-                        <template if:true={release.isLatest}>
-                            <span class="slds-badge slds-theme_success slds-m-left_x-small">
-                                Latest
-                            </span>
-                        </template>
+                        <div class="rn-version-item__main">
+                            <span class="rn-version-item__version">v{release.version}</span>
+                            <template if:true={release.isLatest}>
+                                <span class="rn-badge rn-badge--latest">Latest</span>
+                            </template>
+                        </div>
+                        <div class="rn-version-item__date">{release.date}</div>
                     </li>
                 </template>
             </ul>
         </div>
+
         <!-- Right: Release Details -->
-        <div class="release-details-panel slds-size_2-of-3 slds-p-around_medium slds-theme_shade">
+        <div class="rn-detail">
             <template lwc:if={selectedRelease}>
-                <h2 class="slds-text-heading_medium slds-m-bottom_medium selected-version">
-                    v{selectedRelease.version}
-                    <span class="slds-text-body_small">({selectedRelease.date})</span>
-                </h2>
-                <template for:each={selectedRelease.sections} for:item="section">
-                    <div key={section.title} class="release-section slds-m-bottom_medium">
-                        <div class="section-title slds-text-title_caps slds-m-bottom_x-small">
-                            {section.title}
-                        </div>
-                        <template for:each={section.categories} for:item="category">
-                            <div
-                                key={category.category}
-                                class="release-category slds-m-left_large slds-m-bottom_small">
-                                <div
-                                    class="category-title slds-text-title_bold slds-m-bottom_xx-small">
-                                    {category.category}
-                                </div>
-                                <ul class="slds-list_dotted">
-                                    <template for:each={category.items} for:item="item">
-                                        <li key={item} class="slds-p-vertical_xx-small">{item}</li>
-                                    </template>
-                                </ul>
-                            </div>
-                        </template>
+                <div class="rn-detail__header">
+                    <div class="rn-detail__version-wrap">
+                        <h2 class="rn-detail__version">v{selectedRelease.version}</h2>
+                        <span class="rn-detail__date">{selectedRelease.date}</span>
                     </div>
-                </template>
+                </div>
+
+                <div class="rn-sections">
+                    <template for:each={selectedRelease.sections} for:item="section">
+                        <div key={section.key} class="rn-section">
+                            <div class="rn-section__header">
+                                <span class={section.badgeClass}>{section.title}</span>
+                            </div>
+                            <div class="rn-categories">
+                                <template for:each={section.categories} for:item="category">
+                                    <div key={category.key} class="rn-category">
+                                        <div class="rn-category__name">{category.category}</div>
+                                        <ul class="rn-item-list">
+                                            <template for:each={category.items} for:item="item">
+                                                <li key={item.key} class="rn-item">
+                                                    <span class="rn-item__dot" aria-hidden="true"></span>
+                                                    <span class="rn-item__text">{item.text}</span>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <template lwc:else>
+                <div class="rn-empty">Select a version to view release notes.</div>
             </template>
         </div>
     </div>

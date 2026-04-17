@@ -1,6 +1,7 @@
 import { track, wire } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import { isChromeExtension } from 'shared/utils';
+import { GOOGLE_SIGNIN_SCOPES, GOOGLE_DRIVE_SCOPES } from '../../../agent/googleAuth/constants.js';
 import {
     cacheManager,
     CACHE_CONFIG,
@@ -98,9 +99,17 @@ export default class App extends ToolkitElement {
 
     // Google Integration
     @track googleConnected = false;
+    @track googleUser = null;
+    @track googleDriveConnected = false;
 
     // New property to track API version validity
     _isApiVersionValid = true;
+
+    // Cache Explorer
+    @track showCacheExplorer = false;
+    @track cacheEntries = [];
+    @track cacheFilter = '';
+    _cacheFilterTimer = null;
 
     @track metadataStorageTypeOptions = App.DEFAULT_METADATA_STORAGE_TYPES.map(type => ({
         label: type,
@@ -216,10 +225,10 @@ export default class App extends ToolkitElement {
         }
     };
 
-    handleSetDefaultClientId = () => {
-        // Default for Sforce-Call-Options client (SFDC internal), not OAuth client id
-        const defaultCallOptionsClient = 'SfdcInternalQA/';
-        this.sessionConfig = { ...this.sessionConfig, client_id: defaultCallOptionsClient };
+    handleToggleQaMode = () => {
+        const qaClientId = 'SfdcInternalQA/';
+        const next = this.isQaModeEnabled ? CACHE_SESSION_CONFIG.CLIENT_ID.value : qaClientId;
+        this.sessionConfig = { ...this.sessionConfig, client_id: next };
     };
 
     handleResetClientId = e => {
@@ -234,24 +243,129 @@ export default class App extends ToolkitElement {
         navigate(this.navContext, { type: 'application', state: { applicationName: 'files' } });
     };
 
+    handleOpenCacheExplorer = async () => {
+        this.showCacheExplorer = true;
+        await this._loadCacheEntries();
+    };
+
+    handleCloseCacheExplorer = () => {
+        this.showCacheExplorer = false;
+    };
+
+    handleCacheFilterChange = e => {
+        const value = e.target.value || '';
+        clearTimeout(this._cacheFilterTimer);
+        this._cacheFilterTimer = setTimeout(() => {
+            this.cacheFilter = value;
+        }, 300);
+    };
+
+    handleCacheEntryDelete = async e => {
+        const key = e.currentTarget.dataset.key;
+        if (!key) return;
+        if (this.isChrome) {
+            await new Promise(resolve => chrome.storage.local.remove(key, resolve));
+        } else {
+            localStorage.removeItem(key);
+        }
+        await this._loadCacheEntries();
+    };
+
+    handleCacheRefresh = async () => {
+        await this._loadCacheEntries();
+    };
+
+    handleCacheDownload = () => {
+        const data = this.cacheEntries.reduce((acc, entry) => {
+            try {
+                acc[entry.key] = JSON.parse(entry.value);
+            } catch {
+                acc[entry.key] = entry.value;
+            }
+            return acc;
+        }, {});
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `sf-toolkit-cache-${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
+    _loadCacheEntries = async () => {
+        let entries = [];
+        if (this.isChrome) {
+            entries = await new Promise(resolve => {
+                chrome.storage.local.get(null, items => {
+                    resolve(
+                        Object.entries(items).map(([key, value]) => ({
+                            key,
+                            value: JSON.stringify(value, null, 2),
+                        }))
+                    );
+                });
+            });
+        } else {
+            entries = Object.keys(localStorage).map(key => ({
+                key,
+                value: localStorage.getItem(key),
+            }));
+        }
+        this.cacheEntries = entries.sort((a, b) => a.key.localeCompare(b.key));
+    };
+
+    get filteredCacheEntries() {
+        const filter = (this.cacheFilter || '').toLowerCase();
+        const entries = this.cacheEntries || [];
+        if (!filter) return entries;
+        return entries.filter(
+            e =>
+                e.key.toLowerCase().includes(filter) ||
+                (e.value && e.value.toLowerCase().includes(filter))
+        );
+    }
+
+    get cacheExplorerCount() {
+        return this.filteredCacheEntries.length;
+    }
+
     handleConnectGoogle = async () => {
         if (!this.isChrome || typeof chrome?.identity?.getAuthToken !== 'function') {
             Toast.show({ label: 'Google sign-in is only available in the Chrome extension.', variant: 'error' });
             return;
         }
         try {
-            await new Promise((resolve, reject) => {
-                chrome.identity.getAuthToken({ interactive: true }, token => {
-                    if (chrome.runtime.lastError || !token) {
+            const oauthToken = await new Promise((resolve, reject) => {
+                chrome.identity.getAuthToken({ interactive: true, scopes: GOOGLE_SIGNIN_SCOPES }, t => {
+                    if (chrome.runtime.lastError || !t) {
                         reject(new Error(chrome.runtime.lastError?.message || 'Authorization failed'));
                     } else {
-                        resolve(token);
+                        resolve(t);
                     }
                 });
             });
+
+            // Verify with the backend to get a session JWT — same flow as the AI panel's
+            // googleAuth component — so both entry points share the same stored token format.
+            let serverUrl = '';
+            try { serverUrl = (process.env.WORKBENCH_BASE_URL || '').replace(/\/+$/, ''); } catch {}
+            serverUrl = serverUrl || window.location.origin;
+
+            const resp = await fetch(`${serverUrl}/google/oauth/verify-token`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ accessToken: oauthToken }),
+            });
+            if (!resp.ok) throw new Error(`Backend verification failed (${resp.status})`);
+            const data = await resp.json();
+
+            const session = { token: data.token, email: data.email, name: data.name, picture: data.picture };
+            this.googleUser = session;
             this.googleConnected = true;
+            await saveSingleExtensionConfigToCache(CACHE_CONFIG.GOOGLE_SESSION.key, session);
             await saveSingleExtensionConfigToCache(CACHE_CONFIG.GOOGLE_CONNECTED.key, true);
-            Toast.show({ label: 'Connected to Google', variant: 'success' });
+            Toast.show({ label: `Connected as ${data.name || data.email}`, variant: 'success' });
         } catch (err) {
             LOGGER.error('Google OAuth error', err);
             Toast.show({ label: `Failed to connect: ${err.message}`, variant: 'error' });
@@ -262,19 +376,69 @@ export default class App extends ToolkitElement {
         if (!this.isChrome || typeof chrome?.identity?.getAuthToken !== 'function') return;
         try {
             const token = await new Promise(resolve => {
-                chrome.identity.getAuthToken({ interactive: false }, t => resolve(t || null));
+                chrome.identity.getAuthToken({ interactive: false, scopes: GOOGLE_SIGNIN_SCOPES }, t => resolve(t || null));
             });
             if (token) {
                 await new Promise(resolve => chrome.identity.removeCachedAuthToken({ token }, resolve));
             }
             this.googleConnected = false;
+            this.googleUser = null;
+            this.googleDriveConnected = false;
             await saveSingleExtensionConfigToCache(CACHE_CONFIG.GOOGLE_CONNECTED.key, false);
+            await saveSingleExtensionConfigToCache(CACHE_CONFIG.GOOGLE_SESSION.key, null);
+            await saveSingleExtensionConfigToCache(CACHE_CONFIG.GOOGLE_DRIVE_CONNECTED.key, false);
             Toast.show({ label: 'Disconnected from Google', variant: 'success' });
         } catch (err) {
             LOGGER.error('Google disconnect error', err);
             Toast.show({ label: `Failed to disconnect: ${err.message}`, variant: 'error' });
         }
     };
+
+    handleConnectGoogleDrive = async () => {
+        if (!this.isChrome || typeof chrome?.identity?.getAuthToken !== 'function') {
+            Toast.show({ label: 'Google Drive is only available in the Chrome extension.', variant: 'error' });
+            return;
+        }
+        try {
+            await new Promise((resolve, reject) => {
+                chrome.identity.getAuthToken({ interactive: true, scopes: GOOGLE_DRIVE_SCOPES }, token => {
+                    if (chrome.runtime.lastError || !token) {
+                        reject(new Error(chrome.runtime.lastError?.message || 'Drive authorization failed'));
+                    } else {
+                        resolve(token);
+                    }
+                });
+            });
+            this.googleDriveConnected = true;
+            await saveSingleExtensionConfigToCache(CACHE_CONFIG.GOOGLE_DRIVE_CONNECTED.key, true);
+            Toast.show({ label: 'Google Drive & Sheets connected', variant: 'success' });
+        } catch (err) {
+            LOGGER.error('Google Drive OAuth error', err);
+            Toast.show({ label: `Failed to connect Drive: ${err.message}`, variant: 'error' });
+        }
+    };
+
+    handleDisconnectGoogleDrive = async () => {
+        this.googleDriveConnected = false;
+        await saveSingleExtensionConfigToCache(CACHE_CONFIG.GOOGLE_DRIVE_CONNECTED.key, false);
+        Toast.show({ label: 'Google Drive & Sheets disconnected', variant: 'success' });
+    };
+
+    get googleUserDisplayName() {
+        return this.googleUser?.name || this.googleUser?.email || '';
+    }
+
+    get googleUserEmail() {
+        return this.googleUser?.email || '';
+    }
+
+    get googleUserPicture() {
+        return this.googleUser?.picture || '';
+    }
+
+    get isDriveConnectDisabled() {
+        return !this.googleConnected;
+    }
 
     /** Methods **/
 
@@ -407,6 +571,8 @@ export default class App extends ToolkitElement {
 
         // Google Integration status
         this.googleConnected = !!config[CACHE_CONFIG.GOOGLE_CONNECTED.key];
+        this.googleUser = config[CACHE_CONFIG.GOOGLE_SESSION.key] || null;
+        this.googleDriveConnected = !!config[CACHE_CONFIG.GOOGLE_DRIVE_CONNECTED.key];
     };
 
     loadMetadataStorageTypeOptions = async () => {
@@ -483,7 +649,19 @@ export default class App extends ToolkitElement {
         return this.hasIncognitoAccess;
     }
 
+    get isQaModeEnabled() {
+        return this.sessionConfig?.client_id === 'SfdcInternalQA/';
+    }
+
+    get qaModeButtonVariant() {
+        return this.isQaModeEnabled ? 'brand' : 'neutral';
+    }
+
     get userName() {
         return this.connector?.configuration?.username;
+    }
+
+    get instanceUrl() {
+        return this.connector?.conn?.instanceUrl || this.connector?.configuration?.instanceUrl || '';
     }
 }

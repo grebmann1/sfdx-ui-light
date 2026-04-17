@@ -214,6 +214,8 @@ export const CACHE_CONFIG = {
     OVERLAY_ENABLED: new CONFIG_OBJECT('overlayEnabled', true),
     CONTENT_SCRIPT_INCLUDE_PATTERNS: new CONFIG_OBJECT('content_script_include_patterns', null),
     CONTENT_SCRIPT_EXCLUDE_PATTERNS: new CONFIG_OBJECT('content_script_exclude_patterns', null),
+    // Google Auth Session
+    GOOGLE_SESSION: new CONFIG_OBJECT<{ token: string; email: string; name: string; picture: string } | null>('google_session', null),
     // AI Settings
     PROVIDER_CONFIGS: new CONFIG_OBJECT('llm_provider_configs', null),
     OPENAI_KEY: new CONFIG_OBJECT('openai_key', null),
@@ -277,6 +279,11 @@ export const CACHE_CONFIG = {
     ),
     // Google Integration
     GOOGLE_CONNECTED: new CONFIG_OBJECT('google_connected', false),
+    GOOGLE_DRIVE_CONNECTED: new CONFIG_OBJECT('google_drive_connected', false),
+    // Agent Tools
+    TOOL_BRIGHT_DATA_KEY: new CONFIG_OBJECT('tool_bright_data_key', null),
+    TOOL_BRIGHT_DATA_ENABLED: new CONFIG_OBJECT('tool_bright_data_enabled', false),
+    TOOL_GOOGLE_SHEET_ENABLED: new CONFIG_OBJECT('tool_google_sheet_enabled', false),
     // Beta Features
     BETA_SMARTINPUT_ENABLED: new CONFIG_OBJECT('beta_smartinput_enabled', false),
     // Keyboard shortcuts (injected page + app). Use defaultValue when config not set.

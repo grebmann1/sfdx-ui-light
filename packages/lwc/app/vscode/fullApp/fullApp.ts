@@ -412,19 +412,19 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         }
 
         if (bootstrapAlias) {
-            const storedAliasConfiguration = await getConfiguration(bootstrapAlias).catch(
-                () => null
-            );
-            if (storedAliasConfiguration) {
-                const aliasedConnector = await credentialStrategies.OAUTH.connect({
-                    alias: bootstrapAlias,
-                }).catch(error => handleConnectorFailure(error));
-                const usableAliasedConnector = toUsableConnector(aliasedConnector);
-                if (usableAliasedConnector) {
-                    await this._applyConnector(usableAliasedConnector);
-                    this._clearConnectionBootstrapParams();
-                    return usableAliasedConnector;
-                }
+            // Always attempt OAUTH.connect regardless of whether we have a cached
+            // configuration. If a stored config exists, connect() reuses its refreshToken
+            // to obtain a fresh access token. If no config is stored (first time with
+            // this alias, cleared storage, etc.) connect() falls through to the OAuth
+            // popup so the user can authenticate — instead of silently doing nothing.
+            const aliasedConnector = await credentialStrategies.OAUTH.connect({
+                alias: bootstrapAlias,
+            }).catch(error => handleConnectorFailure(error));
+            const usableAliasedConnector = toUsableConnector(aliasedConnector);
+            if (usableAliasedConnector) {
+                await this._applyConnector(usableAliasedConnector);
+                this._clearConnectionBootstrapParams();
+                return usableAliasedConnector;
             }
         }
         return null;
@@ -747,6 +747,9 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                         this.initializationError =
                             error?.message || 'Failed to connect the iframe JSForce bridge.';
                     },
+                    onAppEvent: event => {
+                        this._handleWorkbenchAppEvent(event);
+                    },
                 });
                 this._iframeJsforceBridgeHost.start();
 
@@ -905,6 +908,19 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
             colorTheme: this.themeMode === 'light' ? LIGHT_COLOR_THEME : DARK_COLOR_THEME,
         });
         this._emitIframeThemeState('theme.applied');
+    }
+
+    _handleWorkbenchAppEvent(event) {
+        const eventName = String(event?.eventName || '').toLowerCase();
+        const payload = event?.payload && typeof event.payload === 'object' ? event.payload : null;
+
+        if (eventName === 'theme.changed' && payload) {
+            const themeMode = String(payload.themeMode || '').toLowerCase();
+            if ((themeMode === 'light' || themeMode === 'dark') && themeMode !== this.themeMode) {
+                // Only update the banner; do not re-emit to the iframe to avoid a feedback loop.
+                this.themeMode = themeMode;
+            }
+        }
     }
 
     _getVscodeWindow() {

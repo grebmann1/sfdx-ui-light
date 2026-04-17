@@ -54,7 +54,12 @@ function resolveProviderRuntimeBaseUrl(provider: ReturnType<typeof normalizeLlmP
     if (provider === 'gemini') {
         return resolveGoogleBaseUrl(normalizedBaseUrl);
     }
-    return normalizedBaseUrl || DEFAULT_PROVIDER_BASE_URLS[provider];
+    const effectiveUrl = normalizedBaseUrl || DEFAULT_PROVIDER_BASE_URLS[provider];
+    // Resolve relative URLs (e.g. /openai/v1) to absolute using the page origin
+    if (effectiveUrl && effectiveUrl.startsWith('/') && typeof window !== 'undefined') {
+        return `${window.location.origin}${effectiveUrl}`;
+    }
+    return effectiveUrl;
 }
 
 export function createProviderInstance({
@@ -80,6 +85,7 @@ export function createProviderInstance({
             return createGoogleGenerativeAI(settings);
         case 'grok':
             return createXai(settings);
+        case 'workbench':
         case 'mistral':
         case 'openai':
         default:

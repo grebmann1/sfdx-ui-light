@@ -1,3 +1,32 @@
+/* Free-tier callout */
+.agent-freetier-callout {
+    background: var(--slds-g-color-brand-base-95, #e8f4fd);
+    border-bottom: 1px solid var(--slds-g-color-brand-base-50, #0176d3);
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+}
+
+.agent-freetier-callout-body {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.agent-freetier-callout-icon {
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+    color: var(--slds-g-color-brand-base-50, #0176d3);
+}
+
+.agent-freetier-callout-text {
+    color: var(--slds-g-color-neutral-base-10, #181818);
+    line-height: 1.5;
+}
+
+.agent-freetier-count-warning {
+    color: var(--slds-g-color-warning-base-30, #a86403);
+}
+
 .agent-error-panel {
     background-color: var(--slds-g-color-error-base-95, #fef3f2);
     border: 1px solid var(--slds-g-color-error-base-50, #c23934);

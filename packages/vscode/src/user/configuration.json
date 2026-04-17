@@ -5,7 +5,7 @@
     "editor.autoClosingQuotes": "languageDefined",
     "editor.scrollBeyondLastLine": true,
     "editor.mouseWheelZoom": true,
-    "editor.wordBasedSuggestions": "off",
+    "editor.wordBasedSuggestions": "matchingDocuments",
     "editor.acceptSuggestionOnEnter": "on",
     "editor.foldingHighlight": false,
     "editor.semanticHighlighting.enabled": true,

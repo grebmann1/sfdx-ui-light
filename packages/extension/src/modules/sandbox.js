@@ -1630,6 +1630,149 @@ window.bash = function(command, options) {
     return sendBashRequest(command, options?.cwd);
 };
 
+// --- Node.js built-in module mocks for require('fs'), require('path'), require('os') ---
+
+const _pathModule = {
+    sep: '/',
+    join: (...parts) => {
+        const joined = parts.join('/').replace(/\/+/g, '/');
+        return joined.replace(/\/$/, '') || '/';
+    },
+    resolve: (...parts) => {
+        let result = '/workspace';
+        for (const p of parts) {
+            if (typeof p !== 'string') continue;
+            if (p.startsWith('/')) result = p;
+            else result = result.replace(/\/$/, '') + '/' + p;
+        }
+        return result.replace(/\/+/g, '/').replace(/(?!^)\/$/, '') || '/';
+    },
+    dirname: (p) => {
+        const parts = p.replace(/\/$/, '').split('/');
+        parts.pop();
+        return parts.join('/') || '/';
+    },
+    basename: (p, ext) => {
+        let base = p.replace(/\/$/, '').split('/').pop() || '';
+        if (ext && base.endsWith(ext)) base = base.slice(0, -ext.length);
+        return base;
+    },
+    extname: (p) => {
+        const base = p.split('/').pop() || '';
+        const dot = base.lastIndexOf('.');
+        return dot > 0 ? base.slice(dot) : '';
+    },
+    normalize: (p) => p.replace(/\/+/g, '/').replace(/(?!^)\/$/, '') || '/',
+    isAbsolute: (p) => p.startsWith('/'),
+    relative: (from, to) => {
+        const fromParts = from.replace(/\/$/, '').split('/').filter(Boolean);
+        const toParts = to.replace(/\/$/, '').split('/').filter(Boolean);
+        let i = 0;
+        while (i < fromParts.length && i < toParts.length && fromParts[i] === toParts[i]) i++;
+        const rel = [...Array(fromParts.length - i).fill('..'), ...toParts.slice(i)];
+        return rel.join('/') || '.';
+    },
+};
+
+const _fsPromises = {
+    readFile: (path /*, options */) => window.readFile(path),
+    writeFile: (path, content /*, options */) => {
+        const data = content instanceof Uint8Array
+            ? new TextDecoder().decode(content)
+            : (typeof content === 'string' ? content : String(content));
+        return window.writeFile(path, data);
+    },
+    appendFile: async (path, content /*, options */) => {
+        let existing = '';
+        try { existing = await window.readFile(path); } catch (_) {}
+        const data = typeof content === 'string' ? content : String(content);
+        return window.writeFile(path, existing + data);
+    },
+    readdir: (path /*, options */) => window.listFiles(path),
+    mkdir: (path /*, options */) => window.mkdir(path),
+    unlink: (path) => window.deleteFile(path),
+    rm: (path /*, options */) => window.deleteFile(path),
+    stat: async (path) => {
+        const s = await window.stat(path);
+        return {
+            ...s,
+            isFile: () => s?.type === 'file',
+            isDirectory: () => s?.type === 'directory',
+            isSymbolicLink: () => false,
+        };
+    },
+    access: async (path /*, mode */) => {
+        const ok = await window.exists(path);
+        if (!ok) {
+            throw Object.assign(
+                new Error(`ENOENT: no such file or directory, access '${path}'`),
+                { code: 'ENOENT' }
+            );
+        }
+    },
+    copyFile: async (src, dest) => {
+        const content = await window.readFile(src);
+        return window.writeFile(dest, content);
+    },
+    rename: async (oldPath, newPath) => {
+        const content = await window.readFile(oldPath);
+        await window.writeFile(newPath, content);
+        return window.deleteFile(oldPath);
+    },
+};
+
+const _syncNotSupported = (method, asyncAlt) => () => {
+    throw new Error(
+        `fs.${method} is not supported in the sandbox. Use: ${asyncAlt}`
+    );
+};
+
+const _wrapCallback = (promiseFn) => (...args) => {
+    const callback = args[args.length - 1];
+    const promiseArgs = args.slice(0, -1);
+    promiseFn(...promiseArgs).then(result => callback(null, result)).catch(err => callback(err));
+};
+
+const _fsModule = {
+    promises: _fsPromises,
+    readFile:    _wrapCallback(_fsPromises.readFile),
+    writeFile:   _wrapCallback(_fsPromises.writeFile),
+    appendFile:  _wrapCallback(_fsPromises.appendFile),
+    readdir:     _wrapCallback(_fsPromises.readdir),
+    mkdir:       _wrapCallback(_fsPromises.mkdir),
+    unlink:      _wrapCallback(_fsPromises.unlink),
+    rm:          _wrapCallback(_fsPromises.rm),
+    stat:        _wrapCallback(_fsPromises.stat),
+    access:      _wrapCallback(_fsPromises.access),
+    copyFile:    _wrapCallback(_fsPromises.copyFile),
+    rename:      _wrapCallback(_fsPromises.rename),
+    existsSync:  _syncNotSupported('existsSync',  'await exists(path) or await fs.promises.access(path)'),
+    readFileSync: _syncNotSupported('readFileSync', 'await readFile(path) or await fs.promises.readFile(path)'),
+    writeFileSync: _syncNotSupported('writeFileSync', 'await writeFile(path, content) or await fs.promises.writeFile(path, content)'),
+    readdirSync: _syncNotSupported('readdirSync', 'await listFiles(path) or await fs.promises.readdir(path)'),
+    mkdirSync:   _syncNotSupported('mkdirSync',   'await mkdir(path) or await fs.promises.mkdir(path)'),
+};
+
+window.require = function(moduleId) {
+    switch (moduleId) {
+        case 'fs':          return _fsModule;
+        case 'fs/promises': return _fsPromises;
+        case 'path':        return _pathModule;
+        case 'os':          return {
+            homedir:  () => '/workspace',
+            tmpdir:   () => '/tmp',
+            platform: () => 'linux',
+            type:     () => 'Linux',
+            EOL:      '\n',
+        };
+        default:
+            throw new Error(
+                `Module '${moduleId}' is not available in the sandbox. ` +
+                `Available built-ins: 'fs', 'fs/promises', 'path', 'os'`
+            );
+    }
+};
+
 function sendToParent(payload) {
     if (window.parent !== window) {
         window.parent.postMessage(payload, parentOrigin);

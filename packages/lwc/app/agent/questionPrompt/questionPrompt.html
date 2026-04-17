@@ -1,44 +1,50 @@
 <template>
-    <div class="question-panel" role="dialog" aria-labelledby="question-panel-title">
+    <!-- eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -->
+    <div class="question-panel" role="dialog" aria-labelledby="question-panel-title" onkeydown={handleKeydown}>
         <div class="question-header">
             <lightning-icon
                 icon-name="utility:question_mark"
                 size="x-small"
                 alternative-text="Question"
                 class="question-header-icon"></lightning-icon>
-            <span id="question-panel-title" class="question-header-title">Question</span>
+            <span id="question-panel-title" class="question-header-title">Questions</span>
         </div>
 
         <div class="question-body">
             <p class="question-text">{question}</p>
 
-            <template lwc:if={hasOptions}>
-                <div class="question-options" role="listbox" aria-label="Answer options">
-                    <template for:each={formattedOptions} for:item="option">
-                        <button
-                            key={option.key}
-                            type="button"
-                            class={option.buttonClass}
-                            data-index={option.index}
-                            onclick={handleOptionClick}
-                            role="option"
-                            aria-selected={option.isSelected}>
-                            <span class="question-option-label">{option.label}</span>
-                            <span class="question-option-value">{option.value}</span>
-                        </button>
-                    </template>
-                </div>
-            </template>
-
-            <div class="question-input-row slds-m-top_x-small">
-                <input
-                    type="text"
-                    class="slds-input question-input"
-                    placeholder={inputPlaceholder}
-                    value={_freeText}
-                    oninput={handleInputChange}
-                    onkeydown={handleInputKeydown}
-                    aria-label="Your answer" />
+            <div class="question-options" role="listbox" aria-label="Answer options">
+                <template for:each={formattedOptions} for:item="option">
+                    <button
+                        key={option.key}
+                        type="button"
+                        class={option.buttonClass}
+                        data-index={option.index}
+                        onclick={handleOptionClick}
+                        role="option"
+                        aria-selected={option.isSelected}>
+                        <span class="question-option-label">{option.label}</span>
+                        <span class="question-option-value">{option.value}</span>
+                    </button>
+                </template>
+                <button
+                    type="button"
+                    class={otherButtonClass}
+                    onclick={handleOtherClick}
+                    role="option"
+                    aria-selected={_otherSelected}>
+                    <span class="question-option-label">{otherLabel}</span>
+                    <span class="question-option-value">Other</span>
+                </button>
+                <template if:true={_otherSelected}>
+                    <input
+                        type="text"
+                        class="question-other-input"
+                        placeholder="Type your answer..."
+                        value={_otherText}
+                        oninput={handleOtherInput}
+                        aria-label="Custom answer" />
+                </template>
             </div>
 
             <div class="question-actions slds-m-top_small">

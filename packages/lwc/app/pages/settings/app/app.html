@@ -9,12 +9,6 @@
                 <div slot="actions" class="slds-builder-toolbar__actions">
                     <lightning-button
                         class="slds-button"
-                        label="Open Files Explorer"
-                        icon-name="utility:open_folder"
-                        onclick={handleOpenFilesExplorer}
-                        variant="brand"></lightning-button>
-                    <lightning-button
-                        class="slds-button"
                         label="Clear All"
                         onclick={handleClearAllClick}
                         variant="neutral"></lightning-button>
@@ -38,27 +32,92 @@
                     see the changes.
                 </p>
             </builder-header>
+            <!-- Cache Explorer Panel -->
+            <slds-vertical-panel
+                title="Cache Explorer"
+                size="slds-size_large"
+                is-open={showCacheExplorer}
+                onclose={handleCloseCacheExplorer}>
+                <div slot="actions">
+                    <lightning-button-icon
+                        icon-name="utility:download"
+                        alternative-text="Download as JSON"
+                        title="Download as JSON"
+                        onclick={handleCacheDownload}></lightning-button-icon>
+                    <lightning-button-icon
+                        icon-name="utility:refresh"
+                        alternative-text="Refresh"
+                        title="Refresh"
+                        onclick={handleCacheRefresh}></lightning-button-icon>
+                </div>
+                <div class="cache-explorer">
+                    <div class="cache-explorer__toolbar">
+                        <lightning-input
+                            type="search"
+                            label="Filter"
+                            variant="label-hidden"
+                            placeholder="Filter by key or value…"
+                            value={cacheFilter}
+                            onchange={handleCacheFilterChange}
+                            class="slds-full-width"></lightning-input>
+                        <span class="cache-explorer__count">{cacheExplorerCount} entries</span>
+                    </div>
+                    <div class="cache-explorer__list">
+                        <template lwc:if={filteredCacheEntries.length}>
+                            <template for:each={filteredCacheEntries} for:item="entry">
+                                <div key={entry.key} class="cache-entry">
+                                    <div class="cache-entry__header">
+                                        <span class="cache-entry__key" title={entry.key}>{entry.key}</span>
+                                        <lightning-button-icon
+                                            data-key={entry.key}
+                                            icon-name="utility:delete"
+                                            alternative-text="Delete"
+                                            title="Delete entry"
+                                            size="x-small"
+                                            variant="bare"
+                                            onclick={handleCacheEntryDelete}></lightning-button-icon>
+                                    </div>
+                                    <pre class="cache-entry__value">{entry.value}</pre>
+                                </div>
+                            </template>
+                        </template>
+                        <template lwc:else>
+                            <div class="slds-p-around_medium slds-text-color_weak slds-text-align_center">
+                                No cache entries found.
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </slds-vertical-panel>
             <article class="full-page-body">
                 <div
                     class="slds-is-relative slds-full-width slds-full-height slds-flex-column slds-p-around_medium"
                     style="min-height: 200px">
                     <slds-tabset variant="vertical" active-tab-value={activeTab}>
                         <slds-tab label="Session" value="session" lwc:if={isUserLoggedIn}>
-                            <div class="slds-section slds-reverse slds-is-open">
-                                <h3 class="slds-section__title">
-                                    <div class="slds-section__title-action slds-p-vertical_x-small">
-                                        <span class="slds-truncate" title="Session settings">
-                                            Session Settings for {userName}
-                                        </span>
+                            <!-- User / Org summary -->
+                            <div class="session-banner slds-m-bottom_medium">
+                                <div class="session-banner__body slds-grid slds-grid_vertical-align-center slds-p-around_medium">
+                                    <lightning-icon
+                                        icon-name="standard:people"
+                                        size="small"
+                                        class="slds-m-right_small session-banner__icon"></lightning-icon>
+                                    <div class="slds-has-flexi-truncate">
+                                        <p class="slds-text-heading_small slds-truncate">{userName}</p>
+                                        <div class="slds-grid slds-grid_vertical-align-center slds-m-top_xx-small session-banner__meta">
+                                            <template lwc:if={alias}>
+                                                <lightning-badge
+                                                    label={alias}
+                                                    class="slds-m-right_x-small session-banner__badge"></lightning-badge>
+                                            </template>
+                                            <template lwc:if={instanceUrl}>
+                                                <span class="slds-text-body_small slds-text-color_weak slds-truncate">{instanceUrl}</span>
+                                            </template>
+                                        </div>
                                     </div>
-                                </h3>
-                                <div class="slds-p-vertical_small">
-                                    <slds-information-block>
-                                        These settings are specific to the user {userName}. They
-                                        will be stored in the browser cache.
-                                    </slds-information-block>
                                 </div>
                             </div>
+
                             <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
                                 <settings-card
                                     class="slds-col slds-size_1-of-2 slds-large-size_1-of-2 slds-p-horizontal_small"
@@ -72,12 +131,19 @@
                                         </p>
                                     </div>
                                     <div slot="actions">
-                                        <lightning-button-icon
-                                            alternative-text="Set default"
-                                            icon-name="utility:toggle_on"
-                                            onclick={handleSetDefaultClientId}></lightning-button-icon>
+                                        <lightning-button-stateful class="slds-m-right_small"
+                                            label-when-off="Enable QA Mode"
+                                            label-when-on="QA Mode Active"
+                                            label-when-hover="Disable QA Mode"
+                                            icon-name-when-off="utility:fallback"
+                                            icon-name-when-on="utility:check"
+                                            icon-name-when-hover="utility:close"
+                                            variant={qaModeButtonVariant}
+                                            selected={isQaModeEnabled}
+                                            onclick={handleToggleQaMode}></lightning-button-stateful>
                                         <lightning-button-icon
                                             alternative-text="Reset"
+                                            title="Clear value"
                                             icon-name="utility:refresh"
                                             onclick={handleResetClientId}></lightning-button-icon>
                                     </div>
@@ -106,6 +172,7 @@
                                     <div slot="actions">
                                         <lightning-button-icon
                                             alternative-text="Reset"
+                                            title="Clear value"
                                             icon-name="utility:refresh"
                                             onclick={handleResetApiVersion}></lightning-button-icon>
                                     </div>
@@ -122,6 +189,70 @@
                                         pattern="[0-9]{2}\.[0-9]{1}"
                                         message-when-pattern-mismatch="Invalid API Version, follow this format: 63.0"></lightning-input>
                                 </settings-card>
+                            </div>
+                        </slds-tab>
+                        <!-- User tab -->
+                        <slds-tab label="User" value="user">
+                            <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
+                                <lightning-card
+                                    class="settings slds-col slds-size_1-of-1 slds-large-size_1-of-1 slds-p-around_medium">
+                                    <div slot="title">
+                                        <h1>Google Account</h1>
+                                        <p class="description slds-truncate">
+                                            Sign in via the AI Agent to link your Google account.
+                                        </p>
+                                    </div>
+                                    <div class="slds-grid slds-wrap">
+                                        <settings-card
+                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small"
+                                            is-first>
+                                            <div slot="title">
+                                                <h1>Google Account</h1>
+                                                <p class="description slds-truncate">
+                                                    Sign in via the AI Agent to link your Google
+                                                    account.
+                                                </p>
+                                            </div>
+                                            <div slot="actions">
+                                                <template lwc:if={googleConnected}>
+                                                    <lightning-button
+                                                        label="Disconnect"
+                                                        variant="destructive-text"
+                                                        onclick={handleDisconnectGoogle}></lightning-button>
+                                                </template>
+                                                <template lwc:else>
+                                                    <lightning-button
+                                                        label="Connect to Google"
+                                                        variant="brand"
+                                                        onclick={handleConnectGoogle}></lightning-button>
+                                                </template>
+                                            </div>
+                                            <template lwc:if={googleConnected}>
+                                                <div class="google-user-info slds-grid slds-grid_vertical-align-center slds-m-top_small">
+                                                    <template lwc:if={googleUserPicture}>
+                                                        <img
+                                                            src={googleUserPicture}
+                                                            alt="Google profile"
+                                                            class="google-user-avatar slds-m-right_small" />
+                                                    </template>
+                                                    <div class="slds-flex-column">
+                                                        <span class="slds-text-body_regular slds-text-color_default">{googleUserDisplayName}</span>
+                                                        <span class="slds-text-body_small slds-text-color_weak">{googleUserEmail}</span>
+                                                    </div>
+                                                    <lightning-badge
+                                                        label="Connected"
+                                                        class="slds-m-left_small google-badge--connected"></lightning-badge>
+                                                </div>
+                                            </template>
+                                            <template lwc:else>
+                                                <slds-information-block>
+                                                    Sign in to Google via the AI Agent tab first.
+                                                    Your account will appear here once authenticated.
+                                                </slds-information-block>
+                                            </template>
+                                        </settings-card>
+                                    </div>
+                                </lightning-card>
                             </div>
                         </slds-tab>
                         <slds-tab label="UI Interface" value="ui">
@@ -359,116 +490,6 @@
                                 </lightning-card>
                             </div>
                         </slds-tab>
-                        <slds-tab label="Metadata" value="metadata">
-                            <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
-                                <lightning-card
-                                    class="settings slds-col slds-size_1-of-1 slds-p-around_medium">
-                                    <div slot="title">
-                                        <h1>Caching Metadata</h1>
-                                        <p class="description slds-truncate">
-                                            Persist metadata in the Files Explorer using SFDX
-                                            structure.
-                                        </p>
-                                    </div>
-                                    <div slot="actions">
-                                        <lightning-input
-                                            data-key="metadata_storage_enabled"
-                                            label="Enable metadata storage"
-                                            message-toggle-active="Enabled"
-                                            message-toggle-inactive="Disabled"
-                                            type="toggle"
-                                            variant="label-hidden"
-                                            checked={config.metadata_storage_enabled}
-                                            onchange={inputfield_change}></lightning-input>
-                                    </div>
-                                    <div class="slds-grid slds-wrap">
-                                        <settings-card
-                                            class="slds-col slds-size_1-of-1 slds-large-size_1-of-3 slds-p-horizontal_small"
-                                            is-first>
-                                            <div slot="title">
-                                                <h1>Background Sync</h1>
-                                                <p class="description slds-truncate">
-                                                    Enable worker-driven metadata synchronization
-                                                    for selected types.
-                                                </p>
-                                            </div>
-                                            <div slot="actions">
-                                                <lightning-input
-                                                    data-key="metadata_storage_background_sync_enabled"
-                                                    label="Enable background metadata sync"
-                                                    message-toggle-active="Enabled"
-                                                    message-toggle-inactive="Disabled"
-                                                    type="toggle"
-                                                    variant="label-hidden"
-                                                    checked={config.metadata_storage_background_sync_enabled}
-                                                    disabled={isMetadataStorageTypeSelectionDisabled}
-                                                    onchange={inputfield_change}></lightning-input>
-                                            </div>
-                                        </settings-card>
-                                        <settings-card
-                                            class="slds-col slds-size_1-of-1 slds-large-size_2-of-3 slds-p-horizontal_small"
-                                            is-first>
-                                            <div slot="title">
-                                                <h1>Metadata Types</h1>
-                                                <p class="description slds-truncate">
-                                                    Choose the metadata types eligible for on-demand
-                                                    and background storage.
-                                                </p>
-                                            </div>
-                                            <lightning-dual-listbox
-                                                data-key="metadata_storage_types"
-                                                label="Metadata Types"
-                                                source-label="Available"
-                                                selected-label="Stored"
-                                                options={metadataStorageTypeOptions}
-                                                value={config.metadata_storage_types}
-                                                disabled={isMetadataStorageTypeSelectionDisabled}
-                                                variant="label-hidden"
-                                                onchange={inputfield_change}></lightning-dual-listbox>
-                                        </settings-card>
-                                    </div>
-                                </lightning-card>
-                            </div>
-                        </slds-tab>
-                        <slds-tab label="Integrations">
-                            <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
-                                <lightning-card
-                                    class="settings slds-col slds-size_1-of-1 slds-large-size_1-of-1 slds-p-around_medium">
-                                    <div slot="title">
-                                        <h1>Google</h1>
-                                        <p class="description slds-truncate">
-                                            Connect your Google account to enable Sheets integration
-                                            for the AI agent.
-                                        </p>
-                                    </div>
-                                    <div class="slds-grid slds-wrap">
-                                        <settings-card
-                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small"
-                                            is-first>
-                                            <div slot="title">
-                                                <h1>Google Account</h1>
-                                                <p class="description slds-truncate">
-                                                    Authorize access to Google Sheets and Drive.
-                                                </p>
-                                            </div>
-                                            <div slot="actions">
-                                                <lightning-badge
-                                                    label="Coming soon"
-                                                    class="slds-m-right_small"></lightning-badge>
-                                                <lightning-button
-                                                    label="Connect to Google"
-                                                    variant="brand"
-                                                    disabled></lightning-button>
-                                            </div>
-                                            <slds-information-block>
-                                                Google Sheets integration is temporarily unavailable.
-                                                Check back in a future release.
-                                            </slds-information-block>
-                                        </settings-card>
-                                    </div>
-                                </lightning-card>
-                            </div>
-                        </slds-tab>
                         <slds-tab label="AI">
                             <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
                                 <lightning-card
@@ -484,7 +505,10 @@
                                             class="slds-col slds-size_1-of-1 slds-p-horizontal_small"
                                             is-first>
                                             <div slot="title">
-                                                <h1>Autocomplete</h1>
+                                                <h1>
+                                                    Autocomplete
+                                                    <lightning-badge label="Disabled" class="slds-m-left_x-small"></lightning-badge>
+                                                </h1>
                                                 <p class="description slds-truncate">
                                                     Select the AI provider to use for the
                                                     Autocomplete feature.
@@ -675,6 +699,112 @@
                                         </slds-tab>
                                     </slds-tabset>
                                 </lightning-card>
+                                <!-- Tools -->
+                                <lightning-card
+                                    class="settings slds-col slds-size_1-of-1 slds-p-around_medium">
+                                    <div slot="title">
+                                        <h1>Tools</h1>
+                                        <p class="description slds-truncate">
+                                            Configure external tools available to the AI agent.
+                                        </p>
+                                    </div>
+                                    <slds-tabset variant="vertical">
+                                        <!-- Bright Data -->
+                                        <slds-tab label="Bright Data" value="bright_data">
+                                            <div class="slds-grid slds-wrap slds-p-around_small">
+                                                <settings-card is-first class="slds-col slds-size_1-of-1 slds-large-size_1-of-2">
+                                                    <div slot="title">
+                                                        <h1>Bright Data</h1>
+                                                        <p class="description slds-truncate">
+                                                            Real-time web search via Bright Data's SERP API.
+                                                        </p>
+                                                    </div>
+                                                    <div slot="actions">
+                                                        <lightning-input
+                                                            data-key="tool_bright_data_enabled"
+                                                            label="Enable for AI agent"
+                                                            message-toggle-active="Enabled"
+                                                            message-toggle-inactive="Disabled"
+                                                            type="toggle"
+                                                            variant="label-hidden"
+                                                            checked={config.tool_bright_data_enabled}
+                                                            onchange={inputfield_change}></lightning-input>
+                                                    </div>
+                                                    <div class="provider-key-row">
+                                                        <lightning-input
+                                                            data-key="tool_bright_data_key"
+                                                            label="API Key"
+                                                            onchange={inputfield_change}
+                                                            type="password"
+                                                            value={config.tool_bright_data_key}
+                                                            variant="label-stacked"
+                                                            class="slds-full-width"></lightning-input>
+                                                        <div class="provider-key-btn">
+                                                            <lightning-button-icon
+                                                                data-key="tool_bright_data_key"
+                                                                alternative-text="Toggle visibility"
+                                                                icon-name="utility:preview"
+                                                                onclick={handleToggleVisibility}></lightning-button-icon>
+                                                        </div>
+                                                    </div>
+                                                </settings-card>
+                                            </div>
+                                        </slds-tab>
+                                        <!-- Google Sheet -->
+                                        <slds-tab label="Google Sheet" value="google_sheet">
+                                            <div class="slds-grid slds-wrap slds-p-around_small">
+                                                <settings-card is-first class="slds-col slds-size_1-of-1 slds-large-size_1-of-2">
+                                                    <div slot="title">
+                                                        <h1>Google Drive &amp; Sheets</h1>
+                                                        <p class="description slds-truncate">
+                                                            Read and write Google Sheets and Drive files on your behalf.
+                                                        </p>
+                                                    </div>
+                                                    <div slot="actions">
+                                                        <lightning-input
+                                                            data-key="tool_google_sheet_enabled"
+                                                            label="Enable for AI agent"
+                                                            message-toggle-active="Enabled"
+                                                            message-toggle-inactive="Disabled"
+                                                            type="toggle"
+                                                            variant="label-hidden"
+                                                            checked={config.tool_google_sheet_enabled}
+                                                            onchange={inputfield_change}></lightning-input>
+                                                    </div>
+                                                    <div class="slds-grid slds-grid_vertical-align-center slds-m-bottom_small">
+                                                        <template lwc:if={googleDriveConnected}>
+                                                            <lightning-badge
+                                                                label="Connected"
+                                                                class="slds-m-right_small google-badge--connected"></lightning-badge>
+                                                            <lightning-button
+                                                                label="Revoke Access"
+                                                                variant="destructive-text"
+                                                                onclick={handleDisconnectGoogleDrive}></lightning-button>
+                                                        </template>
+                                                        <template lwc:else>
+                                                            <lightning-button
+                                                                label="Connect Drive &amp; Sheets"
+                                                                variant="brand"
+                                                                disabled={isDriveConnectDisabled}
+                                                                onclick={handleConnectGoogleDrive}></lightning-button>
+                                                        </template>
+                                                    </div>
+                                                    <template lwc:if={googleDriveConnected}>
+                                                        <p class="slds-text-body_small slds-text-color_weak">
+                                                            The AI agent can access Google Sheets and Drive
+                                                            files using your account.
+                                                        </p>
+                                                    </template>
+                                                    <template lwc:else>
+                                                        <slds-information-block>
+                                                            Requires Google sign-in. Connect your Google account in the User tab first, then click "Connect Drive &amp; Sheets" to grant access.
+                                                        </slds-information-block>
+                                                    </template>
+                                                </settings-card>
+                                            </div>
+                                        </slds-tab>
+                                    </slds-tabset>
+                                </lightning-card>
                             </div>
                         </slds-tab>
                         <slds-tab label="Beta Feature" value="beta">
@@ -683,7 +813,10 @@
                                     class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small"
                                     is-first>
                                     <div slot="title">
-                                        <h1>Smart Input</h1>
+                                        <h1>
+                                            Smart Input
+                                            <lightning-badge label="Disabled" class="slds-m-left_x-small"></lightning-badge>
+                                        </h1>
                                         <p
                                             class="description slds-truncate"
                                             title="Enable the Smart Input tool (Beta).">
@@ -702,9 +835,221 @@
                                 </settings-card>
                             </div>
                         </slds-tab>
+                        <slds-tab label="Storage" value="storage">
+                            <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
+                                <lightning-card
+                                    class="settings slds-col slds-size_1-of-1 slds-p-around_medium">
+                                    <div slot="title">
+                                        <h1>Storage</h1>
+                                        <p class="description slds-truncate">
+                                            Manage the application's local cache and file storage.
+                                        </p>
+                                    </div>
+                                    <div class="slds-grid slds-wrap">
+                                        <settings-card
+                                            class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small"
+                                            is-first>
+                                            <div slot="title">
+                                                <h1>Cache</h1>
+                                                <p class="description slds-truncate">
+                                                    Inspect and manage raw data stored in the browser cache.
+                                                </p>
+                                            </div>
+                                            <div slot="actions">
+                                                <lightning-button
+                                                    label="Open Cache Explorer"
+                                                    icon-name="utility:database"
+                                                    onclick={handleOpenCacheExplorer}
+                                                    variant="neutral"></lightning-button>
+                                            </div>
+                                            <slds-information-block>
+                                                <lightning-icon
+                                                    icon-name="utility:warning"
+                                                    size="x-small"
+                                                    variant="warning"
+                                                    class="slds-m-right_x-small"></lightning-icon>
+                                                Modifying or deleting cache entries manually can corrupt your settings, lose conversation history, or break active sessions. Only proceed if you know what you are doing.
+                                            </slds-information-block>
+                                        </settings-card>
+                                        <settings-card
+                                            class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small"
+                                            is-first>
+                                            <div slot="title">
+                                                <h1>File System</h1>
+                                                <p class="description slds-truncate">
+                                                    Browse files persisted in the local file system via the Files Explorer.
+                                                </p>
+                                            </div>
+                                            <div slot="actions">
+                                                <lightning-button
+                                                    label="Open Files Explorer"
+                                                    icon-name="utility:open_folder"
+                                                    onclick={handleOpenFilesExplorer}
+                                                    variant="neutral"></lightning-button>
+                                            </div>
+                                        </settings-card>
+                                        <settings-card
+                                            class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+                                            <div slot="title">
+                                                <h1>Migrate Cache to File System</h1>
+                                                <p class="description slds-truncate">
+                                                    Export all settings and data from the browser cache into the file system for portability and backup.
+                                                </p>
+                                            </div>
+                                            <div slot="actions">
+                                                <lightning-button
+                                                    label="Migrate to File System"
+                                                    icon-name="utility:upload"
+                                                    variant="brand"
+                                                    disabled></lightning-button>
+                                            </div>
+                                            <slds-information-block>
+                                                This feature is not yet available. It will allow a full one-time migration of all cached data to the file system storage.
+                                            </slds-information-block>
+                                        </settings-card>
+                                    </div>
+                                </lightning-card>
+                                <lightning-card
+                                    class="settings slds-col slds-size_1-of-1 slds-p-around_medium">
+                                    <div slot="title">
+                                        <h1>Caching Metadata</h1>
+                                        <p class="description slds-truncate">
+                                            Persist metadata in the Files Explorer using SFDX
+                                            structure.
+                                        </p>
+                                    </div>
+                                    <div slot="actions">
+                                        <lightning-input
+                                            data-key="metadata_storage_enabled"
+                                            label="Enable metadata storage"
+                                            message-toggle-active="Enabled"
+                                            message-toggle-inactive="Disabled"
+                                            type="toggle"
+                                            variant="label-hidden"
+                                            checked={config.metadata_storage_enabled}
+                                            onchange={inputfield_change}></lightning-input>
+                                    </div>
+                                    <div class="slds-grid slds-wrap">
+                                        <settings-card
+                                            class="slds-col slds-size_1-of-1 slds-large-size_1-of-3 slds-p-horizontal_small"
+                                            is-first>
+                                            <div slot="title">
+                                                <h1>Background Sync</h1>
+                                                <p class="description slds-truncate">
+                                                    Enable worker-driven metadata synchronization
+                                                    for selected types.
+                                                </p>
+                                            </div>
+                                            <div slot="actions">
+                                                <lightning-input
+                                                    data-key="metadata_storage_background_sync_enabled"
+                                                    label="Enable background metadata sync"
+                                                    message-toggle-active="Enabled"
+                                                    message-toggle-inactive="Disabled"
+                                                    type="toggle"
+                                                    variant="label-hidden"
+                                                    checked={config.metadata_storage_background_sync_enabled}
+                                                    disabled={isMetadataStorageTypeSelectionDisabled}
+                                                    onchange={inputfield_change}></lightning-input>
+                                            </div>
+                                        </settings-card>
+                                        <settings-card
+                                            class="slds-col slds-size_1-of-1 slds-large-size_2-of-3 slds-p-horizontal_small"
+                                            is-first>
+                                            <div slot="title">
+                                                <h1>Metadata Types</h1>
+                                                <p class="description slds-truncate">
+                                                    Choose the metadata types eligible for on-demand
+                                                    and background storage.
+                                                </p>
+                                            </div>
+                                            <lightning-dual-listbox
+                                                data-key="metadata_storage_types"
+                                                label="Metadata Types"
+                                                source-label="Available"
+                                                selected-label="Stored"
+                                                options={metadataStorageTypeOptions}
+                                                value={config.metadata_storage_types}
+                                                disabled={isMetadataStorageTypeSelectionDisabled}
+                                                variant="label-hidden"
+                                                onchange={inputfield_change}></lightning-dual-listbox>
+                                        </settings-card>
+                                    </div>
+                                </lightning-card>
+                            </div>
+                        </slds-tab>
                         <!-- Chrome Extension -->
                         <template lwc:if={isChrome}>
-                            <slds-tab label="Chrome Extension" value="chrome">
+                            <slds-tab label="Overlay" value="overlay">
+                                <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
+                                    <lightning-card
+                                        class="settings slds-auto-height slds-col slds-size_1-of-1 slds-p-around_medium">
+                                        <div slot="title">
+                                            <h1>Overlay</h1>
+                                            <p class="description slds-truncate">
+                                                Configure the Workbench overlay injected into Salesforce pages.
+                                            </p>
+                                        </div>
+                                        <div class="slds-grid slds-wrap">
+                                            <settings-card
+                                                is-first
+                                                class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
+                                                <div slot="title">
+                                                    <h1>Overlay Visibility</h1>
+                                                    <p class="description slds-truncate">
+                                                        Show or hide the Workbench overlay
+                                                        in Salesforce pages.
+                                                    </p>
+                                                </div>
+                                                <div slot="actions">
+                                                    <lightning-input
+                                                        data-key="overlayEnabled"
+                                                        label="Show Overlay"
+                                                        message-toggle-active="Enabled"
+                                                        message-toggle-inactive="Disabled"
+                                                        type="toggle"
+                                                        variant="label-hidden"
+                                                        checked={config.overlayEnabled}
+                                                        onchange={inputfield_change}></lightning-input>
+                                                </div>
+                                            </settings-card>
+                                            <settings-card
+                                                is-first
+                                                class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-horizontal_small">
+                                                <div slot="title">
+                                                    <h1>Content Script URL Patterns</h1>
+                                                    <p class="description slds-truncate">
+                                                        Manage the URL patterns for content
+                                                        script injection. One regex per line.
+                                                    </p>
+                                                </div>
+                                                <div slot="actions">
+                                                    <lightning-button
+                                                        label="Reset to Default"
+                                                        onclick={handleResetPatternsClick}
+                                                        variant="neutral"></lightning-button>
+                                                </div>
+                                                <div class="slds-m-bottom_small">
+                                                    <lightning-textarea
+                                                        data-key="content_script_include_patterns"
+                                                        label="Include Patterns (one regex per line)"
+                                                        value={config.content_script_include_patterns}
+                                                        onchange={inputfield_change}
+                                                        class="slds-m-bottom_x-small"
+                                                        variant="label-stacked"></lightning-textarea>
+                                                    <lightning-textarea
+                                                        data-key="content_script_exclude_patterns"
+                                                        label="Exclude Patterns (one regex per line)"
+                                                        value={config.content_script_exclude_patterns}
+                                                        onchange={inputfield_change}
+                                                        variant="label-stacked"></lightning-textarea>
+                                                </div>
+                                            </settings-card>
+                                        </div>
+                                    </lightning-card>
+                                </div>
+                            </slds-tab>
+                            <slds-tab label="General" value="chrome">
                                 <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
                                     <lightning-card
                                         class="settings slds-auto-height slds-col slds-size_1-of-1 slds-p-around_medium">
@@ -719,29 +1064,8 @@
                                             <div
                                                 class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-grid slds-wrap">
                                                 <settings-card
-                                                    is-first
-                                                    class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
-                                                    <div slot="title">
-                                                        <h1>Overlay Visibility</h1>
-                                                        <p class="description slds-truncate">
-                                                            Show or hide the Workbench overlay
-                                                            in Salesforce pages.
-                                                        </p>
-                                                    </div>
-                                                    <div slot="actions">
-                                                        <lightning-input
-                                                            data-key="overlayEnabled"
-                                                            label="Show Overlay"
-                                                            message-toggle-active="Enabled"
-                                                            message-toggle-inactive="Disabled"
-                                                            type="toggle"
-                                                            variant="label-hidden"
-                                                            checked={config.overlayEnabled}
-                                                            onchange={inputfield_change}></lightning-input>
-                                                    </div>
-                                                </settings-card>
-                                                <settings-card
-                                                    class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
+                                                    class="slds-col slds-size_1-of-1 slds-p-horizontal_small"
+                                                    is-first>
                                                     <div slot="title">
                                                         <h1>Input Quick Pick</h1>
                                                         <p class="description slds-truncate">
@@ -766,7 +1090,7 @@
                                                     <div slot="title">
                                                         <h1>Login As</h1>
                                                         <p class="description slds-truncate">
-                                                            LoginAs in
+                                                            Login As in
                                                             <span class="slds-text-title_bold">
                                                                 Experience Cloud
                                                             </span>
@@ -796,43 +1120,6 @@
                                                 </settings-card>
                                             </div>
 
-                                            <!-- RIGHT -->
-                                            <div
-                                                class="slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-grid slds-wrap">
-                                                <!-- Content Script Patterns -->
-                                                <settings-card
-                                                    is-first
-                                                    class="slds-col slds-size_1-of-1 slds-p-horizontal_small">
-                                                    <div slot="title">
-                                                        <h1>Content Script URL Patterns</h1>
-                                                        <p class="description slds-truncate">
-                                                            Manage the URL patterns for content
-                                                            script injection. One regex per line.
-                                                        </p>
-                                                    </div>
-                                                    <div slot="actions">
-                                                        <lightning-button
-                                                            label="Reset to Default"
-                                                            onclick={handleResetPatternsClick}
-                                                            variant="neutral"></lightning-button>
-                                                    </div>
-                                                    <div class="slds-m-bottom_small">
-                                                        <lightning-textarea
-                                                            data-key="content_script_include_patterns"
-                                                            label="Include Patterns (one regex per line)"
-                                                            value={config.content_script_include_patterns}
-                                                            onchange={inputfield_change}
-                                                            class="slds-m-bottom_x-small"
-                                                            variant="label-stacked"></lightning-textarea>
-                                                        <lightning-textarea
-                                                            data-key="content_script_exclude_patterns"
-                                                            label="Exclude Patterns (one regex per line)"
-                                                            value={config.content_script_exclude_patterns}
-                                                            onchange={inputfield_change}
-                                                            variant="label-stacked"></lightning-textarea>
-                                                    </div>
-                                                </settings-card>
-                                            </div>
                                         </div>
                                     </lightning-card>
                                 </div>

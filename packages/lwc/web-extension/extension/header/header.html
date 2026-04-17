@@ -2,13 +2,14 @@
     <header class="slds-global-header_container">
         <div class="slds-global-header slds-grid slds-grid_align-spread">
             <template lwc:if={isIconDisplayed}>
-                <div class="slds-global-header__item slds-show_small">
+                <div class="slds-global-header__item">
                     <div
                         class="slds-context-bar__item slds-context-bar__dropdown-trigger slds-dropdown-trigger slds-dropdown-trigger_click slds-no-hover">
                         <!--<div class={collapseClass}>
                             <lightning-button-icon icon-name={iconName} variant="bare" size="large" onclick={handleToggle}></lightning-button-icon>
                         </div>-->
-                        <span class="slds-context-bar__label-action slds-context-bar__app-name">
+                        <span
+                            class="slds-context-bar__label-action slds-context-bar__app-name slds-show_small">
                             <span class="slds-truncate" title="Workbench">Workbench</span>
                         </span>
                         <template lwc:if={isToggleVisible}>

@@ -17,12 +17,3 @@ extension-header {
 .slds-full-height {
     height: 100%;
 }
-
-.sf-panel-context-banner {
-    flex-shrink: 0;
-    border-bottom: 1px solid #dddbda;
-}
-
-.sf-panel-context-banner__btn {
-    width: 100%;
-}

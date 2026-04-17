@@ -983,6 +983,7 @@ export default class App extends ToolkitElement {
                     numberRecordsProcessed: j.numberRecordsProcessed,
                     numberRecordsFailed: j.numberRecordsFailed,
                     createdDate: j.createdDate,
+                    stateBadgeClass: this._getJobStateBadgeClass(j.state),
                 }))
                 .sort((a, b) =>
                     String(b.createdDate || '').localeCompare(String(a.createdDate || ''))
@@ -1199,6 +1200,15 @@ export default class App extends ToolkitElement {
         return { columns, rows: data, isTruncated };
     }
 
+    /** Job state badge helper */
+    _getJobStateBadgeClass(state: string) {
+        if (state === 'JobComplete') return 'di-badge di-badge_success';
+        if (state === 'Failed') return 'di-badge di-badge_error';
+        if (state === 'Aborted') return 'di-badge di-badge_aborted';
+        if (state === 'InProgress' || state === 'UploadComplete') return 'di-badge di-badge_warning';
+        return 'di-badge';
+    }
+
     /** Banner helpers */
     _setInfo(msg) {
         this.lastRunMessage = msg;
@@ -1322,11 +1332,18 @@ export default class App extends ToolkitElement {
     }
 
     get lastRunMessageClass() {
-        const base = 'slds-text-body_small';
-        if (this.lastRunMessageVariant === 'success') return `${base} slds-text-color_success`;
-        if (this.lastRunMessageVariant === 'warning') return `${base} slds-text-color_warning`;
-        if (this.lastRunMessageVariant === 'error') return `${base} slds-text-color_error`;
-        return `${base} slds-text-color_weak`;
+        const base = 'data-import-run-message';
+        if (this.lastRunMessageVariant === 'success') return `${base} data-import-run-message_success`;
+        if (this.lastRunMessageVariant === 'warning') return `${base} data-import-run-message_warning`;
+        if (this.lastRunMessageVariant === 'error') return `${base} data-import-run-message_error`;
+        return `${base} data-import-run-message_info`;
+    }
+
+    get lastRunMessageIconName() {
+        if (this.lastRunMessageVariant === 'success') return 'utility:success';
+        if (this.lastRunMessageVariant === 'warning') return 'utility:warning';
+        if (this.lastRunMessageVariant === 'error') return 'utility:error';
+        return 'utility:info';
     }
 
     get hasResults() {

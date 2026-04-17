@@ -9,11 +9,12 @@ import qs from 'qs';
 
 import { launchScheduleFileDownloaded } from './modules/cta';
 import { searchDocumentation } from './modules/documentationSearch';
+import googleAuth from './modules/googleAuth';
 import llmModels from './modules/llmModels';
 import openaiProxy from './modules/openaiProxy';
 import proxy from './modules/proxy';
 
-dotenv.config();
+dotenv.config({ path: '.env.dev' });
 
 /** Documentation Temporary Code until a DB is incorporated **/
 const VERSION = process.env.DOC_VERSION || '260.0';
@@ -90,6 +91,8 @@ function haltOnTimedout(req, res, next) {
 app.all('/cometd/:splat(*)', proxy({ enableCORS: true }));
 /* jsForce Proxy */
 app.all('/proxy/:splat(*)', proxy({ enableCORS: true }));
+/* Google Auth */
+googleAuth(app);
 /* OpenAI Proxy */
 openaiProxy(app, { path: '/openai/v1' });
 llmModels(app);
@@ -101,7 +104,8 @@ app.get('/config', function (req, res) {
     res.json({
         clientId: process.env.CLIENT_ID,
         chromeId: CHROME_ID,
-        proxyUrl: process.env.PROXY_URL, // 'https://gkheffb6gpvcv3heh7vl3ipby40cybbo.lambda-url.us-west-2.on.aws/proxy/'
+        proxyUrl: process.env.PROXY_URL,
+        googleClientId: process.env.GOOGLE_CLIENT_ID_WEB || null,
     });
 });
 app.get('/documentation/search', async (req, res) => {

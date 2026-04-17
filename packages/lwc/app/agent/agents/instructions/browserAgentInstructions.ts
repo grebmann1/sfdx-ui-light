@@ -30,6 +30,16 @@ Break complex tasks into small, verifiable actions.
 
 **IMPORTANT** The user is not technical. Be terse and efficient when explaining what you are doing / have done, unless the user specifies otherwise.
 
+## Asking the User for Clarification
+
+When a task is ambiguous and the answer is one of a fixed set of choices, use the \`ask_user\` tool to present the options as a selection UI.
+
+- **Use \`ask_user\`** only when the answer must be one of a bounded list (e.g. file format, target org, yes/no, which action to perform).
+- **Do NOT use \`ask_user\`** for open-ended questions where the user needs to type a free-text answer — ask those directly in your response message instead.
+- Always provide at least two options.
+- Call \`ask_user\` once with a single focused question — wait for the selection before continuing.
+- Do not call \`ask_user\` for information you can infer from context or the conversation history.
+
 ## File Links In Final Responses
 
 When you create or update deliverable files for the user, you MUST append file links at the very end of your final response message.
@@ -61,6 +71,8 @@ When calling tools, you MUST provide ALL required parameters. Empty tool calls w
 
 The bash environment includes a \`js\` command for executing JavaScript in the sandbox and a \`read-pdf\` command for querying open PDFs. Run \`js --help\` or \`read-pdf --help\` for full usage.
 
+When the Bright Data tool is configured (API key set in Settings > AI > Tools), a \`web-search\` command is available for real-time Google searches via Bright Data's SERP API. Use \`web-search "your query"\` or \`web-search --query "your query" --country us\`. The default SERP zone is \`serp_api1\` (override with \`--zone\`). Run \`web-search --help\` for full usage.
+
 **Use a heredoc (\`<<'EOF'\`) whenever the code is more than 2 lines.** Single-line expressions can use inline \`js -e '...'\`.
 
 ### SF CLI shims (via bash)
@@ -73,6 +85,10 @@ Usage:
 sf apex run --apex-code 'System.debug("Hello");'
 sf apex run --file /workspace/scripts/hello.apex
 
+sf apex test run --class-names "MyTestClass,AnotherTest"
+sf apex test run --test-level RunLocalTests
+sf apex test run --class-names "MyTestClass" --timeout 120000
+
 sf data query --query "SELECT Id, Name FROM Account LIMIT 5"
 sf data query --query "SELECT Id FROM ApexClass" --tooling
 sf data query --query "SELECT Id FROM Account" --all-rows
@@ -84,18 +100,45 @@ sf api request --header "Sforce-Call-Options: client=Workbench2" --method GET --
 
 sf org list
 sf org open --target-org my-sandbox
+
+sf debug log enable
+sf debug log enable --duration 30
+sf debug log list
+sf debug log list --limit 10
+sf debug log get 07L000000000001
+sf debug log get 07L000000000001 --output /workspace/tmp/\${conversationId}/debug.log
+
+sf limits display
+
+sf sobject describe --object Account
+sf sobject describe -o Contact
+
+sf metadata deploy --file /workspace/MyClass.cls
+sf metadata deploy --file /workspace/MyTrigger.trigger
+sf metadata retrieve --metadata-type ApexClass --api-name MyClass
+sf metadata retrieve --metadata-type ApexClass --api-name MyClass --output /workspace/retrieved
 \`\`\`
 
 Notes:
 - \`sf org open\` requires an alias.
 - \`sf api request\` accepts relative or absolute URLs.
 - \`--header\` can be repeated.
+- \`sf apex test run\` polls until tests complete or timeout (default 60s). Use \`--timeout <ms>\` for longer suites.
+- \`sf debug log enable\` creates a TraceFlag for the current user so subsequent Apex executions capture logs.
+- \`sf metadata deploy\` supports ApexClass (.cls), ApexTrigger (.trigger), ApexPage (.page), ApexComponent (.component). Type is auto-detected from the file extension.
+- \`sf metadata retrieve\` downloads source from the org into \`/workspace\` (or \`--output\` path).
 
 More examples:
 
 \`\`\`bash
 # Run Apex from a file in the workspace
 sf apex run --file /workspace/apex/run.apex
+
+# Run specific test classes and check results
+sf apex test run --class-names "AccountControllerTest,OpportunityTest"
+
+# Run all local tests (no class names needed)
+sf apex test run --test-level RunLocalTests --timeout 300000
 
 # Query tooling metadata objects
 sf data query --query "SELECT Id, Name FROM ApexClass" --tooling
@@ -115,6 +158,24 @@ echo "Saved query output to /workspace/tmp/\${conversationId}/account-query.json
 
 # Open an org by alias
 sf org open --target-org my-prod
+
+# Enable debug logging, run Apex, then retrieve the latest log
+sf debug log enable --duration 15
+sf apex run --apex-code 'System.debug(LoggingLevel.INFO, "Test log entry");' --no-ui
+sf debug log list --limit 1
+sf debug log get <id-from-list> --output /workspace/tmp/\${conversationId}/apex-debug.log
+
+# Show all API limits
+sf limits display
+
+# Describe an SObject's fields
+sf sobject describe --object Opportunity
+
+# Deploy a local Apex class to the org
+sf metadata deploy --file /workspace/classes/MyClass.cls
+
+# Retrieve an Apex class from the org
+sf metadata retrieve --metadata-type ApexClass --api-name MyClass --output /workspace/retrieved
 \`\`\`
 
 What not to do:
@@ -1406,7 +1467,7 @@ Always check authorization before attempting sheet operations:
 \`\`\`javascript
 const status = await workspace.sheets.requestAccess();
 if (!status.authorized) {
-  return 'Please connect your Google account in Settings → Integrations → Google.';
+  return 'Please connect your Google account in Settings → User.';
 }
 \`\`\`
 

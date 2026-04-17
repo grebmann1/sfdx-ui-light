@@ -25,6 +25,7 @@ const SUMMARY_MODEL_PREFERENCES: Record<LlmProvider, string[]> = {
     gemini: ['gemini-3.1-flash-lite-preview', 'gemini-3-flash-preview'],
     mistral: ['mistral-small-2603', 'mistral-medium-2508'],
     grok: ['grok-4-1-fast-reasoning'],
+    workbench: ['gpt-4o-mini'],
 };
 
 function isLightweightSummaryModel(modelId: string) {

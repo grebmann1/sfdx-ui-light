@@ -1,5 +1,13 @@
 <template>
     <div class="slds-full-height slds-is-relative slds-flex-row">
+        <!-- Google Auth Gate — overlays entire component until signed in -->
+        <template lwc:if={isGoogleAuthRequired}>
+            <agent-google-auth
+                server-url={_serverBaseUrl}
+                onauthenticated={handleAuthenticated}
+                ondriveconnected={handleDriveConnected}></agent-google-auth>
+        </template>
+
         <!-- Side Panel -->
         <slds-vertical-panel
             size="slds-size_x-small"
@@ -101,6 +109,22 @@
                     </template>
                 </div>
             </div>
+            <!-- Free-tier callout for @salesforce.com users on workbench provider -->
+            <template lwc:if={showFreeTierCallout}>
+                <div class="agent-freetier-callout" role="note">
+                    <div class="agent-freetier-callout-body">
+                        <lightning-icon
+                            icon-name="utility:info"
+                            size="x-small"
+                            alternative-text="Info"
+                            class="agent-freetier-callout-icon"></lightning-icon>
+                        <span class="agent-freetier-callout-text">
+                            <strong>Free tier active</strong> &mdash; You have&nbsp;<template lwc:if={rateLimitWarning}><strong class="agent-freetier-count-warning">{rateLimitRemaining} request(s)</strong></template><template lwc:else><strong>{rateLimitRemaining}</strong></template>&nbsp;remaining today. For unlimited access, configure the <strong>Salesforce LLM Gateway</strong> or add your own API key in provider settings.
+                        </span>
+                    </div>
+                </div>
+            </template>
+
             <template lwc:if={hasError}>
                 <div class="agent-error-panel slds-p-around_x-small" role="alert">
                     <div

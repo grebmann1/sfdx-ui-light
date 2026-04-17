@@ -1,4 +1,4 @@
-export const LLM_PROVIDERS = ['openai', 'anthropic', 'gemini', 'mistral', 'grok'] as const;
+export const LLM_PROVIDERS = ['openai', 'anthropic', 'gemini', 'mistral', 'grok', 'workbench'] as const;
 
 export type LlmProvider = (typeof LLM_PROVIDERS)[number];
 
@@ -44,6 +44,7 @@ export const DEFAULT_PROVIDER_BASE_URLS: Record<LlmProvider, string> = {
     gemini: 'https://generativelanguage.googleapis.com',
     mistral: 'https://api.mistral.ai/v1',
     grok: 'https://api.x.ai/v1',
+    workbench: '/openai/v1',
 };
 
 export const LLM_PROVIDER_OPTIONS: Array<{ label: string; value: LlmProvider }> = [
@@ -52,6 +53,7 @@ export const LLM_PROVIDER_OPTIONS: Array<{ label: string; value: LlmProvider }> 
     { label: 'Gemini', value: 'gemini' },
     { label: 'Mistral', value: 'mistral' },
     { label: 'xAI Grok', value: 'grok' },
+    { label: 'Workbench (Free Tier)', value: 'workbench' },
 ];
 
 export const OPENAI_MODEL_OPTIONS: LlmModelOption[] = [
@@ -101,6 +103,11 @@ export const MISTRAL_MODEL_OPTIONS: LlmModelOption[] = [
     { label: 'mistral-medium-2508', value: 'mistral-medium-2508', provider: 'mistral' },
 ];
 
+export const WORKBENCH_MODEL_OPTIONS: LlmModelOption[] = [
+    { label: 'gpt-4o-mini (Free Tier)', value: 'gpt-4o-mini', provider: 'workbench' },
+    { label: 'gpt-4o (Free Tier)', value: 'gpt-4o', provider: 'workbench' },
+];
+
 export const GROK_MODEL_OPTIONS: LlmModelOption[] = [
     {
         label: 'grok-4.20-0309-reasoning',
@@ -125,4 +132,5 @@ export const PROVIDER_MODEL_OPTIONS: Record<LlmProvider, LlmModelOption[]> = {
     gemini: GEMINI_MODEL_OPTIONS,
     mistral: MISTRAL_MODEL_OPTIONS,
     grok: GROK_MODEL_OPTIONS,
+    workbench: WORKBENCH_MODEL_OPTIONS,
 };

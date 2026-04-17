@@ -216,6 +216,10 @@ export default class Footer extends LightningElement {
         return this.hasShortcutHints && !this.isBlankValue(this.versionFormatted);
     }
 
+    get hasFooterRightContent() {
+        return this.hasShortcutHints || !this.isBlankValue(this.versionFormatted);
+    }
+
     formatShortcutForDisplay(combo) {
         if (this.isBlankValue(combo)) return '';
         return combo

@@ -13,6 +13,7 @@ type BridgeClient = {
   onHostEvent?: (
     listener: (event: IframeJsforceBridgeHostEvent) => void
   ) => { dispose?: () => void }
+  emitNotification?: (eventName: string, payload?: Record<string, unknown> | null) => void
   getConnectionStatus: () => Promise<any>
   executeSoql: (args: {
     query: string
@@ -79,6 +80,7 @@ type BridgeConnectionContext = {
   onHostEvent: (
     listener: (event: IframeJsforceBridgeHostEvent) => void
   ) => { dispose: () => void }
+  emitNotification: (eventName: string, payload?: Record<string, unknown> | null) => void
   resolveBridgeClient: () => Promise<BridgeClient>
   dispose: () => void
 }
@@ -259,6 +261,9 @@ function createMockBridgeClient(workspaceRoot: string): BridgeClient {
         errorMessage: '',
         details: null
       }
+    },
+    emitNotification() {
+      // no-op in mock
     }
   }
 }
@@ -662,6 +667,14 @@ export async function createBridgeConnectionContext({
 
   await refreshStatus()
 
+  const emitNotification = (eventName: string, payload?: Record<string, unknown> | null) => {
+    try {
+      bridgeClient?.emitNotification?.(eventName, payload)
+    } catch {
+      // ignore: best-effort
+    }
+  }
+
   return {
     getContext() {
       return {
@@ -680,6 +693,7 @@ export async function createBridgeConnectionContext({
     },
     refreshStatus,
     onHostEvent,
+    emitNotification,
     resolveBridgeClient,
     dispose() {
       if (disposed) {

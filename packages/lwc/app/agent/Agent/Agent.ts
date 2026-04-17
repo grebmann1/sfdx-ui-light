@@ -128,6 +128,8 @@ type AgentSettings = {
         parameters?: unknown;
         execute: (input: Record<string, unknown>) => Promise<unknown> | unknown;
     }>;
+    brightDataApiKey?: string | null;
+    googleSheetEnabled?: boolean;
     store: Store;
 };
 
@@ -365,6 +367,8 @@ export class Agent {
         if (!getCdpHandlerForConversation(id)) {
             await ensureCdpHandlerInitialized(id, {
                 getBashInstance: () => shell,
+                brightDataApiKey: settings.brightDataApiKey ?? null,
+                googleSheetEnabled: settings.googleSheetEnabled ?? false,
             });
         }
         const cdpHandler = getCdpHandlerForConversation(id);
@@ -372,6 +376,7 @@ export class Agent {
 
         const bashTools = createBashTools(shell, fs, {
             execInSandbox: (code, timeoutMs) => cdpHandler.execInSandbox(code, timeoutMs),
+            brightDataApiKey: settings.brightDataApiKey ?? null,
         });
         const currentModel = settings.selectedModel || DEFAULT_MODEL;
         const availableTools = [

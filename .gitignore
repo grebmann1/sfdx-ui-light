@@ -1,6 +1,8 @@
 .vscode
 .idea
 .env
+.env.dev
+.env.prod
 .sfdx
 .DS_Store
 **/.cursor/*

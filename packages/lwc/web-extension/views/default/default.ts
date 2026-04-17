@@ -59,10 +59,6 @@ export default class Default extends LightningElement {
         return this.isSalesforcePanel ? 'slds-hide' : '';
     }
 
-    get showBackToAppsBanner() {
-        return this.isSalesforcePanel && !this.activeTabMatchesSalesforce;
-    }
-
     @wire(connectStore, { store: legacyStore })
     applicationChange({ application }) {
         if (application?.type === 'FAKE_NAVIGATE') {
@@ -118,12 +114,6 @@ export default class Default extends LightningElement {
         if (this.refs.default) {
             (this.refs.default as any).connection_refresh();
         }
-    };
-
-    handleBackToAppsPanel = () => {
-        this.panel = PANELS.DEFAULT;
-        const app = store.getState()?.application?.currentApplication || 'connection';
-        this.notifyBackgroundApplicationChange(app);
     };
 
     /** Methods **/

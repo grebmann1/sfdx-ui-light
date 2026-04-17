@@ -24,8 +24,127 @@
     max-height: 420px;
 }
 
+.data-import-mapping-row {
+    cursor: default;
+    align-items: center;
+}
+
 .data-import-mapping-row .slds-input {
     width: 100%;
+}
+
+/* CSV column pill */
+.data-import-csv-pill {
+    display: inline-block;
+    max-width: 100%;
+    padding: 0.1875rem 0.5rem;
+    background: #f4f6f9;
+    border: 1px solid #dddbda;
+    border-radius: 4px;
+    font-family: 'SFMono-Regular', Consolas, 'Courier New', monospace;
+    font-size: 0.8125rem;
+    color: #3e3e3c;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+/* File info row */
+.data-import-file-info {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-top: 0.375rem;
+}
+
+/* Inline row count badge */
+.di-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.0625rem 0.5rem;
+    border-radius: 0.875rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.5;
+    background: #f4f6f9;
+    border: 1px solid #dddbda;
+    color: #3e3e3c;
+    white-space: nowrap;
+}
+
+.di-badge_success {
+    background: #ecfdf3;
+    border-color: #2e844a;
+    color: #2e844a;
+}
+
+.di-badge_warning {
+    background: #fef6e6;
+    border-color: #dd7a01;
+    color: #855200;
+}
+
+.di-badge_error {
+    background: #fef1ef;
+    border-color: #ba0517;
+    color: #ba0517;
+}
+
+.di-badge_aborted {
+    background: #f6f2f9;
+    border-color: #9050b9;
+    color: #6a3188;
+}
+
+/* Run message inline banner */
+.data-import-run-message {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    border-width: 1px;
+    border-style: solid;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    margin-top: 0.5rem;
+}
+
+.data-import-run-message_info {
+    background: #eaf5fe;
+    border-color: #0176d3;
+    color: #014486;
+}
+
+.data-import-run-message_success {
+    background: #ecfdf3;
+    border-color: #2e844a;
+    color: #0e5c28;
+}
+
+.data-import-run-message_warning {
+    background: #fef6e6;
+    border-color: #dd7a01;
+    color: #855200;
+}
+
+.data-import-run-message_error {
+    background: #fef1ef;
+    border-color: #ba0517;
+    color: #8e030f;
+}
+
+/* Empty state placeholder */
+.data-import-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1rem;
+    text-align: center;
+    gap: 0.625rem;
+    opacity: 0.8;
 }
 
 .data-import-job-row {

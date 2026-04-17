@@ -1,7 +1,7 @@
 import type { SidebarsConfig } from '@docusaurus/plugin-content-docs';
 
 const sidebars: SidebarsConfig = {
-    tutorialSidebar: [
+    userSidebar: [
         'intro',
         {
             type: 'category',
@@ -10,43 +10,35 @@ const sidebars: SidebarsConfig = {
         },
         {
             type: 'category',
-            label: 'Architecture',
-            items: ['architecture/overview'],
-        },
-        {
-            type: 'category',
-            label: 'Workflows',
-            items: ['workflows/common-tasks'],
-        },
-        {
-            type: 'category',
-            label: 'VS Code',
-            items: ['vscode/overview'],
-        },
-        {
-            type: 'category',
-            label: 'CLI',
-            items: ['cli/overview'],
-        },
-        {
-            type: 'category',
             label: 'AI Agent',
             items: ['ai-agent/setup', 'ai-agent/tools-overview'],
         },
         {
             type: 'category',
-            label: 'Local Storage',
-            items: ['storage/indexeddb-workspace'],
+            label: 'Security',
+            items: ['security/local-data-and-privacy'],
         },
         {
             type: 'category',
             label: 'Troubleshooting',
             items: ['troubleshooting/common-issues'],
         },
+    ],
+    developerSidebar: [
         {
             type: 'category',
-            label: 'Security',
-            items: ['security/local-data-and-privacy'],
+            label: 'Architecture',
+            items: ['architecture/overview'],
+        },
+        {
+            type: 'category',
+            label: 'VS Code',
+            items: ['vscode/overview', 'vscode/extension-parity'],
+        },
+        {
+            type: 'category',
+            label: 'Local Storage',
+            items: ['storage/indexeddb-workspace'],
         },
         {
             type: 'category',

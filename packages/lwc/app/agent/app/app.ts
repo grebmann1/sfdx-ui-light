@@ -8,7 +8,7 @@ import {
     isInternalProviderBaseUrl,
     normalizeLlmProvider,
 } from 'shared/llm';
-import { CACHE_CONFIG, saveSingleExtensionConfigToCache } from 'shared/cacheManager';
+import { CACHE_CONFIG, cacheManager, saveSingleExtensionConfigToCache } from 'shared/cacheManager';
 import ToolkitElement from 'core/toolkitElement';
 import { reportError, store, connectStore, AGENT, APPLICATION } from 'core/store';
 import LOGGER from 'shared/logger';
@@ -29,7 +29,7 @@ import { persistPromptImageFiles } from 'agent/utils';
 import { getIndexedDbFileSystem } from 'core/fs';
 import { Agent } from 'agent/Agent';
 import { browserAgentInstructions } from 'agent/agents';
-import { askUserTool, resolveQuestion, rejectQuestion } from 'agent/tools';
+import { askUserTool, resolveQuestion, rejectQuestion, workbenchContextTools } from 'agent/tools';
 import type { ModelMessage, UIMessage } from 'ai';
 
 export default class App extends ToolkitElement {
@@ -106,6 +106,11 @@ export default class App extends ToolkitElement {
     activeProviderBaseUrl;
     isInternal;
 
+    // Google auth state
+    @track isGoogleAuthenticated = false;
+    @track googleUser: { token: string; email: string; name: string; picture: string } | null = null;
+    @track rateLimitRemaining: number | null = null;
+
     // Better to use a constant than a getter ! (renderCallback is called too many times)
     welcomeMessage = Constants.WELCOME_MESSAGE;
     _shouldFocusPublisher = false;
@@ -180,8 +185,97 @@ export default class App extends ToolkitElement {
     connectedCallback() {
         Analytics.trackAppOpen('agent', { alias: this.alias });
         store.dispatch(AGENT.loadCacheSettingsAsync());
-        store.dispatch(AGENT.loadConversationsFromCache());
         window.addEventListener('agent:ask_user', this._handleAskUserEvent);
+        this._restoreGoogleSession();
+    }
+
+    async _restoreGoogleSession() {
+        const session = await cacheManager.getConfigValue<{
+            token: string;
+            email: string;
+            name: string;
+            picture: string;
+        }>(CACHE_CONFIG.GOOGLE_SESSION.key);
+        if (!session?.token) return;
+
+        // Verify the session is still valid on the backend
+        try {
+            const resp = await fetch(`${this._serverBaseUrl}/google/me`, {
+                headers: { Authorization: `Bearer ${session.token}` },
+                credentials: 'same-origin',
+            });
+            if (!resp.ok) {
+                await cacheManager.setConfigValue(CACHE_CONFIG.GOOGLE_SESSION.key, null);
+                return;
+            }
+            this.googleUser = session;
+            this.isGoogleAuthenticated = true;
+            this._applyWorkbenchProvider(session.token, session.email);
+        } catch {
+            // Network error — keep session locally, will fail on first AI request
+            this.googleUser = session;
+            this.isGoogleAuthenticated = true;
+            this._applyWorkbenchProvider(session.token, session.email);
+        }
+        await this._refreshRateLimit();
+    }
+
+    _applyWorkbenchProvider(token: string, email: string) {
+        if (!email.toLowerCase().endsWith('@salesforce.com')) return;
+        store.dispatch(
+            APPLICATION.reduxSlice.actions.updateProviderConfig({
+                provider: 'workbench',
+                config: { apiKey: token, baseUrl: `${this._serverBaseUrl}/openai/v1` },
+            })
+        );
+        // Only switch to workbench if the user has not already configured another provider
+        const state = store.getState();
+        const currentProvider = state.application?.aiProvider;
+        const currentConfig = state.application?.providerConfigs?.[currentProvider];
+        const hasOwnKey = !isEmpty(currentConfig?.apiKey) && currentProvider !== 'workbench';
+        if (!hasOwnKey) {
+            store.dispatch(
+                APPLICATION.reduxSlice.actions.updateAiProvider({ aiProvider: 'workbench' })
+            );
+            store.dispatch(
+                AGENT.reduxSlice.actions.updateSelectedModel({ model: 'gpt-4o-mini' })
+            );
+        }
+    }
+
+    handleAuthenticated = async (event: CustomEvent) => {
+        const { token, email, name, picture } = event.detail || {};
+        if (!token) return;
+        const session = { token, email, name, picture };
+        await cacheManager.setConfigValue(CACHE_CONFIG.GOOGLE_SESSION.key, session);
+        await cacheManager.setConfigValue(CACHE_CONFIG.GOOGLE_CONNECTED.key, true);
+        this.googleUser = session;
+        this.isGoogleAuthenticated = true;
+        this._applyWorkbenchProvider(token, email);
+        await this._refreshRateLimit();
+    };
+
+    handleDriveConnected = async (event: CustomEvent) => {
+        const { accessToken } = event.detail || {};
+        if (!accessToken) return;
+        await cacheManager.setConfigValue(CACHE_CONFIG.GOOGLE_DRIVE_CONNECTED.key, true);
+    };
+
+    async _refreshRateLimit() {
+        const token = this.googleUser?.token;
+        if (!token || !this.isWorkbenchUser) return;
+        try {
+            const resp = await fetch(`${this._serverBaseUrl}/google/rate-limit`, {
+                headers: { Authorization: `Bearer ${token}` },
+                credentials: 'same-origin',
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                this.rateLimitRemaining = typeof data.remaining === 'number' ? data.remaining : null;
+            }
+        } catch {
+            // Non-critical — ignore
+        }
     }
 
     disconnectedCallback() {
@@ -285,7 +379,7 @@ export default class App extends ToolkitElement {
         });
     };
 
-    buildAgentExecutionContext(model = this.selectedModel) {
+    async buildAgentExecutionContext(model = this.selectedModel) {
         const conversationId = this.activeConversationId;
         const state = store.getState();
         const activeProvider = getProviderForModel(model, this.availableModels);
@@ -295,6 +389,11 @@ export default class App extends ToolkitElement {
         const currentMessages = Array.isArray(state.agent?.messagesById?.[conversationId])
             ? state.agent.messagesById[conversationId]
             : [];
+
+        const [brightDataApiKey, googleSheetEnabled] = await Promise.all([
+            cacheManager.getConfigValue<string>(CACHE_CONFIG.TOOL_BRIGHT_DATA_KEY.key),
+            cacheManager.getConfigValue<boolean>(CACHE_CONFIG.TOOL_GOOGLE_SHEET_ENABLED.key),
+        ]);
 
         return {
             conversationId,
@@ -312,14 +411,16 @@ export default class App extends ToolkitElement {
                 systemPrompt: browserAgentInstructions,
                 isStoreEnabled: true,
                 store,
-                extraTools: [askUserTool],
+                extraTools: [askUserTool, ...workbenchContextTools],
+                brightDataApiKey: brightDataApiKey ?? null,
+                googleSheetEnabled: googleSheetEnabled ?? false,
             },
         };
     }
 
     executeAgent = async (prompt, files = [], model = this.selectedModel) => {
         console.log('executeAgent', prompt, files, model);
-        const { conversationId, currentMessages, settings } = this.buildAgentExecutionContext(model);
+        const { conversationId, currentMessages, settings } = await this.buildAgentExecutionContext(model);
         const fs = getIndexedDbFileSystem();
         let filesData = [];
         if (files && files.length > 0) {
@@ -365,6 +466,9 @@ export default class App extends ToolkitElement {
                 agent,
             })
         );
+        if (this.activeProvider === 'workbench') {
+            void this._refreshRateLimit();
+        }
     };
 
     executeAgentWithDirectMessages = async (
@@ -372,7 +476,7 @@ export default class App extends ToolkitElement {
         model = this.selectedModel
     ) => {
         console.log('executeAgentWithDirectMessages', directMessages);
-        const { conversationId, currentMessages, settings } = this.buildAgentExecutionContext(model);
+        const { conversationId, currentMessages, settings } = await this.buildAgentExecutionContext(model);
         const agent = await Agent.create({
             messages: currentMessages as ModelMessage[],
             conversationId,
@@ -473,7 +577,7 @@ export default class App extends ToolkitElement {
         const files = e.detail.files || [];
         const model = e.detail.model ?? this.selectedModel;
         const reasoning = e.detail.reasoning ?? this.selectedReasoning;
-        const { settings } = this.buildAgentExecutionContext(model);
+        const { settings } = await this.buildAgentExecutionContext(model);
         const activeProvider = normalizeLlmProvider(settings.provider);
         const activeProviderLabel = getProviderLabel(activeProvider);
         const isProviderConfigured = !isEmpty(settings.apiKey);
@@ -707,6 +811,45 @@ export default class App extends ToolkitElement {
 
     get activeProviderLabel() {
         return getProviderLabel(this.activeProvider);
+    }
+
+    get isGoogleAuthRequired() {
+        return !this.isGoogleAuthenticated;
+    }
+
+    /** Absolute backend server URL, safe to use from the Chrome extension where
+     *  relative paths would resolve to chrome-extension:// instead.
+     *  Rollup replaces process.env.WORKBENCH_BASE_URL with the literal URL at build time,
+     *  so the try/catch eliminates the runtime process reference entirely. */
+    get _serverBaseUrl(): string {
+        let fromEnv = '';
+        try {
+            fromEnv = (process.env.WORKBENCH_BASE_URL || '').replace(/\/+$/, '');
+        } catch {
+            // process not available in this runtime context
+        }
+        return fromEnv || (typeof window !== 'undefined' ? window.location.origin : '');
+    }
+
+    get isWorkbenchUser() {
+        return !!this.googleUser?.email?.toLowerCase().endsWith('@salesforce.com');
+    }
+
+    get showFreeTierCallout() {
+        return (
+            this.isGoogleAuthenticated &&
+            this.isWorkbenchUser &&
+            this.activeProvider === 'workbench' &&
+            this.rateLimitRemaining !== null
+        );
+    }
+
+    get rateLimitWarning() {
+        return this.rateLimitRemaining !== null && this.rateLimitRemaining < 10;
+    }
+
+    get googleUserName() {
+        return this.googleUser?.name || '';
     }
 
     get inputSectionClass() {

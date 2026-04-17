@@ -37,6 +37,7 @@ import getPreferencesServiceOverride from '@codingame/monaco-vscode-preferences-
 import getSnippetServiceOverride from '@codingame/monaco-vscode-snippets-service-override'
 import getOutputServiceOverride from '@codingame/monaco-vscode-output-service-override'
 import getTerminalServiceOverride from '@codingame/monaco-vscode-terminal-service-override'
+import { salesforceTerminalBackend } from './workbench/extensions/terminal/terminalBackend'
 import getSearchServiceOverride from '@codingame/monaco-vscode-search-service-override'
 import getMarkersServiceOverride from '@codingame/monaco-vscode-markers-service-override'
 import getAccessibilityServiceOverride from '@codingame/monaco-vscode-accessibility-service-override'
@@ -251,7 +252,7 @@ export const commonServices: IEditorOverrideServices = {
   ...getTitleBarServiceOverride(),
   ...getSnippetServiceOverride(),
   ...getOutputServiceOverride(),
-  ...getTerminalServiceOverride(),
+  ...getTerminalServiceOverride(salesforceTerminalBackend),
   ...getSearchServiceOverride(),
   ...getMarkersServiceOverride(),
   ...getAccessibilityServiceOverride(),

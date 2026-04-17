@@ -52,8 +52,6 @@ const DEFAULT_CONVERSATION = {
     streamHistory: [],
     compactionSummary: [],
 };
-let cacheSaveQueue = Promise.resolve();
-
 function normalizeModel(model) {
     if (typeof model !== 'string') {
         return DEFAULT_MODEL;
@@ -211,36 +209,30 @@ const initialState = {
 };
 
 function saveCacheSettings(state) {
-    try {
-        // Persist only cache-relevant fields; avoid serializing the full redux slice,
-        // which may include non-serializable debug/runtime data.
-        const payload = buildConversationDataFromState(state);
-        cacheSaveQueue = cacheSaveQueue
-            .then(async () => {
-                await saveSingleExtensionConfigToCache(
-                    CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATION_DATA.key,
-                    payload
-                );
-                // Backward-compatible keys; can be removed once all clients read canonical payload.
-                await saveExtensionConfigToCache({
-                    [CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATIONS.key]: payload.conversations,
-                    [CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATION_ACTIVE_ID.key]:
-                        payload.activeConversationId,
-                    [CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATION_MODEL.key]: payload.selectedModel,
-                    [CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATION_REASONING.key]:
-                        payload.selectedReasoning,
-                });
-                LOGGER.debug('[agent] saveCacheSettings persisted', {
-                    selectedModel: payload.selectedModel,
-                    selectedReasoning: payload.selectedReasoning,
-                });
-            })
-            .catch(e => {
-                LOGGER.error('Failed to save CONFIG to localstorage', e);
+    // Persist only cache-relevant fields; avoid serializing the full redux slice,
+    // which may include non-serializable debug/runtime data.
+    // Saves are fired immediately (not queued) so that writes reach chrome.storage
+    // before the extension popup/panel is closed.
+    const payload = buildConversationDataFromState(state);
+    saveSingleExtensionConfigToCache(CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATION_DATA.key, payload)
+        .then(() => {
+            LOGGER.debug('[agent] saveCacheSettings persisted', {
+                selectedModel: payload.selectedModel,
+                selectedReasoning: payload.selectedReasoning,
             });
-    } catch (e) {
-        LOGGER.error('Failed to save CONFIG to localstorage', e);
-    }
+        })
+        .catch(e => {
+            LOGGER.error('Failed to save CONFIG to localstorage', e);
+        });
+    // Backward-compatible keys; can be removed once all clients read canonical payload.
+    saveExtensionConfigToCache({
+        [CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATIONS.key]: payload.conversations,
+        [CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATION_ACTIVE_ID.key]: payload.activeConversationId,
+        [CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATION_MODEL.key]: payload.selectedModel,
+        [CACHE_CONFIG.EINSTEIN_AGENT_CONVERSATION_REASONING.key]: payload.selectedReasoning,
+    }).catch(e => {
+        LOGGER.error('Failed to save legacy CONFIG to localstorage', e);
+    });
 }
 
 function loadCacheSettings(cachedConfig, state) {
@@ -501,6 +493,7 @@ const agentSlice = createSlice({
                 hydrateMessagesFromConversations(state);
             })
             .addCase(loadConversationsFromCache.fulfilled, (state, action) => {
+                if (!isNotUndefinedOrNull(action.payload)) return;
                 const normalized = normalizeAgentConversationData(action.payload);
                 state.conversations = normalized.conversations;
                 state.activeConversationId = normalized.activeConversationId;

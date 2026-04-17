@@ -861,7 +861,7 @@ chrome.runtime.onInstalled.addListener(async details => {
     if (reason === 'install') {
         await chrome.storage.local.set({ installedVersion: currentVersion });
         chrome.tabs.create({
-            url: `https://sf-toolkit.com/install?redirect_url=${encodeURIComponent(chrome.runtime.getURL('views/app.html'))}`,
+            url: `https://sf-toolkit.com/welcome?redirect_url=${encodeURIComponent(chrome.runtime.getURL('views/app.html'))}`,
         });
     } else if (
         reason === 'update' &&

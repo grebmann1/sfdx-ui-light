@@ -134,10 +134,16 @@
                                                     disabled={isWorking}
                                                     onchange={handleFileChange}></lightning-input>
                                                 <template lwc:if={csvFileName}>
-                                                    <div
-                                                        class="slds-text-body_small slds-text-color_weak slds-m-top_x-small">
-                                                        Loaded: {csvFileName}
-                                                        ({csvRowCountFormatted} rows)
+                                                    <div class="data-import-file-info">
+                                                        <lightning-icon
+                                                            icon-name="doctype:csv"
+                                                            size="x-small"
+                                                            alternative-text="CSV file"></lightning-icon>
+                                                        <span
+                                                            class="slds-text-body_small slds-text-color_weak"
+                                                            >{csvFileName}</span>
+                                                        <span class="di-badge"
+                                                            >{csvRowCountFormatted} rows</span>
                                                     </div>
                                                 </template>
                                                 <template lwc:if={csvError}>
@@ -186,12 +192,8 @@
                                                             <div
                                                                 class="slds-truncate"
                                                                 title={row.csvHeader}>
-                                                                <span class="slds-text-title_caps">
-                                                                    CSV
-                                                                </span>
-                                                                <div class="slds-text-body_regular">
-                                                                    {row.csvHeader}
-                                                                </div>
+                                                                <code class="data-import-csv-pill"
+                                                                    >{row.csvHeader}</code>
                                                             </div>
                                                         </div>
                                                         <div class="slds-col slds-size_6-of-12">
@@ -232,8 +234,15 @@
                                                 </template>
                                             </template>
                                             <template lwc:else>
-                                                <div class="slds-text-color_weak">
-                                                    Upload a CSV to configure field mapping.
+                                                <div
+                                                    class="data-import-empty-state slds-text-color_weak">
+                                                    <lightning-icon
+                                                        icon-name="utility:upload"
+                                                        size="small"
+                                                        alternative-text="Upload"></lightning-icon>
+                                                    <p class="slds-text-body_regular">
+                                                        Upload a CSV to configure field mapping.
+                                                    </p>
                                                 </div>
                                             </template>
                                         </div>
@@ -251,7 +260,13 @@
                                 </div>
                                 <div class="slds-card__body slds-card__body_inner">
                                     <template lwc:if={lastRunMessage}>
-                                        <div class={lastRunMessageClass}>{lastRunMessage}</div>
+                                        <div role="status" class={lastRunMessageClass}>
+                                            <lightning-icon
+                                                icon-name={lastRunMessageIconName}
+                                                size="x-small"
+                                                alternative-text="Status"></lightning-icon>
+                                            <span>{lastRunMessage}</span>
+                                        </div>
                                     </template>
                                     <template lwc:if={hasResults}>
                                         <div class="slds-m-top_small">
@@ -381,10 +396,9 @@
                                                                 </div>
                                                             </td>
                                                             <td data-label="State">
-                                                                <div
-                                                                    class="slds-truncate"
-                                                                    title={job.state}>
-                                                                    {job.state}
+                                                                <div title={job.state}>
+                                                                    <span class={job.stateBadgeClass}
+                                                                        >{job.state}</span>
                                                                 </div>
                                                             </td>
                                                             <td data-label="Processed">
@@ -415,8 +429,14 @@
                                         </div>
                                     </template>
                                     <template lwc:else>
-                                        <div class="slds-text-color_weak">
-                                            No jobs loaded yet. Click “Refresh Jobs”.
+                                        <div class="data-import-empty-state slds-text-color_weak">
+                                            <lightning-icon
+                                                icon-name="utility:list"
+                                                size="small"
+                                                alternative-text="No jobs"></lightning-icon>
+                                            <p class="slds-text-body_regular">
+                                                No jobs loaded yet. Click “Refresh Jobs”.
+                                            </p>
                                         </div>
                                     </template>
 

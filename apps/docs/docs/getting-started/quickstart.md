@@ -4,37 +4,52 @@ title: Quickstart
 
 # Quickstart
 
-This guide gets you from clone to useful workflows in a few minutes.
+This guide gets you from install to your first working session in a few minutes.
 
-## 1. Install and start local runtime
+## Option A — Chrome Extension (fastest)
+
+1. Install from the [Chrome Web Store](https://chromewebstore.google.com/detail/salesforce-toolkit/konbmllgicfccombdckckakhnmejjoei?hl=en).
+2. Navigate to any Salesforce org.
+3. The Workbench overlay appears — connect your org via OAuth.
+4. Start exploring.
+
+## Option B — Web App
+
+1. Open [app.sf-toolkit.com](https://app.sf-toolkit.com).
+2. Connect your org via OAuth.
+3. You're ready.
+
+---
+
+## Option C — Local dev setup
+
+### 1. Install and start
 
 ```bash
-git clone https://github.com/grebmann1/sf-toolkit-web.git
-cd sf-toolkit-web
+git clone https://github.com/grebmann1/sfdx-ui-light.git
+cd sfdx-ui-light
 npm install
-npm run start:dev:web
+npm run start:dev:ui
 ```
 
-If you want the welcome and docs sites in dev mode too:
+This starts the server on port `3000` and the Vite UI on port `27100`.
 
-```bash
-npm run site:dev
-```
+### 2. Open the key pages and verify they load
 
-## 2. Open the key pages and verify they load
+| Surface | URL |
+| --- | --- |
+| Welcome / landing page | `http://localhost:27100` |
+| Main app | `http://localhost:27100/app` |
+| Server | `http://localhost:3000` |
 
-- Website: `http://localhost:3000/welcome`
-- Docs: `http://localhost:3000/docs`
-- Main app: `http://localhost:3000/app`
+### 3. Connect your Salesforce org (OAuth)
 
-## 3. Connect your Salesforce org (OAuth)
+1. Open `http://localhost:27100/app`.
+2. Open the Connections area in the app shell.
+3. Complete OAuth login with your connected app credentials.
+4. Verify org details and the connected user context load correctly.
 
-1. Open `/app`.
-2. Open the org/connection area in the app shell.
-3. Complete OAuth login.
-4. Validate that org details and connected-user context load successfully.
-
-## 4. Run your first SOQL check
+### 4. Run your first SOQL query
 
 1. Open the SOQL surface from the app menu.
 2. Run a low-risk query:
@@ -43,22 +58,24 @@ npm run site:dev
 SELECT Id, Name FROM Account LIMIT 10
 ```
 
-3. Confirm rows render and pagination/export controls appear as expected.
+3. Confirm rows render and pagination/export controls appear.
 
-## 5. Validate metadata and API workflows
+### 5. Validate metadata and API workflows
 
 - Open metadata tools and inspect at least one object or component type.
-- Open API tools and run a minimal request first (for example, list available API versions).
-- Confirm response payloads match the connected org and permissions.
+- Open API tools and run a minimal request (e.g. list available API versions).
+- Confirm responses match the connected org and user permissions.
 
-## 6. Run a baseline quality check before sharing changes
+### 6. Run a baseline quality check
 
 ```bash
 npm run check
 ```
 
+---
+
 ## Next steps
 
-- Read [Common workflows](../workflows/common-tasks)
-- Check [VS Code workflows](../vscode/overview)
+- Check [VS Code integration](../vscode/overview) for the embedded editor
+- Configure the [AI Agent](../ai-agent/setup)
 - Use [Troubleshooting](../troubleshooting/common-issues) if something breaks

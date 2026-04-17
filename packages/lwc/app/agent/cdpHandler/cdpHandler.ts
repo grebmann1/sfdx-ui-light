@@ -1,4 +1,5 @@
 import LOGGER from 'shared/logger';
+import { GOOGLE_DRIVE_SCOPES } from '../googleAuth/constants.js';
 
 /**
  * Chrome Debugger Bridge (CdpHandler)
@@ -1033,6 +1034,15 @@ export class CdpHandler {
                 return res;
             };
 
+            if (
+                typeof operation === 'string' &&
+                operation.startsWith('sheets.') &&
+                operation !== 'sheets.requestAccess' &&
+                !this.deps?.googleSheetEnabled
+            ) {
+                throw new Error('Google Sheets is not enabled. Please enable it in Settings → AI → Tools.');
+            }
+
             switch (operation) {
                 case 'status': {
                     const cwd = typeof bash.getCwd === 'function' ? bash.getCwd() : '/workspace';
@@ -1120,10 +1130,19 @@ export class CdpHandler {
                     return;
                 }
                 case 'sheets.requestAccess': {
+                    console.log('### [CdpHandler] sheets.requestAccess 1', this.deps?.googleSheetEnabled);
+                    if (!this.deps?.googleSheetEnabled) {
+                        respond({ success: true, result: { authorized: false } });
+                        return;
+                    }
                     try {
+                        console.log('### [CdpHandler] sheets.requestAccess 2');
                         const token = await this._getGoogleAccessToken(false);
+                        console.log('### [CdpHandler] sheets.requestAccess 3', token);
                         respond({ success: true, result: { authorized: !!token } });
-                    } catch {
+                    } catch (error) {
+                        console.log('### [CdpHandler] sheets.requestAccess 4', error);
+                        console.log('### [CdpHandler] sheets.requestAccess 3');
                         respond({ success: true, result: { authorized: false } });
                     }
                     return;
@@ -1257,6 +1276,40 @@ export class CdpHandler {
                     respond({ success: true, result });
                     return;
                 }
+                case 'brightdata.search': {
+                    const { query, zone = 'serp_api1', country } = input;
+                    if (!query || typeof query !== 'string') {
+                        throw new Error('brightdata.search requires a non-empty string query');
+                    }
+                    const apiKey = this.deps?.brightDataApiKey;
+                    if (!apiKey) {
+                        throw new Error('Bright Data API key is not configured. Please add it in Settings > AI > Tools.');
+                    }
+                    const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}&hl=en${country ? `&gl=${country}` : ''}`;
+                    const body: Record<string, unknown> = {
+                        zone: typeof zone === 'string' ? zone : 'serp_api1',
+                        url: searchUrl,
+                        format: 'json',
+                    };
+                    if (country && typeof country === 'string') {
+                        body.country = country;
+                    }
+                    const response = await fetch('https://api.brightdata.com/request', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${apiKey}`,
+                        },
+                        body: JSON.stringify(body),
+                    });
+                    if (!response.ok) {
+                        const text = await response.text().catch(() => response.statusText);
+                        throw new Error(`Bright Data API error ${response.status}: ${text}`);
+                    }
+                    const result = await response.json();
+                    respond({ success: true, result });
+                    return;
+                }
                 default:
                     throw new Error(`Unsupported workspace operation: ${String(operation)}`);
             }
@@ -1271,7 +1324,7 @@ export class CdpHandler {
             throw new Error('Google sign-in is only available in the Chrome extension.');
         }
         return new Promise((resolve, reject) => {
-            chrome.identity.getAuthToken({ interactive }, token => {
+            chrome.identity.getAuthToken({ interactive, scopes: GOOGLE_DRIVE_SCOPES }, token => {
                 if (chrome.runtime.lastError || !token) {
                     reject(new Error(
                         chrome.runtime.lastError?.message ||

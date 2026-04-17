@@ -24,16 +24,15 @@
 }
 
 .custom-utility-bar .custom-utility-right {
-    width: 30%;
-    min-width: 280px;
-    float: right;
+    flex: 0 0 auto;
     display: flex;
     flex-wrap: nowrap;
     justify-content: flex-end;
 }
 
 .custom-utility-bar .custom-utility-left {
-    width: 100%;
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 .custom-utility-text-copy {

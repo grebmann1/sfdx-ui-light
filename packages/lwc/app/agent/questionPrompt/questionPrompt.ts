@@ -8,15 +8,12 @@ export default class QuestionPrompt extends LightningElement {
     @api options: string[] = [];
 
     @track _selectedIndex: number | null = null;
-    @track _freeText = '';
-
-    get hasOptions() {
-        return Array.isArray(this.options) && this.options.length > 0;
-    }
+    @track _otherSelected: boolean = false;
+    @track _otherText: string = '';
 
     get formattedOptions() {
         return (Array.isArray(this.options) ? this.options : []).map((value, index) => {
-            const isSelected = this._selectedIndex === index;
+            const isSelected = !this._otherSelected && this._selectedIndex === index;
             return {
                 key: `opt-${index}`,
                 index,
@@ -30,35 +27,42 @@ export default class QuestionPrompt extends LightningElement {
         });
     }
 
-    get inputPlaceholder() {
-        return this.hasOptions ? 'Or type a custom answer…' : 'Type your answer…';
+    get otherLabel() {
+        const count = Array.isArray(this.options) ? this.options.length : 0;
+        return OPTION_LABELS[count] ?? String(count + 1);
+    }
+
+    get otherButtonClass() {
+        return this._otherSelected
+            ? 'question-option-btn question-option-btn-selected'
+            : 'question-option-btn';
     }
 
     get isSubmitDisabled() {
-        if (this._selectedIndex !== null) return false;
-        return !this._freeText.trim();
-    }
-
-    get _currentAnswer() {
-        if (this._selectedIndex !== null) {
-            const opt = Array.isArray(this.options) ? this.options[this._selectedIndex] : null;
-            return opt ?? '';
+        if (this._otherSelected) {
+            return !this._otherText.trim();
         }
-        return this._freeText.trim();
+        return this._selectedIndex === null;
     }
 
     handleOptionClick(event) {
         const index = parseInt(event.currentTarget.dataset.index, 10);
+        this._otherSelected = false;
         this._selectedIndex = this._selectedIndex === index ? null : index;
-        this._freeText = '';
     }
 
-    handleInputChange(event) {
-        this._freeText = event.target.value;
-        this._selectedIndex = null;
+    handleOtherClick() {
+        this._otherSelected = !this._otherSelected;
+        if (this._otherSelected) {
+            this._selectedIndex = null;
+        }
     }
 
-    handleInputKeydown(event) {
+    handleOtherInput(event) {
+        this._otherText = event.target.value;
+    }
+
+    handleKeydown(event) {
         if (event.key === 'Enter' && !this.isSubmitDisabled) {
             this._submit();
         }
@@ -76,7 +80,13 @@ export default class QuestionPrompt extends LightningElement {
     }
 
     _submit() {
-        const answer = this._currentAnswer;
+        let answer: string;
+        if (this._otherSelected) {
+            answer = this._otherText.trim();
+        } else {
+            if (this._selectedIndex === null) return;
+            answer = Array.isArray(this.options) ? this.options[this._selectedIndex] : '';
+        }
         if (!answer) return;
         this.dispatchEvent(
             new CustomEvent('questionanswered', {

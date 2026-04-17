@@ -66,10 +66,11 @@ export async function connect(
             credentialType: OAUTH_TYPES.OAUTH,
         });
 
-        if (
-            isNotUndefinedOrNull(connection.refreshToken) &&
-            isUndefinedOrNull(connection.accessToken)
-        ) {
+        // Always refresh when a refreshToken is available, regardless of whether
+        // a cached accessToken exists. The cached token may be expired; calling
+        // generateAccessToken() exchanges the refreshToken for a fresh accessToken
+        // so the connector dispatched to the store is never stale on cold-start.
+        if (isNotUndefinedOrNull(connection.refreshToken)) {
             await connector.generateAccessToken();
         }
         LOGGER.log('connector -> ', connector);

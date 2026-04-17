@@ -60,6 +60,20 @@ export class IframeJsforceBridgeClient {
         this.hostEventListeners.clear();
     }
 
+    emitNotification(eventName: string, payload?: Record<string, unknown> | null) {
+        try {
+            this.port.postMessage({
+                protocol: IFRAME_JSFORCE_BRIDGE_PROTOCOL,
+                version: IFRAME_JSFORCE_BRIDGE_VERSION,
+                type: IFRAME_JSFORCE_BRIDGE_PORT_MESSAGE_TYPES.EVENT,
+                eventName,
+                payload: payload ?? null,
+            });
+        } catch {
+            // ignore: best-effort fire-and-forget
+        }
+    }
+
     onHostEvent(listener: (event: IframeJsforceBridgeHostEvent) => void) {
         if (typeof listener !== 'function') {
             return {

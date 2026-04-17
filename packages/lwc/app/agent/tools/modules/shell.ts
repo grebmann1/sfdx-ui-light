@@ -9,6 +9,7 @@ import {
     ORG_HELP,
     registerSalesforceShellCommands,
     SOQL_HELP,
+    detectMetadataType,
 } from 'core/bash';
 import { store, APEX, API, QUERY, ERROR } from 'core/store';
 import {
@@ -37,6 +38,7 @@ export type BashToolOptions = {
     files?: string[];
     toolPrompt?: string;
     extraInstructions?: string;
+    brightDataApiKey?: string | null;
 };
 
 export function generateBashDescription(cwd: string, opts?: BashToolOptions) {
@@ -188,6 +190,80 @@ async function resolveCliFileContent(filePath: string, ctx: ShellCommandContext)
     } catch {
         return { content: null, resolvedPath };
     }
+}
+
+async function callConnectorRest({
+    path,
+    method = 'GET',
+    body,
+    extraHeaders = {},
+    isTooling = false,
+}: {
+    path: string;
+    method?: string;
+    body?: string;
+    extraHeaders?: Record<string, string>;
+    isTooling?: boolean;
+}): Promise<{ data: any; status: number }> {
+    const state = store.getState() as any;
+    const connector = state?.application?.connector;
+    if (!connector?.conn) {
+        throw new Error('No active org connector found.');
+    }
+    const { conn } = connector;
+    const version = conn.version || '59.0';
+    const baseSegment = isTooling ? `/services/data/v${version}/tooling` : `/services/data/v${version}`;
+    const url = path.startsWith('http')
+        ? path
+        : `${conn.instanceUrl}${baseSegment}${path.startsWith('/') ? path : `/${path}`}`;
+
+    const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        ...extraHeaders,
+    };
+    if (conn.accessToken) {
+        headers.Authorization = `Bearer ${conn.accessToken}`;
+    }
+
+    const res = await fetch(url, {
+        method,
+        headers,
+        body: body ?? undefined,
+    });
+
+    const contentType = res.headers.get('content-type') || '';
+    let data: any;
+    if (contentType.includes('application/json')) {
+        try { data = await res.json(); } catch { data = await res.text(); }
+    } else {
+        data = await res.text();
+    }
+
+    if (!res.ok) {
+        const errorMsg = Array.isArray(data)
+            ? data.map((e: any) => e.message || JSON.stringify(e)).join('; ')
+            : (typeof data === 'object' ? JSON.stringify(data) : String(data));
+        throw new Error(`HTTP ${res.status}: ${errorMsg}`);
+    }
+
+    return { data, status: res.status };
+}
+
+async function getConnectorVersion(): Promise<string> {
+    const state = store.getState() as any;
+    return state?.application?.connector?.conn?.version || '59.0';
+}
+
+async function getConnectorUserInfo(): Promise<{ id: string; username: string }> {
+    const state = store.getState() as any;
+    const conn = state?.application?.connector?.conn;
+    if (!conn) throw new Error('No active org connector found.');
+    const userInfo = conn.userInfo || {};
+    return {
+        id: userInfo.id || userInfo.user_id || '',
+        username: userInfo.username || userInfo.preferred_username || '',
+    };
 }
 
 export function registerShellCommands({
@@ -411,6 +487,80 @@ export function registerShellCommands({
     });
     shell.registerCommand(saveSkillCommand);
 
+    if (opts.brightDataApiKey) {
+        const brightDataApiKey = opts.brightDataApiKey;
+
+        const webSearchCommand = createCommand('web-search', async (argv, _ctx) => {
+            if (argv.includes('--help') || argv.includes('-h')) {
+                return { stdout: SHELL_TOOL_HELP.webSearch, stderr: '', exitCode: 0 };
+            }
+
+            const { flags, positionals } = parseCliArgs(argv);
+            const queryFromFlag = ensureSingleValue(getFlagValue(flags, 'query', 'q'));
+            const query =
+                typeof queryFromFlag === 'string'
+                    ? queryFromFlag
+                    : positionals.join(' ').trim();
+
+            if (!query) {
+                return {
+                    stdout: '',
+                    stderr: `Error: Missing search query. Usage: web-search "your query"\n\n${SHELL_TOOL_HELP.webSearch}\n`,
+                    exitCode: 1,
+                };
+            }
+
+            const zone = ensureSingleValue(getFlagValue(flags, 'zone', 'z'));
+            const country = ensureSingleValue(getFlagValue(flags, 'country', 'c'));
+
+            const searchUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}&hl=en${country ? `&gl=${country}` : ''}`;
+
+            try {
+                const body: Record<string, unknown> = {
+                    zone: typeof zone === 'string' ? zone : 'serp_api1',
+                    url: searchUrl,
+                    format: 'json',
+                };
+                if (country && typeof country === 'string') {
+                    body.country = country;
+                }
+
+                const response = await fetch('https://api.brightdata.com/request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${brightDataApiKey}`,
+                    },
+                    body: JSON.stringify(body),
+                });
+
+                if (!response.ok) {
+                    const text = await response.text().catch(() => response.statusText);
+                    return {
+                        stdout: '',
+                        stderr: `Error: Bright Data API returned ${response.status}: ${text}\n`,
+                        exitCode: 1,
+                    };
+                }
+
+                const data = await response.json();
+                return {
+                    stdout: JSON.stringify(data, null, 2),
+                    stderr: '',
+                    exitCode: 0,
+                };
+            } catch (err) {
+                const message = err instanceof Error ? err.message : String(err);
+                return {
+                    stdout: '',
+                    stderr: `Error: web-search failed: ${message}\n`,
+                    exitCode: 1,
+                };
+            }
+        });
+        shell.registerCommand(webSearchCommand);
+    }
+
     registerSalesforceShellCommands({
         shell,
         handlers: {
@@ -546,6 +696,289 @@ export function registerShellCommands({
                 const connector = await getConnectorByAlias(alias);
                 await openBrowser({ url: connector.frontDoorUrl, alias, target: 'default' });
                 return { result: `Opened org ${alias}` };
+            },
+            async runApexTests({ classNames, testLevel, timeoutMs }) {
+                const requestBody: Record<string, any> = { testLevel };
+                if (classNames.length > 0) {
+                    requestBody.classNames = classNames.join(',');
+                }
+                const { data: jobId } = await callConnectorRest({
+                    path: '/runTestsAsynchronous',
+                    method: 'POST',
+                    body: JSON.stringify(requestBody),
+                    isTooling: true,
+                });
+                if (!jobId || typeof jobId !== 'string') {
+                    throw new Error('Unexpected response from runTestsAsynchronous');
+                }
+
+                const deadline = Date.now() + timeoutMs;
+                const pollQuery = `SELECT+Id,Status,NumberTestsTotal,NumberTestsCompleted,NumberTestErrors+FROM+ApexTestRunResult+WHERE+AsyncApexJobId='${jobId}'`;
+                let runResult: any = null;
+                while (Date.now() < deadline) {
+                    await new Promise(r => setTimeout(r, 2000));
+                    const { data } = await callConnectorRest({
+                        path: `/query?q=${pollQuery}`,
+                        isTooling: true,
+                    });
+                    const record = data?.records?.[0];
+                    if (record && ['Completed', 'Failed', 'Aborted'].includes(record.Status)) {
+                        runResult = record;
+                        break;
+                    }
+                }
+
+                const resultsQuery = `SELECT+MethodName,Outcome,Message,StackTrace,ApexClass.Name+FROM+ApexTestResult+WHERE+AsyncApexJobId='${jobId}'+ORDER+BY+Outcome+ASC`;
+                const { data: resultsData } = await callConnectorRest({
+                    path: `/query?q=${resultsQuery}`,
+                    isTooling: true,
+                });
+                const testResults = resultsData?.records || [];
+
+                const passed = testResults.filter((r: any) => r.Outcome === 'Pass').length;
+                const failed = testResults.filter((r: any) => r.Outcome === 'Fail').length;
+                const skipped = testResults.filter((r: any) => r.Outcome === 'Skip').length;
+
+                const summary = runResult
+                    ? { status: runResult.Status, total: runResult.NumberTestsTotal, completed: runResult.NumberTestsCompleted, errors: runResult.NumberTestErrors }
+                    : { status: 'timeout', passed, failed, skipped };
+
+                const failures = testResults
+                    .filter((r: any) => r.Outcome === 'Fail')
+                    .map((r: any) => ({ class: r.ApexClass?.Name, method: r.MethodName, message: r.Message, stackTrace: r.StackTrace }));
+
+                const exitCode = failed > 0 || summary.status === 'timeout' ? 1 : 0;
+                return { result: { jobId, summary: { ...summary, passed, failed, skipped }, failures }, exitCode };
+            },
+            async enableDebugLog({ durationMinutes }) {
+                const userInfo = await getConnectorUserInfo();
+                let userId = userInfo.id;
+
+                // Resolve user ID from username if not available directly
+                if (!userId && userInfo.username) {
+                    const { data } = await callConnectorRest({
+                        path: `/query?q=SELECT+Id+FROM+User+WHERE+Username='${userInfo.username}'+LIMIT+1`,
+                    });
+                    userId = data?.records?.[0]?.Id || '';
+                }
+                if (!userId) throw new Error('Could not determine current user ID.');
+
+                // Ensure a DebugLevel record exists
+                const { data: dlData } = await callConnectorRest({
+                    path: `/query?q=SELECT+Id+FROM+DebugLevel+WHERE+DeveloperName='WorkbenchAgent'+LIMIT+1`,
+                    isTooling: true,
+                });
+                let debugLevelId: string = dlData?.records?.[0]?.Id || '';
+                if (!debugLevelId) {
+                    const { data: newDl } = await callConnectorRest({
+                        path: '/sobjects/DebugLevel',
+                        method: 'POST',
+                        body: JSON.stringify({
+                            DeveloperName: 'WorkbenchAgent',
+                            MasterLabel: 'Workbench Agent',
+                            ApexCode: 'DEBUG',
+                            ApexProfiling: 'NONE',
+                            Callout: 'INFO',
+                            Database: 'INFO',
+                            System: 'DEBUG',
+                            Validation: 'INFO',
+                            Visualforce: 'INFO',
+                            Workflow: 'INFO',
+                        }),
+                        isTooling: true,
+                    });
+                    debugLevelId = newDl?.id || newDl?.Id || '';
+                }
+                if (!debugLevelId) throw new Error('Could not find or create DebugLevel.');
+
+                const now = new Date();
+                const expiry = new Date(now.getTime() + durationMinutes * 60 * 1000);
+
+                // Delete any existing TraceFlag for this user to avoid conflicts
+                const { data: tfData } = await callConnectorRest({
+                    path: `/query?q=SELECT+Id+FROM+TraceFlag+WHERE+TracedEntityId='${userId}'+AND+LogType='DEVELOPER_LOG'+LIMIT+1`,
+                    isTooling: true,
+                });
+                const existingTfId: string = tfData?.records?.[0]?.Id || '';
+                if (existingTfId) {
+                    await callConnectorRest({
+                        path: `/sobjects/TraceFlag/${existingTfId}`,
+                        method: 'DELETE',
+                        isTooling: true,
+                    });
+                }
+
+                await callConnectorRest({
+                    path: '/sobjects/TraceFlag',
+                    method: 'POST',
+                    body: JSON.stringify({
+                        TracedEntityId: userId,
+                        DebugLevelId: debugLevelId,
+                        LogType: 'DEVELOPER_LOG',
+                        StartDate: now.toISOString(),
+                        ExpirationDate: expiry.toISOString(),
+                    }),
+                    isTooling: true,
+                });
+
+                return {
+                    result: {
+                        enabled: true,
+                        userId,
+                        expiresAt: expiry.toISOString(),
+                        durationMinutes,
+                    },
+                };
+            },
+            async listDebugLogs({ limit }) {
+                const safeLimit = Math.min(Math.max(1, limit), 200);
+                const q = `SELECT+Id,LogUser.Name,Application,DurationMilliseconds,StartTime,Status,LogLength+FROM+ApexLog+ORDER+BY+StartTime+DESC+LIMIT+${safeLimit}`;
+                const { data } = await callConnectorRest({ path: `/query?q=${q}`, isTooling: true });
+                return { result: data?.records || [] };
+            },
+            async getDebugLog({ logId, outputPath, ctx }) {
+                const { data } = await callConnectorRest({
+                    path: `/sobjects/ApexLog/${logId}/Body`,
+                    extraHeaders: { Accept: 'text/plain' },
+                    isTooling: true,
+                });
+                const logText = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+                if (outputPath && ctx.fs.writeFile) {
+                    const resolved = ctx.fs.resolvePath(ctx.cwd, outputPath);
+                    await ctx.fs.writeFile(resolved, logText);
+                    return { result: `Log saved to ${resolved} (${logText.length} chars)` };
+                }
+                return { result: logText };
+            },
+            async displayLimits() {
+                const version = await getConnectorVersion();
+                const { data } = await callConnectorRest({ path: '/limits' });
+                if (!data || typeof data !== 'object') return { result: data };
+                const lines = Object.entries(data).map(([name, val]: [string, any]) => {
+                    const max = val?.Max ?? '?';
+                    const remaining = val?.Remaining ?? '?';
+                    const used = typeof max === 'number' && typeof remaining === 'number' ? max - remaining : '?';
+                    return `${name}: ${used}/${max} used (${remaining} remaining)`;
+                });
+                return { result: { apiVersion: version, limits: data, summary: lines.join('\n') } };
+            },
+            async describeSObject({ objectName }) {
+                const { data } = await callConnectorRest({ path: `/sobjects/${objectName}/describe` });
+                if (!data || typeof data !== 'object') return { result: data };
+                const fields = (data.fields || []).map((f: any) => ({
+                    name: f.name,
+                    label: f.label,
+                    type: f.type,
+                    length: f.length,
+                    required: !f.nillable && !f.defaultedOnCreate,
+                    updateable: f.updateable,
+                    referenceTo: f.referenceTo?.length ? f.referenceTo : undefined,
+                }));
+                return {
+                    result: {
+                        name: data.name,
+                        label: data.label,
+                        keyPrefix: data.keyPrefix,
+                        custom: data.custom,
+                        queryable: data.queryable,
+                        createable: data.createable,
+                        updateable: data.updateable,
+                        deletable: data.deletable,
+                        fieldCount: fields.length,
+                        fields,
+                    },
+                };
+            },
+            async deployMetadata({ filePath, metadataType, apiName, ctx }) {
+                const resolved = ctx.fs.resolvePath(ctx.cwd, filePath);
+                let content: string | null = null;
+                try {
+                    content = await ctx.fs.readFile(resolved, 'utf-8');
+                } catch {
+                    throw new Error(`Cannot read file: ${resolved}`);
+                }
+
+                const detected = detectMetadataType(resolved);
+                const type = metadataType || detected.type;
+                const name = apiName || detected.apiName;
+
+                if (!type) {
+                    throw new Error(
+                        `Cannot detect metadata type for "${resolved}". Use --metadata-type to specify it explicitly.`
+                    );
+                }
+
+                const bodyField = type === 'StaticResource' ? 'Body' : 'Body';
+                const nameField = 'Name';
+
+                // Check if record already exists
+                const q = `SELECT+Id+FROM+${type}+WHERE+${nameField}='${name}'+LIMIT+1`;
+                const { data: existing } = await callConnectorRest({
+                    path: `/query?q=${q}`,
+                    isTooling: true,
+                });
+                const existingId: string = existing?.records?.[0]?.Id || '';
+
+                if (existingId) {
+                    await callConnectorRest({
+                        path: `/sobjects/${type}/${existingId}`,
+                        method: 'PATCH',
+                        body: JSON.stringify({ [bodyField]: content }),
+                        isTooling: true,
+                    });
+                    return { result: { deployed: true, type, name, action: 'updated', id: existingId } };
+                } else {
+                    const version = await getConnectorVersion();
+                    const { data: created } = await callConnectorRest({
+                        path: `/sobjects/${type}`,
+                        method: 'POST',
+                        body: JSON.stringify({ [nameField]: name, [bodyField]: content, ApiVersion: parseFloat(version) }),
+                        isTooling: true,
+                    });
+                    return { result: { deployed: true, type, name, action: 'created', id: created?.id || created?.Id } };
+                }
+            },
+            async retrieveMetadata({ metadataType, apiName, outputPath, ctx }) {
+                const q = `SELECT+Id,Name,Body+FROM+${metadataType}+WHERE+Name='${apiName}'+LIMIT+1`;
+                const { data } = await callConnectorRest({
+                    path: `/query?q=${q}`,
+                    isTooling: true,
+                });
+                const record = data?.records?.[0];
+                if (!record) {
+                    throw new Error(`No ${metadataType} found with name "${apiName}".`);
+                }
+
+                const extMap: Record<string, string> = {
+                    ApexClass: '.cls',
+                    ApexTrigger: '.trigger',
+                    ApexPage: '.page',
+                    ApexComponent: '.component',
+                    StaticResource: '.resource',
+                };
+                const ext = extMap[metadataType] || '.txt';
+                const filename = `${apiName}${ext}`;
+                const targetDir = outputPath
+                    ? ctx.fs.resolvePath(ctx.cwd, outputPath)
+                    : '/workspace';
+                const targetPath = `${targetDir}/${filename}`;
+
+                if (ctx.fs.writeFile) {
+                    if (ctx.fs.mkdir) {
+                        await ctx.fs.mkdir(targetDir, { recursive: true });
+                    }
+                    await ctx.fs.writeFile(targetPath, record.Body || '');
+                }
+
+                return {
+                    result: {
+                        retrieved: true,
+                        type: metadataType,
+                        name: apiName,
+                        savedTo: targetPath,
+                        size: (record.Body || '').length,
+                    },
+                };
             },
         },
     });

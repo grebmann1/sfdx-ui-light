@@ -72,6 +72,7 @@ const initialState: ApplicationState = {
         gemini: [],
         mistral: [],
         grok: [],
+        workbench: [],
     },
     modelCatalogStatusByProvider: {
         openai: { status: 'missing_key', error: null },
@@ -79,6 +80,7 @@ const initialState: ApplicationState = {
         gemini: { status: 'missing_key', error: null },
         mistral: { status: 'missing_key', error: null },
         grok: { status: 'missing_key', error: null },
+        workbench: { status: 'missing_key', error: null },
     },
     openaiKey: null,
     openaiUrl: createDefaultProviderConfigMap().openai.baseUrl,

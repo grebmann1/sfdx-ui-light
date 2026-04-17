@@ -1,16 +1,4 @@
 <template>
-    <template lwc:if={showBackToAppsBanner}>
-        <div
-            class="sf-panel-context-banner slds-p-around_x-small slds-theme_shade"
-            role="status"
-            aria-live="polite">
-            <lightning-button
-                class="sf-panel-context-banner__btn"
-                label="Back to Workbench apps"
-                onclick={handleBackToAppsPanel}
-                variant="neutral"></lightning-button>
-        </div>
-    </template>
     <!-- Salesforce Panel -->
     <panels-salesforce
         class={salesforcePanelClass}

@@ -5,49 +5,54 @@ slug: /
 
 # Workbench Documentation
 
-Workbench is a Salesforce productivity platform that ships as a **web app**, a **browser extension**, and an **Electron desktop app**. All three surfaces share the same LWC frontend, an embedded VS Code workbench, and an AI agent for Salesforce-oriented tasks.
+Workbench is a Salesforce productivity toolkit that ships as a **Chrome extension** (recommended), a **web app**, and a **desktop app** (in development). All surfaces share the same LWC frontend, an embedded VS Code workbench, and an AI agent for Salesforce-oriented tasks.
+
+It is the modern replacement for **Salesforce Workbench** and **Benchpress**.
 
 ## What this documentation covers
 
-- **Getting started**: install prerequisites, configure OAuth variables, and run local services.
-- **Architecture**: high-level overview of the monorepo, packages, iframe bridge design, and multi-surface builds.
-- **App workflows**: run SOQL, inspect metadata, test APIs, and validate org changes.
-- **Workbench workflows**: use extension-driven Salesforce tooling in the embedded VS Code surface.
-- **Operations and support**: troubleshoot local issues, review privacy details, and contribute changes safely.
+- **Getting started**: install the extension or run locally, configure OAuth, and connect your org.
+- **Architecture**: monorepo layout, packages, iframe bridge design, and multi-surface builds.
+- **VS Code integration**: embedded editor, extension bridges, and parity with upstream Salesforce extensions.
+- **AI Agent**: provider setup, capabilities, and tool reference.
+- **Operations and support**: troubleshoot issues, review privacy details, and contribute changes.
 
-## Core local routes
+## Available platforms
 
-| Route | Surface | Purpose |
+| Platform | Status | Link |
 | --- | --- | --- |
-| `/welcome` | Welcome website | Product overview and onboarding entry points. |
-| `/docs` | Documentation app | Guides for setup, workflows, and contributor docs. |
-| `/app` | Main web application | Day-to-day Salesforce tooling for data, metadata, and API tasks. |
+| Chrome Extension | Available | [Chrome Web Store](https://chromewebstore.google.com/detail/salesforce-toolkit/konbmllgicfccombdckckakhnmejjoei?hl=en) |
+| Web App | Available | [app.sf-toolkit.com](https://app.sf-toolkit.com) |
+| Desktop App | In development | — |
+
+## Local dev routes (self-hosted)
+
+| Surface | Dev URL | Production URL |
+| --- | --- | --- |
+| Welcome / landing | `http://localhost:27100` | `http://localhost:3000/welcome` |
+| Main app | `http://localhost:27100/app` | `http://localhost:3000/app` |
+| Docs | `http://localhost:3001` | `http://localhost:3000/docs` |
 
 ## Recommended reading path
 
 1. [Installation](./getting-started/installation)
 2. [Quickstart](./getting-started/quickstart)
 3. [Architecture overview](./architecture/overview)
-4. [Common workflows](./workflows/common-tasks)
-5. [VS Code integration](./vscode/overview)
-6. [CLI usage](./cli/overview)
+4. [VS Code integration](./vscode/overview)
+5. [AI Agent setup](./ai-agent/setup)
 
 ## Start here
 
 - [Installation](./getting-started/installation)
 - [Quickstart](./getting-started/quickstart)
 - [Architecture overview](./architecture/overview)
-- [Common workflows](./workflows/common-tasks)
 - [VS Code integration](./vscode/overview)
 - [AI Agent tools](./ai-agent/tools-overview)
 - [IndexedDB virtual file system](./storage/indexeddb-workspace)
 - [Security and privacy](./security/local-data-and-privacy)
-- [CLI usage](./cli/overview)
 - [Troubleshooting](./troubleshooting/common-issues)
 
 ## Contribute
-
-If you want to help improve Workbench:
 
 - [How to contribute](./contributing/how-to-contribute)
 - [Report issues and request features](./contributing/reporting-issues)

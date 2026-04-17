@@ -162,11 +162,10 @@ export const formatApiRequest = ({
                 });
             }
         } else if (typeof header === 'string') {
-            // Clean up the header string and process each line
             header
-                .replace(/^[\s\r\n]+/gm, '') // Remove empty lines
-                .trim()
                 .split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0)
                 .forEach(line => {
                     const lineArr = line.split(':');
                     if (lineArr.length >= 2) {

@@ -40,6 +40,8 @@ export function computeFileLists(fileOps): { readFiles: string[]; modifiedFiles:
 
 const TOOL_RESULT_MAX_CHARS = 2000;
 const MIN_KEPT_TOKENS_ON_RETRY = 4000;
+// ~50K tokens — safe upper bound for a single summary model API call input
+const SUMMARY_MODEL_MAX_INPUT_CHARS = 200_000;
 
 export const DEFAULT_RESERVE_TOKENS = 16_384;
 export const DEFAULT_KEEP_RECENT_TOKENS = 20_000;
@@ -563,6 +565,88 @@ async function summarizeConversation(
     return text.trim();
 }
 
+/**
+ * Split messages into chunks where each chunk's serialized text stays under maxCharsPerChunk.
+ * Messages are never split mid-message; a single oversized message occupies its own chunk.
+ */
+function splitMessagesIntoChunks(
+    messages: ModelMessage[],
+    maxCharsPerChunk: number
+): ModelMessage[][] {
+    const chunks: ModelMessage[][] = [];
+    let current: ModelMessage[] = [];
+    let currentChars = 0;
+
+    for (const message of messages) {
+        const serialized = serializeConversation([message]);
+        if (current.length > 0 && currentChars + serialized.length > maxCharsPerChunk) {
+            chunks.push(current);
+            current = [];
+            currentChars = 0;
+        }
+        current.push(message);
+        currentChars += serialized.length;
+    }
+
+    if (current.length > 0) {
+        chunks.push(current);
+    }
+
+    return chunks;
+}
+
+/**
+ * Progressively summarize messages that are too large for a single API call.
+ * Each chunk is summarized with the prior chunk's summary as previousSummary,
+ * rolling the context forward until all chunks are processed.
+ */
+async function summarizeInChunks(
+    providerInstance: ProviderInstance,
+    provider: string,
+    modelId: string,
+    messages: ModelMessage[],
+    reserveTokens: number,
+    customInstructions?: string,
+    initialPreviousSummary?: string,
+    signal?: AbortSignal,
+    isInternal = false
+): Promise<string> {
+    const chunks = splitMessagesIntoChunks(messages, SUMMARY_MODEL_MAX_INPUT_CHARS);
+
+    if (chunks.length <= 1) {
+        return summarizeConversation(
+            providerInstance,
+            provider,
+            modelId,
+            messages,
+            reserveTokens,
+            customInstructions,
+            initialPreviousSummary,
+            undefined,
+            signal,
+            isInternal
+        );
+    }
+
+    let rollingPreviousSummary = initialPreviousSummary;
+    for (const chunk of chunks) {
+        rollingPreviousSummary = await summarizeConversation(
+            providerInstance,
+            provider,
+            modelId,
+            chunk,
+            reserveTokens,
+            customInstructions,
+            rollingPreviousSummary,
+            undefined,
+            signal,
+            isInternal
+        );
+    }
+
+    return rollingPreviousSummary ?? '';
+}
+
 export async function generateCompactionSummary(
     providerInstance: ProviderInstance,
     provider: string,
@@ -574,11 +658,11 @@ export async function generateCompactionSummary(
 ): Promise<string> {
     const { messagesToSummarize, turnPrefixMessages, isSplitTurn, previousSummary, settings } =
         preparation;
-    let summary;
+    let summary: string;
     if (isSplitTurn && turnPrefixMessages.length > 0) {
         const [historySummary, prefixSummary] = await Promise.all([
             messagesToSummarize.length > 0
-                ? summarizeConversation(
+                ? summarizeInChunks(
                       providerInstance,
                       provider,
                       modelId,
@@ -586,7 +670,6 @@ export async function generateCompactionSummary(
                       settings.reserveTokens,
                       customInstructions,
                       previousSummary,
-                      undefined,
                       signal,
                       isInternal
                   )
@@ -610,20 +693,19 @@ export async function generateCompactionSummary(
         } else {
             summary = (historySummary || prefixSummary).trim();
         }
+    } else {
+        summary = await summarizeInChunks(
+            providerInstance,
+            provider,
+            modelId,
+            messagesToSummarize,
+            settings.reserveTokens,
+            customInstructions,
+            previousSummary,
+            signal,
+            isInternal
+        );
     }
-
-    summary = await summarizeConversation(
-        providerInstance,
-        provider,
-        modelId,
-        messagesToSummarize,
-        settings.reserveTokens,
-        customInstructions,
-        previousSummary,
-        undefined,
-        signal,
-        isInternal
-    );
 
     // Compute file lists and append to summary
     const { readFiles, modifiedFiles } = computeFileLists(preparation.fileOps);

@@ -23,6 +23,7 @@ type IframeJsforceBridgeHostOptions = {
     handshakeTimeoutMs?: number;
     onReady?: () => void;
     onError?: (error: IframeJsforceBridgeError) => void;
+    onAppEvent?: (event: { eventName: string; payload?: Record<string, unknown> | null }) => void;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -36,6 +37,7 @@ class IframeJsforceBridgeHost {
     private handshakeTimeoutMs: number;
     private onReady?: () => void;
     private onError?: (error: IframeJsforceBridgeError) => void;
+    private onAppEvent?: (event: { eventName: string; payload?: Record<string, unknown> | null }) => void;
     private started = false;
     private disposed = false;
     private ready = false;
@@ -51,6 +53,7 @@ class IframeJsforceBridgeHost {
         this.runtime = options.runtime;
         this.onReady = options.onReady;
         this.onError = options.onError;
+        this.onAppEvent = options.onAppEvent;
         this.handshakeTimeoutMs = Math.max(
             1000,
             Number(options.handshakeTimeoutMs || DEFAULT_HANDSHAKE_TIMEOUT_MS)
@@ -195,6 +198,22 @@ class IframeJsforceBridgeHost {
 
         if (event.data.type === IFRAME_JSFORCE_BRIDGE_PORT_MESSAGE_TYPES.REQUEST) {
             await this.handleJsforceRequest(event.data);
+            return;
+        }
+
+        if (event.data.type === IFRAME_JSFORCE_BRIDGE_PORT_MESSAGE_TYPES.EVENT) {
+            const eventName = String(event.data.eventName || '').trim();
+            if (eventName && this.onAppEvent) {
+                const payload =
+                    event.data.payload && typeof event.data.payload === 'object'
+                        ? (event.data.payload as Record<string, unknown>)
+                        : null;
+                try {
+                    this.onAppEvent({ eventName, payload });
+                } catch {
+                    // ignore handler errors
+                }
+            }
             return;
         }
 

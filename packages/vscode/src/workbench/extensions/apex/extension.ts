@@ -2,6 +2,7 @@ import { buildSalesforceExtensionConfig } from '../core/extensionManifest';
 import { registerSalesforceExtension } from '../core/extensionRegistration';
 import { resolveCoreServices, type CoreServices } from '../core/coreServices';
 import { registerQueryAndApexTools } from '../metadata/commands/queryAndApexTools';
+import { LanguageClientWrapper } from '../../../languageClient/wrapper';
 
 const APEX_LANGUAGE_ASSETS = [
     {
@@ -17,6 +18,11 @@ const APEX_LANGUAGE_ASSETS = [
     {
         sourcePath: '/libs/extensions/salesforce-apex/syntaxes/apex.configuration.json',
         targetPath: '/workspace/vscode/apex.configuration.json',
+        mimeType: 'application/json',
+    },
+    {
+        sourcePath: '/libs/extensions/salesforce-apex/snippets/apex.json',
+        targetPath: '/workspace/vscode/apex.code-snippets',
         mimeType: 'application/json',
     },
 ];
@@ -42,14 +48,29 @@ function buildApexExtensionConfig() {
                     path: '/workspace/vscode/apex.tmLanguage',
                 },
             ],
+            snippets: [
+                { language: 'apex', path: '/workspace/vscode/apex.code-snippets' },
+            ],
             commands: [
                 {
                     command: 'salesforceMetadata.executeAnonymous',
                     title: 'Salesforce: Execute Anonymous Apex (inline)',
                 },
                 {
+                    command: 'salesforceMetadata.executeAnonymousWithLogs',
+                    title: 'Salesforce: Execute Anonymous Apex with Logs',
+                },
+                {
                     command: 'salesforceMetadata.runApexTests',
                     title: 'Salesforce: Run Apex Tests (Tooling API)',
+                },
+                {
+                    command: 'salesforceMetadata.runApexTestsCurrentFile',
+                    title: 'Salesforce: Run Apex Tests (Current File)',
+                },
+                {
+                    command: 'salesforceMetadata.runApexTestMethod',
+                    title: 'Salesforce: Run Apex Test Method',
                 },
                 {
                     command: 'salesforceMetadata.enableDebugLogs',
@@ -63,7 +84,9 @@ function buildApexExtensionConfig() {
             menus: {
                 commandPalette: [
                     { command: 'salesforceMetadata.executeAnonymous' },
+                    { command: 'salesforceMetadata.executeAnonymousWithLogs' },
                     { command: 'salesforceMetadata.runApexTests' },
+                    { command: 'salesforceMetadata.runApexTestsCurrentFile' },
                     { command: 'salesforceMetadata.enableDebugLogs' },
                     { command: 'salesforceMetadata.openDebugLogs' },
                 ],
@@ -72,6 +95,11 @@ function buildApexExtensionConfig() {
                         command: 'salesforceMetadata.executeAnonymous',
                         when: 'editorHasSelection',
                         group: 'z_salesforce@1',
+                    },
+                    {
+                        command: 'salesforceMetadata.runApexTestsCurrentFile',
+                        when: "editorLangId == 'apex'",
+                        group: 'z_salesforce@2',
                     },
                 ],
             },
@@ -89,7 +117,7 @@ export async function register(
             config: buildApexExtensionConfig(),
             remoteAssets: APEX_LANGUAGE_ASSETS,
         },
-        async () => {
+        async (_vscode, { push }) => {
             const core = await resolveCoreServices(coreServices, vscodeBundle);
             if (
                 !core?.connection?.runtime ||
@@ -133,26 +161,26 @@ export async function register(
                 }
 
                 try {
-                    const LanguageClientWrapper =
-                        vscodeBundle?.monacoLanguageClient?.LanguageClient?.LanguageClientWrapper;
-                    if (LanguageClientWrapper) {
-                        const worker = new Worker(
-                            '/libs/extensions/salesforce-apex/server/server.browser.js',
-                            { type: 'module', name: 'Apex LS' }
-                        );
-                        const wrapper = new LanguageClientWrapper({
-                            languageId: 'apex',
-                            clientOptions: {
-                                documentSelector: [
-                                    { scheme: 'file', pattern: '**/*.cls' },
-                                    { scheme: 'file', pattern: '**/*.trigger' },
-                                ],
+                    const worker = new Worker(
+                        '/libs/extensions/salesforce-apex/server/server.browser.js',
+                        { type: 'module', name: 'Apex LS' }
+                    );
+                    const wrapper = new LanguageClientWrapper({
+                        languageId: 'apex',
+                        clientOptions: {
+                            documentSelector: [
+                                { scheme: 'file', language: 'apex' },
+                            ],
+                        },
+                        connection: {
+                            options: {
+                                $type: 'WorkerDirect',
+                                worker,
                             },
-                            connection: { options: { worker } },
-                        });
-                        await wrapper.start();
-                        context.addDisposable?.({ dispose: () => wrapper?.dispose?.() });
-                    }
+                        },
+                    });
+                    await wrapper.start();
+                    push(wrapper);
                 } catch (error) {
                     // eslint-disable-next-line no-console
                     console.warn('Apex language client failed to start:', error);

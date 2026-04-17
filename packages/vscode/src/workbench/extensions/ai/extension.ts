@@ -10,6 +10,7 @@ import {
 
 import { createWorkbenchAgentBridge } from './agentBridge';
 import { WORKBENCH_BASH_TOOL_DEFINITIONS } from './tools/bashTools';
+import { WORKBENCH_SALESFORCE_TOOL_DEFINITIONS } from './tools/salesforceTools';
 import { VSCODE_FILE_TOOL_DEFINITIONS } from './tools/vscodeFileTools';
 import {
     getWorkbenchAiBridgeConfig,
@@ -56,6 +57,7 @@ const ACTIVE_EDITOR_TOOL_DEFINITIONS = [
 const TOOL_DEFINITIONS = [
     ...ACTIVE_EDITOR_TOOL_DEFINITIONS,
     ...WORKBENCH_BASH_TOOL_DEFINITIONS,
+    ...WORKBENCH_SALESFORCE_TOOL_DEFINITIONS,
     ...VSCODE_FILE_TOOL_DEFINITIONS,
 ];
 

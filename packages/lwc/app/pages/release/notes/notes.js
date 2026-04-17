@@ -1,6 +1,17 @@
 import { LightningElement, track } from 'lwc';
 import { isChromeExtension } from 'shared/utils';
 
+const SECTION_COLOR_MAP = {
+    'new features': 'section-badge--feature',
+    'enhancements': 'section-badge--enhancement',
+    'bug fixes': 'section-badge--bugfix',
+    'breaking changes': 'section-badge--breaking',
+};
+
+function getSectionBadgeClass(title = '') {
+    return SECTION_COLOR_MAP[title.toLowerCase()] ?? 'section-badge--other';
+}
+
 export default class Notes extends LightningElement {
     @track releases = [];
     @track error = null;
@@ -15,10 +26,10 @@ export default class Notes extends LightningElement {
             .then(data => {
                 this.releases = data;
                 if (data.length > 0) {
-                    this.selectedVersion = data[0].version; // Default to latest
+                    this.selectedVersion = data[0].version;
                 }
             })
-            .catch(err => {
+            .catch(() => {
                 this.error = 'Failed to load release notes.';
             });
     }
@@ -31,26 +42,45 @@ export default class Notes extends LightningElement {
     get formattedReleases() {
         return this.releases.map((release, idx) => ({
             ...release,
-            sections: release.sections.map((section, idx) => ({
+            sections: release.sections.map((section, sIdx) => ({
                 ...section,
-                key: idx,
-                categories: section.categories.map((category, idx) => ({
+                key: sIdx,
+                badgeClass: `section-badge ${getSectionBadgeClass(section.title)}`,
+                categories: section.categories.map((category, cIdx) => ({
                     ...category,
-                    key: idx,
-                    items: category.items.map((item, idx) => ({
-                        ...item,
-                        key: idx,
+                    key: cIdx,
+                    items: category.items.map((item, iIdx) => ({
+                        text: item,
+                        key: iIdx,
                     })),
                 })),
             })),
             key: idx,
             isSelected: this.selectedVersion === release.version,
             isLatest: idx === 0,
-            className: `release-list-item slds-p-vertical_x-small slds-p-horizontal_small slds-truncate ${this.selectedVersion === release.version ? 'selected' : ''}`,
+            className: `release-list-item ${this.selectedVersion === release.version ? 'selected' : ''}`,
         }));
     }
 
     get selectedRelease() {
-        return this.releases.find(r => r.version === this.selectedVersion);
+        if (!this.selectedVersion) return null;
+        const release = this.releases.find(r => r.version === this.selectedVersion);
+        if (!release) return null;
+        return {
+            ...release,
+            sections: release.sections.map((section, sIdx) => ({
+                ...section,
+                key: sIdx,
+                badgeClass: `section-badge ${getSectionBadgeClass(section.title)}`,
+                categories: section.categories.map((category, cIdx) => ({
+                    ...category,
+                    key: cIdx,
+                    items: category.items.map((item, iIdx) => ({
+                        text: item,
+                        key: iIdx,
+                    })),
+                })),
+            })),
+        };
     }
 }

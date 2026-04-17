@@ -18,7 +18,8 @@ import * as data from '../../package.json';
 
 const getIsProduction = (args) => (args?.NODE_ENV || process.env.NODE_ENV) === 'production';
 const r = (...args) => path.resolve(__dirname, ...args);
-dotenv.config({ path: r('../../.env') });
+const envFile = process.env.NODE_ENV === 'production' ? '.env.prod' : '.env.dev';
+dotenv.config({ path: r(`../../${envFile}`) });
 const lwc = typeof lwcPlugin === 'function' ? lwcPlugin : lwcPlugin?.default;
 if (typeof lwc !== 'function') {
     throw new TypeError(
@@ -387,11 +388,10 @@ const assetCopyTargets = [
 
 const getChromeCopyTargets = (isProduction) => [
     { src: r('../../packages/extension/src/views/'), dest: r('../../dist/extension') },
-    {
-        src: r('../../packages/extension/src/scripts'),
-        dest: r('../../dist/extension'),
-        filter: (name) => !name.endsWith('/viewer.js') && !name.endsWith('\\viewer.js'),
-    },
+    // Copy plain scripts (app.js, callback.js, preload.js, etc.) as-is.
+    // The bundled `viewer.js` lives under `packages/extension/src/modules/`
+    // (see `basicBundler` below) so this copy step cannot overwrite it.
+    { src: r('../../packages/extension/src/scripts'), dest: r('../../dist/extension') },
     { src: r('../../packages/extension/src/images'), dest: r('../../dist/extension') },
     {
         src: r('../../packages/extension/manifest.template.json'),
@@ -409,6 +409,10 @@ const getChromeCopyTargets = (isProduction) => [
                 isProduction
                     ? String(process.env.WORKBENCH_BASE_URL || 'https://sf-toolkit.com') + '/'
                     : 'http://localhost:5173/'
+            );
+            newContents = newContents.replace(
+                '__googleOauthClientId__',
+                String(process.env.GOOGLE_CLIENT_ID_EXTENSION || '')
             );
             return newContents;
         }
@@ -551,12 +555,14 @@ const basicBundler = (
         ...(useLwc ? [] : [lwcAliasForNonLwcBundles(modulesArg)]),
         resolvePlugin,
         vscodeFullAppTsFallback(),
+        // Strip TypeScript before cjsPlugin so @rollup/plugin-commonjs never parses
+        // raw .ts syntax. Safe for JS-only bundles (returns null for non-.ts files).
+        stripTypescript(),
         cjsPlugin,
         // Provide polyfills for any Node built-ins used by bundled deps (browser-only output).
         nodePolyfills(),
         ...(useLwc
             ? [
-                stripTypescript(),
                 lwc({
                     enableDynamicComponents: true,
                     modules: modulesArg,
@@ -678,14 +684,13 @@ export default (args) => {
         ]
     ),
         basicBundler(
-        '../../packages/extension/src/scripts/viewer.js',
+        '../../packages/extension/src/modules/viewer.js',
         '../../dist/extension/scripts/viewer.js',
         'ExtensionViewer',
         isProduction,
         false,
         modules,
         [
-            stripTypescript(),
             assertNoBareSpecifiers('viewer', [
                 /['"]core\/[^'"]+['"]/g,
                 /['"]shared\/[^'"]+['"]/g,

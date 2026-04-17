@@ -10,7 +10,11 @@ export type ShellCommandContext = {
     fs: {
         resolvePath: (cwd: string, path: string) => string;
         readFile: (path: string, encoding?: string) => Promise<string>;
-        writeFile?: (path: string, content: string, options?: { encoding?: string }) => Promise<void>;
+        writeFile?: (
+            path: string,
+            content: string,
+            options?: { encoding?: string }
+        ) => Promise<void>;
         mkdir?: (path: string, opts?: { recursive?: boolean }) => Promise<void>;
         exists: (path: string) => Promise<boolean>;
     };
@@ -54,6 +58,33 @@ type SalesforceShellHandlers = {
     }) => Promise<SalesforceCommandExecution>;
     listOrgs: () => Promise<SalesforceCommandExecution>;
     openOrg: (args: { alias: string }) => Promise<SalesforceCommandExecution>;
+    runApexTests: (args: {
+        classNames: string[];
+        testLevel: string;
+        timeoutMs: number;
+        ctx: ShellCommandContext;
+    }) => Promise<SalesforceCommandExecution>;
+    enableDebugLog: (args: { durationMinutes: number }) => Promise<SalesforceCommandExecution>;
+    listDebugLogs: (args: { limit: number }) => Promise<SalesforceCommandExecution>;
+    getDebugLog: (args: {
+        logId: string;
+        outputPath: string | null;
+        ctx: ShellCommandContext;
+    }) => Promise<SalesforceCommandExecution>;
+    displayLimits: () => Promise<SalesforceCommandExecution>;
+    describeSObject: (args: { objectName: string }) => Promise<SalesforceCommandExecution>;
+    deployMetadata: (args: {
+        filePath: string;
+        metadataType: string | null;
+        apiName: string | null;
+        ctx: ShellCommandContext;
+    }) => Promise<SalesforceCommandExecution>;
+    retrieveMetadata: (args: {
+        metadataType: string;
+        apiName: string;
+        outputPath: string | null;
+        ctx: ShellCommandContext;
+    }) => Promise<SalesforceCommandExecution>;
 };
 
 export const APEX_HELP = `Run anonymous Apex (SF CLI shim).
@@ -101,6 +132,76 @@ Usage:
 
 Notes:
   - Alias is required for org open.`;
+
+export const APEX_TEST_HELP = `Run Apex tests (SF CLI shim).
+
+Usage:
+  sf apex test run --class-names "MyTestClass,AnotherTest"
+  sf apex test run --class-names "MyTestClass" --test-level RunSpecifiedTests
+  sf apex test run --test-level RunLocalTests
+  sf apex test run --timeout 120000
+  sf apex test run --help
+
+Options:
+  --class-names, -n   Comma-separated list of test class names (required unless test-level is RunLocalTests/RunAllTestsInOrg)
+  --test-level        RunSpecifiedTests | RunLocalTests | RunAllTestsInOrg (default: RunSpecifiedTests)
+  --timeout           Max wait time in ms (default: 60000)`;
+
+export const DEBUG_LOG_HELP = `Manage Salesforce debug logs (SF CLI shim).
+
+Usage:
+  sf debug log enable
+  sf debug log enable --duration 30
+  sf debug log list
+  sf debug log list --limit 10
+  sf debug log get <id>
+  sf debug log get <id> --output /workspace/debug.log
+  sf debug log --help
+
+Subcommands:
+  enable    Create or refresh a TraceFlag so debug logs are captured (default: 15 min)
+  list      List recent ApexLog records
+  get       Download a specific log body by ID`;
+
+export const LIMITS_HELP = `Display API limits for the connected org (SF CLI shim).
+
+Usage:
+  sf limits display
+  sf limits display --help`;
+
+export const SOBJECT_HELP = `Describe a Salesforce SObject's fields and metadata (SF CLI shim).
+
+Usage:
+  sf sobject describe --object Account
+  sf sobject describe -o Contact
+  sf sobject describe --object MyCustomObject__c
+  sf sobject describe --help
+
+Options:
+  --object, -o    SObject API name (required)`;
+
+export const METADATA_HELP = `Deploy or retrieve Salesforce metadata (SF CLI shim).
+
+Usage:
+  sf metadata deploy --file /workspace/MyClass.cls
+  sf metadata deploy --file /workspace/MyTrigger.trigger
+  sf metadata deploy --file /workspace/MyPage.page
+  sf metadata retrieve --metadata-type ApexClass --api-name MyClass
+  sf metadata retrieve --metadata-type ApexClass --api-name MyClass --output /workspace/retrieved
+  sf metadata --help
+
+Supported Tooling API types for deploy/retrieve:
+  ApexClass, ApexTrigger, ApexPage, ApexComponent, StaticResource
+
+Options:
+  deploy:
+    --file, -f          Path to metadata file in /workspace (required)
+    --metadata-type     Override auto-detected type
+    --api-name          Override auto-detected API name
+  retrieve:
+    --metadata-type     Metadata type (required)
+    --api-name          API name of the record to retrieve (required)
+    --output            Output directory (default: /workspace)`;
 
 function createCommand(
     name: string,
@@ -151,6 +252,17 @@ export function parseCliArgs(argv: string[]) {
         'u',
         'target-org',
         'o',
+        'n',
+        'class-names',
+        'test-level',
+        'timeout',
+        'duration',
+        'limit',
+        'output',
+        'metadata-type',
+        'm',
+        'api-name',
+        'object',
     ]);
     for (let i = 0; i < argv.length; i += 1) {
         const arg = argv[i];
@@ -256,6 +368,25 @@ export function getApexExecutionExitCode(result: unknown) {
     return 0;
 }
 
+const TOOLING_API_TYPES: Record<string, string> = {
+    '.cls': 'ApexClass',
+    '.trigger': 'ApexTrigger',
+    '.page': 'ApexPage',
+    '.component': 'ApexComponent',
+    '.resource': 'StaticResource',
+};
+
+export function detectMetadataType(filePath: string): { type: string | null; apiName: string } {
+    const basename = filePath.split('/').pop() || filePath;
+    const lastDot = basename.lastIndexOf('.');
+    if (lastDot === -1) return { type: null, apiName: basename };
+    const ext = basename.slice(lastDot);
+    const nameOnly = basename.slice(0, lastDot);
+    // Strip -meta.xml suffix if present
+    const apiName = nameOnly.endsWith('-meta') ? nameOnly.slice(0, -5) : nameOnly;
+    return { type: TOOLING_API_TYPES[ext] ?? null, apiName };
+}
+
 export function registerSalesforceShellCommands({
     shell,
     handlers,
@@ -270,7 +401,7 @@ export function registerSalesforceShellCommands({
         const { flags } = parseCliArgs(argv);
         const fileFlag = ensureSingleValue(getFlagValue(flags, 'file', 'f'));
         const codeFlag = ensureSingleValue(getFlagValue(flags, 'apex-code', 'c'));
-        const shouldOpenUi = !Boolean(getFlagValue(flags, 'no-ui'));
+        const shouldOpenUi = !getFlagValue(flags, 'no-ui');
         let apexCode = typeof codeFlag === 'string' ? codeFlag : '';
         let sourceFilePath: string | null = null;
         if (!apexCode && typeof fileFlag === 'string') {
@@ -351,11 +482,13 @@ export function registerSalesforceShellCommands({
             return { stdout: API_HELP, stderr: '', exitCode: 0 };
         }
         const { flags } = parseCliArgs(argv);
-        const method = String(ensureSingleValue(getFlagValue(flags, 'method', 'X')) || 'GET').toUpperCase();
+        const method = String(
+            ensureSingleValue(getFlagValue(flags, 'method', 'X')) || 'GET'
+        ).toUpperCase();
         const endpoint = ensureSingleValue(getFlagValue(flags, 'url', 'endpoint', 'u')) || '';
         const bodyFlag = ensureSingleValue(getFlagValue(flags, 'body'));
         const headerValues = collectFlagArray(getFlagValue(flags, 'header', 'H'))
-            .map((value) => String(value))
+            .map(value => String(value))
             .filter(Boolean);
 
         if (!endpoint || typeof endpoint !== 'string') {
@@ -443,32 +576,294 @@ export function registerSalesforceShellCommands({
         }
     };
 
+    const runApexTestCli = async (argv: string[], ctx: ShellCommandContext) => {
+        if (argv.includes('--help') || argv.includes('-h')) {
+            return { stdout: APEX_TEST_HELP, stderr: '', exitCode: 0 };
+        }
+        const { flags } = parseCliArgs(argv);
+        const classNamesFlag = ensureSingleValue(getFlagValue(flags, 'class-names', 'n'));
+        const testLevel = String(
+            ensureSingleValue(getFlagValue(flags, 'test-level')) || 'RunSpecifiedTests'
+        );
+        const timeoutFlag = ensureSingleValue(getFlagValue(flags, 'timeout'));
+        const timeoutMs = typeof timeoutFlag === 'string' ? parseInt(timeoutFlag, 10) : 60000;
+
+        const classNames =
+            typeof classNamesFlag === 'string'
+                ? classNamesFlag
+                      .split(',')
+                      .map(s => s.trim())
+                      .filter(Boolean)
+                : [];
+
+        if (classNames.length === 0 && testLevel === 'RunSpecifiedTests') {
+            return {
+                stdout: '',
+                stderr: `Error: --class-names is required when test-level is RunSpecifiedTests.\n\n${APEX_TEST_HELP}\n`,
+                exitCode: 1,
+            };
+        }
+        try {
+            const handled = normalizeHandlerResult(
+                await handlers.runApexTests({ classNames, testLevel, timeoutMs, ctx })
+            );
+            return {
+                stdout: formatCliOutput(handled.result),
+                stderr: '',
+                exitCode: handled.exitCode,
+            };
+        } catch (err) {
+            return commandError(err instanceof Error ? err.message : String(err));
+        }
+    };
+
+    const runDebugLogCli = async (argv: string[], ctx: ShellCommandContext) => {
+        if (!argv?.length || argv.includes('--help') || argv.includes('-h')) {
+            return { stdout: DEBUG_LOG_HELP, stderr: '', exitCode: 0 };
+        }
+        const [subcommand, ...rest] = argv;
+
+        if (subcommand === 'enable') {
+            const { flags } = parseCliArgs(rest);
+            const durationFlag = ensureSingleValue(getFlagValue(flags, 'duration'));
+            const durationMinutes =
+                typeof durationFlag === 'string' ? parseInt(durationFlag, 10) : 15;
+            try {
+                const handled = normalizeHandlerResult(
+                    await handlers.enableDebugLog({ durationMinutes })
+                );
+                return {
+                    stdout: formatCliOutput(handled.result),
+                    stderr: '',
+                    exitCode: handled.exitCode,
+                };
+            } catch (err) {
+                return commandError(err instanceof Error ? err.message : String(err));
+            }
+        }
+
+        if (subcommand === 'list') {
+            const { flags } = parseCliArgs(rest);
+            const limitFlag = ensureSingleValue(getFlagValue(flags, 'limit'));
+            const limit = typeof limitFlag === 'string' ? parseInt(limitFlag, 10) : 25;
+            try {
+                const handled = normalizeHandlerResult(await handlers.listDebugLogs({ limit }));
+                return {
+                    stdout: formatCliOutput(handled.result),
+                    stderr: '',
+                    exitCode: handled.exitCode,
+                };
+            } catch (err) {
+                return commandError(err instanceof Error ? err.message : String(err));
+            }
+        }
+
+        if (subcommand === 'get') {
+            const { flags, positionals } = parseCliArgs(rest);
+            const logId =
+                positionals[0] || String(ensureSingleValue(getFlagValue(flags, 'id')) || '');
+            const outputFlag = ensureSingleValue(getFlagValue(flags, 'output', 'o'));
+            const outputPath = typeof outputFlag === 'string' ? outputFlag : null;
+            if (!logId) {
+                return {
+                    stdout: '',
+                    stderr: `Error: Missing log ID.\nUsage: sf debug log get <id>\n`,
+                    exitCode: 1,
+                };
+            }
+            try {
+                const handled = normalizeHandlerResult(
+                    await handlers.getDebugLog({ logId, outputPath, ctx })
+                );
+                return {
+                    stdout: formatCliOutput(handled.result),
+                    stderr: '',
+                    exitCode: handled.exitCode,
+                };
+            } catch (err) {
+                return commandError(err instanceof Error ? err.message : String(err));
+            }
+        }
+
+        return {
+            stdout: '',
+            stderr: `Error: Unknown debug log subcommand "${subcommand}"\n\n${DEBUG_LOG_HELP}\n`,
+            exitCode: 1,
+        };
+    };
+
+    const runLimitsDisplayCli = async (argv: string[]) => {
+        if (argv.includes('--help') || argv.includes('-h')) {
+            return { stdout: LIMITS_HELP, stderr: '', exitCode: 0 };
+        }
+        try {
+            const handled = normalizeHandlerResult(await handlers.displayLimits());
+            return {
+                stdout: formatCliOutput(handled.result),
+                stderr: '',
+                exitCode: handled.exitCode,
+            };
+        } catch (err) {
+            return commandError(err instanceof Error ? err.message : String(err));
+        }
+    };
+
+    const runSObjectDescribeCli = async (argv: string[]) => {
+        if (argv.includes('--help') || argv.includes('-h')) {
+            return { stdout: SOBJECT_HELP, stderr: '', exitCode: 0 };
+        }
+        const { flags, positionals } = parseCliArgs(argv);
+        const objectName = String(
+            ensureSingleValue(getFlagValue(flags, 'object', 'o')) || positionals[0] || ''
+        ).trim();
+        if (!objectName) {
+            return {
+                stdout: '',
+                stderr: `Error: Missing SObject name. Use --object.\n\n${SOBJECT_HELP}\n`,
+                exitCode: 1,
+            };
+        }
+        try {
+            const handled = normalizeHandlerResult(await handlers.describeSObject({ objectName }));
+            return {
+                stdout: formatCliOutput(handled.result),
+                stderr: '',
+                exitCode: handled.exitCode,
+            };
+        } catch (err) {
+            return commandError(err instanceof Error ? err.message : String(err));
+        }
+    };
+
+    const runMetadataCli = async (argv: string[], ctx: ShellCommandContext) => {
+        if (!argv?.length || argv.includes('--help') || argv.includes('-h')) {
+            return { stdout: METADATA_HELP, stderr: '', exitCode: 0 };
+        }
+        const [subcommand, ...rest] = argv;
+
+        if (subcommand === 'deploy') {
+            const { flags } = parseCliArgs(rest);
+            const fileFlag = ensureSingleValue(getFlagValue(flags, 'file', 'f'));
+            const metadataTypeFlag = ensureSingleValue(getFlagValue(flags, 'metadata-type', 'm'));
+            const apiNameFlag = ensureSingleValue(getFlagValue(flags, 'api-name'));
+            if (!fileFlag || typeof fileFlag !== 'string') {
+                return {
+                    stdout: '',
+                    stderr: `Error: Missing --file flag.\n\n${METADATA_HELP}\n`,
+                    exitCode: 1,
+                };
+            }
+            const metadataType = typeof metadataTypeFlag === 'string' ? metadataTypeFlag : null;
+            const apiName = typeof apiNameFlag === 'string' ? apiNameFlag : null;
+            try {
+                const handled = normalizeHandlerResult(
+                    await handlers.deployMetadata({
+                        filePath: fileFlag,
+                        metadataType,
+                        apiName,
+                        ctx,
+                    })
+                );
+                return {
+                    stdout: formatCliOutput(handled.result),
+                    stderr: '',
+                    exitCode: handled.exitCode,
+                };
+            } catch (err) {
+                return commandError(err instanceof Error ? err.message : String(err));
+            }
+        }
+
+        if (subcommand === 'retrieve') {
+            const { flags } = parseCliArgs(rest);
+            const metadataTypeFlag = ensureSingleValue(getFlagValue(flags, 'metadata-type', 'm'));
+            const apiNameFlag = ensureSingleValue(getFlagValue(flags, 'api-name'));
+            const outputFlag = ensureSingleValue(getFlagValue(flags, 'output', 'o'));
+            if (!metadataTypeFlag || typeof metadataTypeFlag !== 'string') {
+                return {
+                    stdout: '',
+                    stderr: `Error: Missing --metadata-type flag.\n\n${METADATA_HELP}\n`,
+                    exitCode: 1,
+                };
+            }
+            if (!apiNameFlag || typeof apiNameFlag !== 'string') {
+                return {
+                    stdout: '',
+                    stderr: `Error: Missing --api-name flag.\n\n${METADATA_HELP}\n`,
+                    exitCode: 1,
+                };
+            }
+            const outputPath = typeof outputFlag === 'string' ? outputFlag : null;
+            try {
+                const handled = normalizeHandlerResult(
+                    await handlers.retrieveMetadata({
+                        metadataType: metadataTypeFlag,
+                        apiName: apiNameFlag,
+                        outputPath,
+                        ctx,
+                    })
+                );
+                return {
+                    stdout: formatCliOutput(handled.result),
+                    stderr: '',
+                    exitCode: handled.exitCode,
+                };
+            } catch (err) {
+                return commandError(err instanceof Error ? err.message : String(err));
+            }
+        }
+
+        return {
+            stdout: '',
+            stderr: `Error: Unknown metadata subcommand "${subcommand}"\n\n${METADATA_HELP}\n`,
+            exitCode: 1,
+        };
+    };
+
     const sfCommand = createCommand('sf', async (argv, ctx) => {
         if (!argv?.length || argv.includes('--help') || argv.includes('-h')) {
             const help = [
-                'SF CLI shims (minimal):',
+                'SF CLI shims:',
                 '',
                 '  sf apex run',
+                '  sf apex test run',
                 '  sf data query',
                 '  sf api request',
                 '  sf org list',
                 '  sf org open',
+                '  sf debug log enable|list|get',
+                '  sf limits display',
+                '  sf sobject describe',
+                '  sf metadata deploy|retrieve',
                 '',
                 'Use subcommand --help for details.',
                 '',
                 APEX_HELP,
+                '',
+                APEX_TEST_HELP,
                 '',
                 SOQL_HELP,
                 '',
                 API_HELP,
                 '',
                 ORG_HELP,
+                '',
+                DEBUG_LOG_HELP,
+                '',
+                LIMITS_HELP,
+                '',
+                SOBJECT_HELP,
+                '',
+                METADATA_HELP,
             ].join('\n');
             return { stdout: help, stderr: '', exitCode: 0 };
         }
         const [group, action, ...rest] = argv;
         if (group === 'apex' && action === 'run') {
             return runApexCli(rest, ctx);
+        }
+        if (group === 'apex' && action === 'test') {
+            return runApexTestCli(rest, ctx);
         }
         if (group === 'data' && action === 'query') {
             return runSoqlCli(rest, ctx);
@@ -481,6 +876,18 @@ export function registerSalesforceShellCommands({
         }
         if (group === 'org' && action === 'open') {
             return runOrgOpenCli(rest);
+        }
+        if (group === 'debug' && action === 'log') {
+            return runDebugLogCli(rest, ctx);
+        }
+        if (group === 'limits' && action === 'display') {
+            return runLimitsDisplayCli(rest);
+        }
+        if (group === 'sobject' && action === 'describe') {
+            return runSObjectDescribeCli(rest);
+        }
+        if (group === 'metadata' && (action === 'deploy' || action === 'retrieve')) {
+            return runMetadataCli([action, ...rest], ctx);
         }
         return {
             stdout: '',

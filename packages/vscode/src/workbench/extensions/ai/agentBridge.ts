@@ -10,6 +10,7 @@ import {
 import { stringifyUri, truncateText } from './agentFormatting';
 import { createWorkbenchAgentRequest } from './agentRuntime';
 import { createWorkbenchBashTools } from './tools/bashTools';
+import { createWorkbenchSalesforceTools } from './tools/salesforceTools';
 import { createWorkspaceFileTools } from './tools/vscodeFileTools';
 import { getWorkbenchAiBridgeClient } from '../../bridge/bridgeConnection';
 
@@ -290,6 +291,7 @@ function createWorkbenchTools(vscode) {
         ...createEditorTools(vscode),
         ...createWorkspaceFileTools(vscode),
         ...createWorkbenchBashTools(),
+        ...createWorkbenchSalesforceTools(),
     ];
 }
 

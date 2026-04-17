@@ -7,6 +7,7 @@ import type { CoreServices } from '../extensions/core/coreServices';
 type BridgeConnection = {
     refreshStatus: () => Promise<void>;
     onHostEvent: (handler: (event: { eventName?: unknown; payload?: Record<string, unknown> | null }) => void) => { dispose(): void };
+    emitNotification?: (eventName: string, payload?: Record<string, unknown> | null) => void;
 };
 
 function asString(value: unknown): string {
@@ -190,7 +191,26 @@ export function registerWorkbenchRuntimeEvents(
         }
     };
 
-    return bridgeConnection.onHostEvent(event => {
+    const hostEventDisposable = bridgeConnection.onHostEvent(event => {
         void handleBridgeHostEvent(event);
     });
+
+    // Notify the host whenever the active color theme changes inside the workbench
+    // (e.g. user switches theme via the command palette).
+    const colorThemeDisposable = vscode.window?.onDidChangeActiveColorTheme?.((theme) => {
+        if (!bridgeConnection.emitNotification) {
+            return;
+        }
+        // ColorThemeKind: 1 = Light, 2 = Dark, 3 = HighContrast (dark), 4 = HighContrastLight
+        const kind = theme?.kind;
+        const themeMode = (kind === 2 || kind === 3) ? 'dark' : 'light';
+        bridgeConnection.emitNotification('theme.changed', { themeMode });
+    });
+
+    return {
+        dispose() {
+            hostEventDisposable.dispose();
+            colorThemeDisposable?.dispose?.();
+        },
+    };
 }

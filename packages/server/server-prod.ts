@@ -9,11 +9,12 @@ import handler from 'serve-handler';
 
 import { launchScheduleFileDownloaded } from './modules/cta';
 import { initDocumentationIndex, searchDocumentation } from './modules/documentationSearch';
+import googleAuth from './modules/googleAuth';
 import llmModels from './modules/llmModels';
 import openaiProxy from './modules/openaiProxy';
 import proxy from './modules/proxy';
 
-dotenv.config();
+dotenv.config({ path: '.env.prod' });
 
 let serveJson = {};
 try {
@@ -85,6 +86,8 @@ app.get('/welcome{/*splat}', (_req, res) => {
 app.all('/cometd{/*splat}', proxy({ enableCORS: true }));
 /* jsForce Proxy */
 app.all('/proxy{/*splat}', proxy({ enableCORS: true }));
+/* Google Auth */
+googleAuth(app);
 /* OpenAI Proxy */
 openaiProxy(app);
 llmModels(app);
@@ -154,6 +157,7 @@ app.get('/config', function (req, res) {
         clientId: process.env.CLIENT_ID,
         chromeId: CHROME_ID,
         proxyUrl: process.env.PROXY_URL,
+        googleClientId: process.env.GOOGLE_CLIENT_ID_WEB || null,
     });
 });
 app.get('/version', function (req, res) {

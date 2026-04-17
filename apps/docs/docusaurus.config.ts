@@ -36,17 +36,23 @@ const config: Config = {
             items: [
                 {
                     type: 'docSidebar',
-                    sidebarId: 'tutorialSidebar',
+                    sidebarId: 'userSidebar',
                     position: 'left',
-                    label: 'Docs',
+                    label: 'User Guide',
                 },
                 {
-                    href: 'https://sf-toolkit.com/welcome',
+                    type: 'docSidebar',
+                    sidebarId: 'developerSidebar',
+                    position: 'left',
+                    label: 'Developer',
+                },
+                {
+                    href: 'https://sf-toolkit.com',
                     label: 'Website',
                     position: 'right',
                 },
                 {
-                    href: 'https://sf-toolkit.com/app',
+                    href: 'https://app.sf-toolkit.com',
                     label: 'Open App',
                     position: 'right',
                 },
@@ -56,22 +62,31 @@ const config: Config = {
             style: 'dark',
             links: [
                 {
-                    title: 'Docs',
+                    title: 'User Guide',
                     items: [
                         { label: 'Installation', to: '/getting-started/installation' },
-                        { label: 'VS Code', to: '/vscode/overview' },
-                        { label: 'AI Agent Tools', to: '/ai-agent/tools-overview' },
-                        { label: 'IndexedDB Workspace', to: '/storage/indexeddb-workspace' },
-                        { label: 'CLI', to: '/cli/overview' },
+                        { label: 'Quickstart', to: '/getting-started/quickstart' },
+                        { label: 'AI Agent', to: '/ai-agent/setup' },
                         { label: 'Security', to: '/security/local-data-and-privacy' },
+                        { label: 'Troubleshooting', to: '/troubleshooting/common-issues' },
+                    ],
+                },
+                {
+                    title: 'Developer',
+                    items: [
+                        { label: 'Architecture', to: '/architecture/overview' },
+                        { label: 'VS Code', to: '/vscode/overview' },
+                        { label: 'Local Storage', to: '/storage/indexeddb-workspace' },
                         { label: 'Contributing', to: '/contributing/how-to-contribute' },
                     ],
                 },
                 {
                     title: 'Product',
                     items: [
-                        { label: 'Website', href: 'https://sf-toolkit.com/welcome' },
-                        { label: 'Application', href: 'https://sf-toolkit.com/app' },
+                        { label: 'Website', href: 'https://sf-toolkit.com' },
+                        { label: 'Application', href: 'https://app.sf-toolkit.com' },
+                        { label: 'Chrome Extension', href: 'https://chromewebstore.google.com/detail/salesforce-toolkit/konbmllgicfccombdckckakhnmejjoei?hl=en' },
+                        { label: 'GitHub', href: 'https://github.com/grebmann1/sfdx-ui-light' },
                     ],
                 },
             ],

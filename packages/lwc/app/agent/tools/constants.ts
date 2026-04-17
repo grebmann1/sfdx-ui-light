@@ -26,8 +26,23 @@ Notes:
     useRelativePaths: 'Use relative paths from here.',
     availableFilesLabel: 'Available files:',
     customCommands:
-        "Custom commands: js -e '<code>', js <file>, open <file>, save-skill, sf apex run, sf data query, sf api request, sf org list, sf org open",
+        "Custom commands: js -e '<code>', js <file>, open <file>, save-skill, web-search, sf apex run, sf apex test run, sf data query, sf api request, sf org list, sf org open, sf debug log enable|list|get, sf limits display, sf sobject describe, sf metadata deploy|retrieve",
     sfCliShimsHelp: 'SF CLI shims help:',
+    webSearch: `Search the internet using Bright Data's SERP API.
+
+Usage:
+  web-search "your query"
+  web-search --query "your query"
+  web-search -q "your query" --country us
+  web-search -q "your query" --zone my_serp_zone
+  web-search --help
+
+Options:
+  -q, --query    Search query (required)
+  --country, -c  Two-letter country code for results (e.g. us, gb, fr)
+  --zone, -z     Bright Data SERP zone name (default: serp_api1)
+
+Returns structured JSON from Google Search via Bright Data.`,
 } as const;
 
 export const TOOL_OUTPUT_LIMITS = {
@@ -234,13 +249,17 @@ export const AGENT_TOOL_CONFIG = {
     },
     askUser: {
         name: 'ask_user',
-        description: `Ask the user a clarifying question before proceeding.
-Use this tool when you need more information or a decision from the user to complete the task correctly.
-Provide clear answer options when the choices are bounded; omit options for open-ended questions.
-Wait for the user's answer before continuing.`,
+        description: `Present the user with a multiple-choice question when you need them to pick from a bounded set of options (e.g. file format, target org, action to take, yes/no decisions).
+
+ONLY call this tool when you have a predefined list of options for the user to choose from.
+Do NOT call this tool for open-ended questions where the user needs to type a free-text answer — in that case, ask directly in your response message instead.
+
+Wait for the user's selection before continuing.`,
+        descriptionDescription:
+            'Short label (≤ 60 chars) summarising what you are asking, shown in the chat UI (e.g. "Choose export format", "Select target org").',
         questionDescription: 'The question to present to the user.',
         optionsDescription:
-            'Optional list of predefined answer choices shown as selectable options. Omit for open-ended questions.',
+            'Required list of answer choices the user can select from. Must contain at least two options.',
         skippedAnswer: 'The user skipped this question.',
         answerPrefix: "User's answer: ",
     },
