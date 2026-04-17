@@ -288,6 +288,7 @@ const sharedModules = [
     { name: 'shared/sf', path: getSharedModulePath('sf') },
     { name: 'shared/store', path: getSharedModulePath('store') },
     { name: 'shared/utils', path: getSharedModulePath('utils') },
+    { name: 'shared/salesforceUrl', path: getSharedModulePath('salesforceUrl') },
 ];
 
 const coreAliasEntries = [
@@ -304,11 +305,6 @@ const vscodePureAliasEntries = [
     { find: 'vscode/toolingApi', replacement: r('../../packages/shared/modules/toolingApi/toolingApi.ts') },
     { find: 'vscode/sourceTracking', replacement: r('../../packages/shared/modules/sourceTracking/sourceTracking.ts') },
     // workbench modules (consumed by fullApp.ts via module aliases)
-    { find: 'vscode/workbench/iframeAiBridgeRuntime', replacement: r('../../packages/lwc/app/vscode/fullApp/bridge/iframeAiBridgeRuntime.ts') },
-    { find: 'vscode/workbench/iframeJsforceBridgeRuntime', replacement: r('../../packages/vscode/src/workbench/bridge/iframeJsforceBridgeRuntime.ts') },
-    { find: 'vscode/workbench/workbenchConnection', replacement: r('../../packages/vscode/src/workbench/workbenchConnection.ts') },
-    { find: 'vscode/workbench/workbenchWorkspace', replacement: r('../../packages/vscode/src/workbench/workbenchWorkspace.ts') },
-    { find: 'vscode/workbench/salesforceWorkbenchHost', replacement: r('../../packages/vscode/src/workbench/platform/workbenchHost.ts') },
     // bridge aliases (consumed transitively by workbench modules)
     { find: 'vscode/bridge/iframeFsBridgeContract', replacement: r('../../packages/lwc/app/vscode/fullApp/bridge/iframeFsBridgeContract.ts') },
     { find: 'vscode/bridge/iframeFsBridgeClient', replacement: r('../../packages/lwc/app/vscode/fullApp/bridge/iframeFsBridgeClient.ts') },
@@ -447,11 +443,6 @@ const modules = [
     { name: 'vscode/toolingApi', path: r('../../packages/shared/modules/toolingApi/toolingApi.ts') },
     { name: 'vscode/sourceTracking', path: r('../../packages/shared/modules/sourceTracking/sourceTracking.ts') },
     // vscode workbench modules (consumed by fullApp.ts via module aliases)
-    { name: 'vscode/workbench/iframeAiBridgeRuntime', path: r('../../packages/lwc/app/vscode/fullApp/bridge/iframeAiBridgeRuntime.ts') },
-    { name: 'vscode/workbench/iframeJsforceBridgeRuntime', path: r('../../packages/vscode/src/workbench/bridge/iframeJsforceBridgeRuntime.ts') },
-    { name: 'vscode/workbench/workbenchConnection', path: r('../../packages/vscode/src/workbench/workbenchConnection.ts') },
-    { name: 'vscode/workbench/workbenchWorkspace', path: r('../../packages/vscode/src/workbench/workbenchWorkspace.ts') },
-    { name: 'vscode/workbench/salesforceWorkbenchHost', path: r('../../packages/vscode/src/workbench/platform/workbenchHost.ts') },
     // vscode bridge aliases (consumed by workbench modules imported from vscode package)
     { name: 'vscode/bridge/iframeFsBridgeContract', path: r('../../packages/lwc/app/vscode/fullApp/bridge/iframeFsBridgeContract.ts') },
     { name: 'vscode/bridge/iframeFsBridgeClient', path: r('../../packages/lwc/app/vscode/fullApp/bridge/iframeFsBridgeClient.ts') },

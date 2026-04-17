@@ -3,7 +3,7 @@ import {
     normalizeInstanceUrl,
     normalizeProxyUrl,
     toSalesforcePath,
-} from '../salesforceUrl/salesforceUrl';
+} from 'shared/salesforceUrl';
 
 type JsforceConnection = {
     instanceUrl: string;

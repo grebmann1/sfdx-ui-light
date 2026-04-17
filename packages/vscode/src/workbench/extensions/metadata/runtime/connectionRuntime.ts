@@ -4,19 +4,21 @@ import { createToolingClient } from 'vscode/toolingApi';
 
 import {
     getInjectedConnectionContext,
-    hasConnectionIssue,
-    hasExpiredConnection,
-    hasUsableConnection,
     isAuthError,
     refreshConnectionRecord,
     resolveConnectionRecord,
-} from '../../../workbenchConnection';
+} from '../../../connection/connectorRecord';
+import {
+    hasConnectionIssue,
+    hasExpiredConnection,
+    hasUsableConnection,
+} from '../../../connection/connectionFactory';
 import {
     DEFAULT_SOURCE_API_VERSION,
     normalizeSfApiVersion,
     resolveWorkspaceApiVersionFromVscode,
     writeWorkspaceApiVersionFromVscode,
-} from '../../../workbenchWorkspace';
+} from '../../../workspace/sfdxProject';
 import { registerCommand } from '../../core/extensionRegistration';
 const OPEN_SALESFORCE_PANEL_COMMAND = 'salesforceMetadata.openSalesforcePanel';
 import { getWorkspaceUri } from '../core/workspacePaths';

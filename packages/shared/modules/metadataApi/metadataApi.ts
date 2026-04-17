@@ -4,7 +4,7 @@ import {
     normalizeApiVersion,
     normalizeInstanceUrl,
     normalizeProxyUrl,
-} from '../salesforceUrl/salesforceUrl';
+} from 'shared/salesforceUrl';
 
 
 interface ApiError extends Error {

@@ -22,29 +22,52 @@ export type GoogleSession = {
     expiresAt: number;
 };
 
-// In-memory session store — resets on server restart
-const sessions = new Map<string, GoogleSession>();
-
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
-function purgeExpiredSessions() {
-    const now = Date.now();
-    for (const [token, session] of sessions) {
-        if (session.expiresAt <= now) {
-            sessions.delete(token);
+// Stateless HMAC-signed tokens — server restarts do not invalidate existing client tokens.
+// Only the rate-limiter (in-memory) resets on restart, which is the intended behaviour.
+let _signingSecret = '';
+
+function getSigningSecret(): string {
+    if (!_signingSecret) {
+        _signingSecret =
+            process.env.GOOGLE_SESSION_SECRET ||
+            process.env.GOOGLE_CLIENT_SECRET_WEB ||
+            '';
+        if (!_signingSecret) {
+            console.warn('[googleAuth] No signing secret found — sessions will not survive process restarts');
         }
     }
+    return _signingSecret;
+}
+
+function mintSessionToken(data: Omit<GoogleSession, 'sessionToken'>): string {
+    const payload = Buffer.from(JSON.stringify(data)).toString('base64url');
+    const sig = crypto.createHmac('sha256', getSigningSecret()).update(payload).digest('base64url');
+    return `${payload}.${sig}`;
 }
 
 export function validateSession(token: string): GoogleSession | null {
     if (!token) return null;
-    const session = sessions.get(token);
-    if (!session) return null;
-    if (session.expiresAt <= Date.now()) {
-        sessions.delete(token);
+    const dot = token.lastIndexOf('.');
+    if (dot === -1) return null;
+    const payload = token.slice(0, dot);
+    const sig = token.slice(dot + 1);
+    const expected = crypto.createHmac('sha256', getSigningSecret()).update(payload).digest('base64url');
+    try {
+        if (!crypto.timingSafeEqual(Buffer.from(sig, 'base64url'), Buffer.from(expected, 'base64url'))) {
+            return null;
+        }
+    } catch {
         return null;
     }
-    return session;
+    try {
+        const data = JSON.parse(Buffer.from(payload, 'base64url').toString()) as Omit<GoogleSession, 'sessionToken'>;
+        if (!data || data.expiresAt <= Date.now()) return null;
+        return { ...data, sessionToken: token };
+    } catch {
+        return null;
+    }
 }
 
 async function fetchGoogleUserInfo(accessToken: string): Promise<{
@@ -69,99 +92,16 @@ async function fetchGoogleUserInfo(accessToken: string): Promise<{
     }
 }
 
-function buildGoogleAuthUrl(clientId: string, redirectUri: string, state: string): string {
-    const params = new URLSearchParams({
-        client_id: clientId,
-        redirect_uri: redirectUri,
-        response_type: 'code',
-        scope: 'openid email profile',
-        access_type: 'online',
-        state,
-    });
-    return `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
-}
-
-async function exchangeCodeForTokens(
-    code: string,
-    clientId: string,
-    clientSecret: string,
-    redirectUri: string
-): Promise<{ access_token: string } | null> {
-    try {
-        const response = await fetch('https://oauth2.googleapis.com/token', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({
-                code,
-                client_id: clientId,
-                client_secret: clientSecret,
-                redirect_uri: redirectUri,
-                grant_type: 'authorization_code',
-            }),
-        });
-        if (!response.ok) return null;
-        return (await response.json()) as { access_token: string };
-    } catch {
-        return null;
-    }
-}
-
 export default function googleAuth(app: Application) {
-    const CLIENT_ID = process.env.GOOGLE_CLIENT_ID_WEB;
     const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET_WEB;
 
-    if (!CLIENT_ID || !CLIENT_SECRET) {
-        console.warn('[googleAuth] GOOGLE_CLIENT_ID_WEB or GOOGLE_CLIENT_SECRET_WEB not set — Google auth routes disabled');
+    if (!CLIENT_SECRET) {
+        console.warn('[googleAuth] GOOGLE_CLIENT_SECRET_WEB not set — Google auth routes disabled');
         return;
     }
 
-    // Clean up expired sessions every hour
-    setInterval(purgeExpiredSessions, 60 * 60 * 1000);
-
-    app.get('/google/oauth/authorize', (req: Request, res: Response) => {
-        const host = req.get('host') || req.hostname;
-        const redirectUri = `${req.protocol}://${host}/google/oauth/callback`;
-        // state carries the origin so the popup can post the token back
-        const state = Buffer.from(JSON.stringify({ origin: `${req.protocol}://${host}` })).toString('base64url');
-        const url = buildGoogleAuthUrl(CLIENT_ID, redirectUri, state);
-        res.redirect(url);
-    });
-
-    app.get('/google/oauth/callback', async (req: Request, res: Response) => {
-        const code = Array.isArray(req.query.code) ? req.query.code[0] : req.query.code;
-        if (!code || typeof code !== 'string') {
-            return res.status(400).send('Missing authorization code');
-        }
-
-        const host = req.get('host') || req.hostname;
-        const redirectUri = `${req.protocol}://${host}/google/oauth/callback`;
-
-        const tokens = await exchangeCodeForTokens(code, CLIENT_ID, CLIENT_SECRET, redirectUri);
-        if (!tokens?.access_token) {
-            return res.status(500).send('Failed to exchange authorization code');
-        }
-
-        const userInfo = await fetchGoogleUserInfo(tokens.access_token);
-        if (!userInfo) {
-            return res.status(500).send('Failed to fetch user info');
-        }
-
-        const sessionToken = crypto.randomUUID();
-        const session: GoogleSession = {
-            sessionToken,
-            userId: userInfo.sub,
-            email: userInfo.email,
-            name: userInfo.name,
-            picture: userInfo.picture,
-            expiresAt: Date.now() + SESSION_TTL_MS,
-        };
-        sessions.set(sessionToken, session);
-
-        console.log(`[googleAuth] New session for ${userInfo.email} (${userInfo.sub})`);
-
-        // Redirect to a page the popup can read — token in hash fragment
-        res.redirect(`/google/callback#token=${sessionToken}&email=${encodeURIComponent(userInfo.email)}&name=${encodeURIComponent(userInfo.name)}&picture=${encodeURIComponent(userInfo.picture)}`);
-    });
+    // Prime the signing secret now that env vars are confirmed present.
+    getSigningSecret();
 
     app.get('/google/me', googleCors, (req: Request, res: Response) => {
         const authHeader = req.headers['authorization'];
@@ -194,16 +134,13 @@ export default function googleAuth(app: Application) {
         if (!userInfo) {
             return res.status(401).json({ error: 'Invalid or expired Google access token' });
         }
-        const sessionToken = crypto.randomUUID();
-        const session: GoogleSession = {
-            sessionToken,
+        const sessionToken = mintSessionToken({
             userId: userInfo.sub,
             email: userInfo.email,
             name: userInfo.name,
             picture: userInfo.picture,
             expiresAt: Date.now() + SESSION_TTL_MS,
-        };
-        sessions.set(sessionToken, session);
+        });
         console.log(`[googleAuth] New extension session for ${userInfo.email} (${userInfo.sub})`);
         res.json({
             token: sessionToken,
@@ -232,12 +169,8 @@ export default function googleAuth(app: Application) {
         });
     });
 
-    app.post('/google/oauth/logout', googleCors, (req: Request, res: Response) => {
-        const authHeader = req.headers['authorization'];
-        const token = typeof authHeader === 'string' ? authHeader.replace(/^Bearer\s+/i, '') : null;
-        if (token) {
-            sessions.delete(token);
-        }
+    app.post('/google/oauth/logout', googleCors, (_req: Request, res: Response) => {
+        // Tokens are stateless — actual invalidation happens client-side by clearing the stored token.
         res.json({ ok: true });
     });
 }

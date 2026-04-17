@@ -3,6 +3,7 @@ import {
     basicStore,
     loadExtensionConfigFromCache,
     CACHE_CONFIG,
+    cacheManager,
     getAiProviderFromConfig,
     getLlmProviderConfigCacheKeys,
     resolveLlmProviderConfigMap,
@@ -35,11 +36,8 @@ export async function initCacheStorage() {
  * @param {Object} context - Component context (for setting component properties)
  */
 export async function loadFromCache(context) {
-    const configuration = await loadExtensionConfigFromCache([
-        CACHE_CONFIG.UI_IS_APPLICATION_TAB_VISIBLE.key,
-        CACHE_CONFIG.BETA_SMARTINPUT_ENABLED.key,
-        ...getLlmProviderConfigCacheKeys(),
-    ]);
+    const allKeys = Object.values(CACHE_CONFIG).map(x => x.key);
+    const configuration = await cacheManager.loadConfig(allKeys);
 
     if (context) {
         context.isApplicationTabVisible =
@@ -58,6 +56,7 @@ export async function loadFromCache(context) {
     LOGGER.debug('loadFromCache - mistralKey', mistralKey);
     LOGGER.debug('loadFromCache - aiProvider', aiProvider); */
 
+    store.dispatch(APPLICATION.reduxSlice.actions.updateSettings(configuration));
     store.dispatch(APPLICATION.reduxSlice.actions.updateProviderConfigs({ providerConfigs }));
     store.dispatch(APPLICATION.reduxSlice.actions.updateAiProvider({ aiProvider }));
     try {

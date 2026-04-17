@@ -1,5 +1,157 @@
 [
   {
+    "version": "2.0.0",
+    "date": "April 17th, 2026",
+    "sections": [
+      {
+        "title": "Say Hello to Workbench 2.0",
+        "categories": [
+          {
+            "category": "A New Era for the Toolkit",
+            "items": [
+              "SF Toolkit is now Workbench 2.0 \u2014 a brand-new identity for the Salesforce workbench you already love, now bigger, bolder, and built for what\u2019s next.",
+              "A fresh look from top to bottom: refreshed branding, icons, and copy across the app, docs, and Chrome extension.",
+              "Rebuilt from the inside out with a restructured project and cleaner foundations to unlock faster shipping of the features you\u2019ve been asking for."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "The Agent, Reimagined",
+        "categories": [
+          {
+            "category": "Smarter, Safer, More Capable",
+            "items": [
+              "Meet the new \u201cAsk User\u201d tool \u2014 the Agent can now pause, ask the right question with a dedicated prompt UI, and keep moving without guessing.",
+              "Sandboxed tool execution keeps your org safe while giving the Agent more room to do the heavy lifting for you.",
+              "Native OpenAI tool support unlocks a powerful new toolbox out of the box \u2014 no glue code, no workarounds.",
+              "New Debug Mode lets you step through every move the Agent makes, so you can see exactly how it thinks and acts."
+            ]
+          },
+          {
+            "category": "A Clearer Conversation",
+            "items": [
+              "Live reasoning state management surfaces the Agent\u2019s thought process as it works \u2014 no more \u201cblack box\u201d.",
+              "Redesigned message and reasoning rendering for a cleaner, more readable chat that\u2019s a joy to scan.",
+              "Smarter automatic conversation titles so your history is easy to browse at a glance."
+            ]
+          },
+          {
+            "category": "Skills That Grow With You",
+            "items": [
+              "Introducing the Agent Skills system \u2014 a first-class way to extend what the Agent can do, with documentation to help you author your own.",
+              "New built-in skills and upgrades to existing ones expand the Agent\u2019s reach across Workbench.",
+              "Revamped agent settings and model resolution, plus updated OpenAI dependencies for faster, sharper responses."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Workbench, Everywhere You Work",
+        "categories": [
+          {
+            "category": "Desktop App",
+            "items": [
+              "A brand-new dedicated Desktop package brings Workbench 2.0 to your OS with its own build pipeline and tuned configuration.",
+              "A cleaner, rebuilt desktop bridge makes the integration layer simpler, faster, and ready for future capabilities."
+            ]
+          },
+          {
+            "category": "VS Code Extension",
+            "items": [
+              "Workbench now feels right at home inside VS Code, with a smoother development workflow and tighter iframe communication.",
+              "An all-new iframe IndexedDB + JSforce bridge delivers a rock-solid localhost experience.",
+              "Refreshed VS Code integration and documentation make getting started effortless."
+            ]
+          },
+          {
+            "category": "Docker & Self-Hosting",
+            "items": [
+              "First-class Docker support arrives in 2.0 \u2014 spin up your own Workbench in minutes with updated, developer-friendly docs."
+            ]
+          },
+          {
+            "category": "Salesforce Project Sync",
+            "items": [
+              "A new Metadata API command lets you sync a Salesforce project straight from Workbench \u2014 no context switching, no CLI detours."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Data Tools That Keep Up",
+        "categories": [
+          {
+            "category": "SOQL Explorer",
+            "items": [
+              "Reworked SOQL tooling with sleeker tree structures and search that actually finds what you need \u2014 fast."
+            ]
+          },
+          {
+            "category": "File Tree",
+            "items": [
+              "A rebuilt File Tree component brings stronger accessibility and lightning-quick search to every explorer that uses it."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "A Fresh, Focused UI",
+        "categories": [
+          {
+            "category": "Redesigned From the Ground Up",
+            "items": [
+              "Every pixel polished: reworked layout and styling deliver a calmer, more consistent experience across the app.",
+              "Fine-tuned header spacing, navigation widths, explorer contrast, search inputs, and menu icons for a look that just feels right.",
+              "Dozens of UI component and style refinements add up to a noticeably cleaner, faster feeling."
+            ]
+          },
+          {
+            "category": "Navigation That Stays Out of Your Way",
+            "items": [
+              "A sleek new vertical navigation with smart tooltips puts your favorite apps one click away \u2014 and frees up space for what matters.",
+              "New Shortcut Selector and integrated shortcut settings let keyboard pros fly through Workbench at their own pace."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Built to Trust",
+        "categories": [
+          {
+            "category": "Reliability You Can Feel",
+            "items": [
+              "New centralized error reporting brings consistent, actionable diagnostics across the entire app \u2014 fewer surprises, faster fixes."
+            ]
+          },
+          {
+            "category": "Connections",
+            "items": [
+              "Hardened OAuth flow now always persists the full connector configuration (refresh + access tokens), so reconnecting is seamless \u2014 even days later."
+            ]
+          },
+          {
+            "category": "Under the Hood",
+            "items": [
+              "Big lint cleanup, modernized build configurations, and project-wide hygiene improvements \u2014 the invisible work that makes everything else feel better."
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Thank You",
+        "categories": [
+          {
+            "category": "To Our Community",
+            "items": [
+              "2.0 is a love letter to every admin, developer, and architect who pushed this toolkit further. This release is for you \u2014 and it\u2019s only the beginning."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "version": "1.5.2",
     "date": "March 3rd, 2026",
     "sections": [

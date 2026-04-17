@@ -11,7 +11,8 @@
             "shared/llm": ["modules/llm/llm"],
             "shared/loader": ["modules/loader/loader"],
             "shared/markdown": ["modules/markdown/markdown"],
-            "shared/sf": ["modules/sf/sf"]
+            "shared/sf": ["modules/sf/sf"],
+            "shared/salesforceUrl": ["modules/salesforceUrl/salesforceUrl"]
         },
         "rootDir": "./modules",
         "outDir": "./dist/modules",

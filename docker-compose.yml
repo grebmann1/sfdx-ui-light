@@ -12,4 +12,11 @@ services:
       - "5173:5173"   # packages/vscode  — Monaco/VS Code web IDE      (vscode.sf-toolkit.com)
     env_file:
       - .env
+    # PORT here is ONLY consumed by nginx inside the container (the public
+    # front door). The Express server's own PORT is pinned to 3000 by
+    # supervisord (see docker/supervisord.conf [program:server]).
+    # Overriding it here keeps nginx on 80 locally regardless of what .env
+    # sets PORT to (it is 3000 for direct-run dev outside Docker).
+    environment:
+      PORT: "80"
     restart: unless-stopped

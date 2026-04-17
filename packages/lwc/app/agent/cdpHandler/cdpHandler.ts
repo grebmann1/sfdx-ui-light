@@ -1,5 +1,5 @@
 import LOGGER from 'shared/logger';
-import { GOOGLE_DRIVE_SCOPES } from '../googleAuth/constants.js';
+import { GOOGLE_DRIVE_SCOPES } from 'agent/googleAuth';
 
 /**
  * Chrome Debugger Bridge (CdpHandler)

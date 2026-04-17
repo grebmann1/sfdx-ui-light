@@ -1,8 +1,8 @@
-import { hasUsableConnection } from '../../workbenchConnection';
+import { hasUsableConnection } from '../../connection/connectionFactory';
 import {
     DEFAULT_SOURCE_API_VERSION,
     normalizeSfApiVersion,
-} from '../../workbenchWorkspace';
+} from '../../workspace/sfdxProject';
 import { resolveCoreServices, type CoreServices } from '../core/coreServices';
 import { buildSalesforceExtensionConfig } from '../core/extensionManifest';
 import { registerCommand, registerSalesforceExtension } from '../core/extensionRegistration';

@@ -192,7 +192,7 @@
                             </div>
                         </slds-tab>
                         <!-- User tab -->
-                        <slds-tab label="User" value="user">
+                        <slds-tab label="User" value="user" lwc:if={isChrome}>
                             <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
                                 <lightning-card
                                     class="settings slds-col slds-size_1-of-1 slds-large-size_1-of-1 slds-p-around_medium">
@@ -490,7 +490,7 @@
                                 </lightning-card>
                             </div>
                         </slds-tab>
-                        <slds-tab label="AI">
+                        <slds-tab label="AI" lwc:if={isChrome}>
                             <div class="slds-grid slds-wrap slds-grid_vertical-stretch">
                                 <lightning-card
                                     class="settings slds-col slds-size_1-of-1 slds-large-size_1-of-2 slds-p-around_medium">

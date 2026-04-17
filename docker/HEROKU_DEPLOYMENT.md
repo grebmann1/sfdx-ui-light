@@ -9,9 +9,9 @@ This runbook deploys the single Docker image built by `./docker/build.sh` to **o
 | `doc.sf-toolkit.com`        | `nginx` → `dist/docs`        | Docusaurus (static)             |
 | `vscode.sf-toolkit.com`     | `nginx` → `packages/vscode/dist` | Monaco / VS Code web IDE    |
 
-All four domains share a single dyno. `nginx` inside the container dispatches by `Host` header — this is exactly what `docker/nginx.conf` already does on port `80`.
+All four domains share a single dyno. `nginx` inside the container dispatches by `Host` header — this is what `docker/nginx.conf.template` does on the platform-assigned `$PORT`.
 
-As a convenience, `sf-toolkit.com/app` (and any sub-path, e.g. `sf-toolkit.com/app/foo?x=1`) is `301`-redirected to `app.sf-toolkit.com` — `/app` is stripped, query string is preserved. See the `location ~ ^/app(/.*)?$` block on the `sf-toolkit.com` server in `docker/nginx.conf`.
+As a convenience, `sf-toolkit.com/app` (and any sub-path, e.g. `sf-toolkit.com/app/foo?x=1`) is `301`-redirected to `app.sf-toolkit.com` — `/app` is stripped, query string is preserved. See the `location ~ ^/app(/.*)?$` block on the `sf-toolkit.com` server in `docker/nginx.conf.template`.
 
 ---
 
@@ -26,67 +26,41 @@ That means:
 - The internal-only nginx listeners on `4000 / 5000 / 5173` are dev/fallback paths and are **not reachable** from the internet on Heroku. They can stay in the config (harmless) or be removed.
 - Heroku's router preserves the `Host` header, so subdomain-based routing in `nginx` works unchanged.
 
-We deploy with the **Heroku Container Registry** (`heroku.yml` style). The Procfile is not used in container mode.
+We deploy with the **Heroku Container Registry** via `heroku container:push` — the image is built locally from the existing `Dockerfile` and pushed as a pre-built binary to Heroku. No `heroku.yml` is needed (that file only applies when Heroku builds the image on their side), and the `Procfile` is ignored in container mode.
 
 ---
 
 ## 2. One-time code / config changes
 
-### 2.1 Make nginx listen on `$PORT`
+### 2.1 nginx listens on `$PORT` (already wired)
 
-Heroku assigns `$PORT` at dyno start. Replace the public `listen 80;` in `docker/nginx.conf` with a templated value and substitute it at container start.
+Heroku assigns `$PORT` at dyno start. The repo is already set up for it — here's how the pieces fit together so you can debug it later:
 
-**Option A (recommended): `envsubst` at boot.**
+- **`docker/nginx.conf.template`** — every public listener uses `listen ${PORT};` instead of `listen 80;`. The internal fallback listeners on `4000 / 5000 / 5173` stay at fixed ports (they're unreachable on Heroku, but still useful for direct container-port access in `docker compose`).
+- **`Dockerfile`** — installs `gettext` alongside `nginx` and `supervisor` (for the `envsubst` binary), and `COPY`s the template to `/etc/nginx/nginx.conf.template` instead of the final `.conf`.
+- **`docker/supervisord.conf`** — the `[program:nginx]` command renders the template first, then execs nginx:
+  ```ini
+  command=/bin/sh -c "envsubst '$PORT' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && exec nginx -g 'daemon off;' -c /etc/nginx/nginx.conf"
+  ```
+  The allow-list argument `'$PORT'` is important: `envsubst` with no arguments would also try to substitute nginx's own runtime variables (`$uri`, `$host`, `$request_uri`, …) and break the config.
+- **`docker-compose.yml`** — sets `PORT=80` via `environment:` on the `app` service, so local `docker compose up` keeps exposing the nginx front door on port 80 regardless of what `.env` says (`.env` has `PORT=3000` for direct-run Express dev, which is the right value there).
 
-1. Rename `docker/nginx.conf` → `docker/nginx.conf.template`.
-2. In the template, change every public listener from:
-   ```nginx
-   listen 80;
-   ```
-   to:
-   ```nginx
-   listen ${PORT};
-   ```
-   (Leave the internal `4000 / 5000 / 5173` listeners alone, or delete them — they are not reachable on Heroku.)
-3. Add `gettext` to the Dockerfile so `envsubst` is available:
-   ```dockerfile
-   RUN apk add --no-cache nginx supervisor gettext
-   ```
-4. Replace the `[program:nginx]` command in `docker/supervisord.conf` with a shell that renders the template first:
-   ```ini
-   command=/bin/sh -c "envsubst '$$PORT' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;' -c /etc/nginx/nginx.conf"
-   ```
-5. In the Dockerfile, copy the template instead of the final config:
-   ```dockerfile
-   COPY docker/nginx.conf.template /etc/nginx/nginx.conf.template
-   ```
+### 2.2 No `heroku.yml` — `container:push` flow
 
-**Local dev unchanged:** `docker-compose.yml` provides `PORT=80` (default from the `.env`) — set `PORT=80` in `.env` to keep the existing local behaviour.
+We are **not** using `heroku.yml`. That file is only relevant when you want Heroku to build the Docker image from your git tree on every `git push heroku main`. That path requires a multi-stage Dockerfile that can compile all artefacts from a clean checkout, which is a bigger rewrite than this project needs today (LWR alone is ~2 min and the `dist/` outputs are `.gitignore`d by design — see `.gitignore` lines 17–30).
 
-### 2.2 Add `heroku.yml`
+Instead we build the image locally with the existing `npm run docker:prebuild && docker compose build` flow, then push the resulting image to Heroku's Container Registry. Deployment commands are in §5.
 
-Create `heroku.yml` at the repo root:
+If we later move to a multi-stage Dockerfile, we can revisit adding a `heroku.yml` at the repo root that looks like:
 
 ```yaml
+# Kept here for reference only — NOT currently used.
 build:
     docker:
         web: Dockerfile
-    config:
-        NODE_ENV: production
 run:
     web: supervisord -c /etc/supervisord.conf
 ```
-
-Heroku will build the image from the repo context and run `supervisord` as the `web` dyno command. The `Procfile` is ignored in container mode and can stay for non-Heroku use.
-
-### 2.3 Pre-build artefacts must be in the git tree — or build in CI
-
-The current `Dockerfile` **packages pre-built artefacts** (`dist/web`, `dist/docs`, `dist/ui`, `packages/server/dist`, `packages/vscode/dist`). Two options:
-
-- **Simplest:** commit the `dist/` outputs before `git push heroku main`. Not great hygiene but matches the existing flow.
-- **Cleaner:** switch to a multi-stage Dockerfile that runs `npm run docker:prebuild` inside the builder stage, so `git push heroku main` on a clean tree produces a working image. Recommended before first real deploy.
-
-Until the Dockerfile is multi-stage, **always run `npm run docker:prebuild` locally and commit `dist/` before pushing to Heroku**.
 
 ---
 
@@ -172,27 +146,22 @@ heroku config -a sf-toolkit
 
 ## 5. Deployment
 
-From a clean checkout of the branch you want to ship:
+Three commands from a clean checkout:
 
 ```bash
-# 1. Build all artefacts locally (into dist/ and packages/*/dist)
+# 1. Build all static/server artefacts into dist/* and packages/*/dist.
+#    Required because the Dockerfile only COPYs them — it does not compile.
 npm run docker:prebuild
 
-# 2. Commit dist outputs (until the Dockerfile is made multi-stage)
-git add -f dist packages/server/dist packages/vscode/dist
-git commit -m "chore(deploy): build artefacts for heroku"
+# 2. Build the image from the repo Dockerfile and push it to Heroku's
+#    Container Registry. The CLI tags it as registry.heroku.com/sf-toolkit/web.
+heroku container:push web -a sf-toolkit
 
-# 3. Push to Heroku — triggers a container build on their side
-git push heroku main
+# 3. Promote the pushed image to the active release.
+heroku container:release web -a sf-toolkit
 ```
 
-Alternative (push a pre-built image instead of letting Heroku build):
-
-```bash
-npm run docker:prebuild
-heroku container:push web     -a sf-toolkit
-heroku container:release web  -a sf-toolkit
-```
+> `heroku container:push` runs `docker build` against the local `Dockerfile` — it does **not** reuse an image already tagged as `sf-toolkit:latest`. So don't run `docker compose build` before it; the push command builds once on its own.
 
 Tail logs to confirm `nginx` and `server` both come up under supervisor:
 
@@ -245,7 +214,7 @@ heroku rollback v<previous> -a sf-toolkit
 
 ## 8. Known follow-ups
 
-- **Multi-stage Dockerfile** to move `npm run docker:prebuild` into the build, so `dist/` no longer needs to be committed.
+- **Multi-stage Dockerfile + `heroku.yml`** to let Heroku build the image from git on each push (instead of us building locally and using `heroku container:push`). Worth doing once CI is involved so a teammate without Docker installed can still deploy.
 - **Dyno sizing**: the image ships LWR + Docusaurus + Monaco assets and the Express server; start on `standard-1x`, scale up if memory pressure appears under LWR SSR load.
 - **Health check**: add a lightweight `/healthz` in `packages/server/server-prod.ts` and a matching nginx location on each subdomain so Heroku's routing layer surfaces real failures instead of a black-box 503.
 - **Preview / staging app**: duplicate the provisioning section under `sf-toolkit-staging` with different domains (e.g. `staging.sf-toolkit.com`) before shipping risky changes.

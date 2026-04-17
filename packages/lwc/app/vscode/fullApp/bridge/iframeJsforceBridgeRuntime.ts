@@ -1,17 +1,19 @@
 import { createMetadataApiClient } from 'vscode/metadataApi';
 import { createToolingClient } from 'vscode/toolingApi';
+
 import {
+    DEFAULT_SOURCE_API_VERSION,
+    hasUsableConnection,
     isAuthError,
+    normalizeSfApiVersion,
     refreshConnectionRecord,
     resolveConnectionRecord,
-} from '../connection/connectorRecord';
-import { hasUsableConnection } from '../connection/connectionFactory';
-import { DEFAULT_SOURCE_API_VERSION, normalizeSfApiVersion } from '../workspace/sfdxProject';
+} from '../workbench';
 
 import {
     isIframeJsforceBridgeMethod,
     type IframeJsforceBridgeMethod,
-} from 'vscode/bridge/iframeJsforceBridgeContract';
+} from './iframeJsforceBridgeContract';
 
 const DEFAULT_METADATA_RETRIEVE_TIMEOUT_MS = 10 * 60 * 1000;
 const DEFAULT_APEX_TEST_TIMEOUT_MS = 20 * 60 * 1000;

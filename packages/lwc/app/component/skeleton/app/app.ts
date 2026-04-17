@@ -620,7 +620,7 @@ export default class App extends LightningElement {
     }
 
     get isAgentVisible() {
-        return true; //return isChromeExtension();
+        return isChromeExtension();
     }
 
     /** Dynamic Loading */

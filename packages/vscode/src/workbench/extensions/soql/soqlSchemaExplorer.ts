@@ -1,4 +1,4 @@
-import { hasUsableConnection } from '../../workbenchConnection';
+import { hasUsableConnection } from '../../connection/connectionFactory';
 import { registerCommand } from '../core/extensionRegistration';
 import { type SchemaToolsApi } from './soqlCompletionMiddleware';
 

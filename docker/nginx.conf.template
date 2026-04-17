@@ -1,3 +1,14 @@
+# =============================================================================
+# nginx config TEMPLATE — rendered at container start by supervisord.
+#
+# The only templated variable is ${PORT}. It becomes the Host-based router's
+# public listener so Heroku (and docker-compose) can inject whatever port they
+# want. Everything else in this file is literal nginx config — the $uri,
+# $host, $remote_addr etc. references are nginx runtime variables and MUST
+# NOT be substituted. That is why supervisord invokes envsubst with an
+# allow-list: `envsubst '$PORT' < template > conf`.
+# =============================================================================
+
 worker_processes auto;
 error_log /dev/stderr warn;
 pid /tmp/nginx.pid;
@@ -29,7 +40,7 @@ http {
 
     # sf-toolkit.com → apps/ui (Vite SPA)
     server {
-        listen 80;
+        listen ${PORT};
         server_name sf-toolkit.com www.sf-toolkit.com;
         root /app/dist/ui;
 
@@ -53,7 +64,7 @@ http {
 
     # app.sf-toolkit.com → packages/server (Express API + LWR web app)
     server {
-        listen 80;
+        listen ${PORT};
         server_name app.sf-toolkit.com;
 
         location / {
@@ -70,7 +81,7 @@ http {
 
     # vscode.sf-toolkit.com → packages/vscode (Monaco/VS Code web IDE)
     server {
-        listen 80;
+        listen ${PORT};
         server_name vscode.sf-toolkit.com;
         root /app/packages/vscode/dist;
 
@@ -92,7 +103,7 @@ http {
 
     # doc.sf-toolkit.com → apps/docs (Docusaurus)
     server {
-        listen 80;
+        listen ${PORT};
         server_name doc.sf-toolkit.com;
         root /app/dist/docs;
 

@@ -1,7 +1,7 @@
 import { track, wire } from 'lwc';
 import ToolkitElement from 'core/toolkitElement';
 import { isChromeExtension } from 'shared/utils';
-import { GOOGLE_SIGNIN_SCOPES, GOOGLE_DRIVE_SCOPES } from '../../../agent/googleAuth/constants.js';
+import { GOOGLE_SIGNIN_SCOPES, GOOGLE_DRIVE_SCOPES } from 'agent/googleAuth';
 import {
     cacheManager,
     CACHE_CONFIG,
@@ -15,7 +15,7 @@ import {
 } from 'shared/cacheManager';
 import Toast from 'lightning/toast';
 import LOGGER from 'shared/logger';
-import { store, APPLICATION } from 'core/store';
+import { store, APPLICATION, connectStore } from 'core/store';
 import { NavigationContext, navigate } from 'lwr/navigation';
 import { METADATA as METADATA_UTILS } from 'shared/utils';
 
@@ -97,8 +97,8 @@ export default class App extends ToolkitElement {
     isOpenAIKeyVisible = false;
     isMistralKeyVisible = false;
 
-    // Google Integration
-    @track googleConnected = false;
+    // Google Integration. `googleConnected` is derived from `googleUser.token` so the
+    // UI can never claim "Connected" while the session token is missing.
     @track googleUser = null;
     @track googleDriveConnected = false;
 
@@ -118,6 +118,15 @@ export default class App extends ToolkitElement {
 
     @wire(NavigationContext)
     navContext;
+
+    @wire(connectStore, { store })
+    storeChange({ application }) {
+        const settings = application?.settings || {};
+        const session = settings[CACHE_CONFIG.GOOGLE_SESSION.key] || null;
+        this.googleUser = session;
+        this.googleDriveConnected =
+            !!session?.token && !!(settings[CACHE_CONFIG.GOOGLE_DRIVE_CONNECTED.key]);
+    }
 
     connectedCallback() {
         this.loadConfigFromCache();
@@ -361,10 +370,10 @@ export default class App extends ToolkitElement {
             const data = await resp.json();
 
             const session = { token: data.token, email: data.email, name: data.name, picture: data.picture };
-            this.googleUser = session;
-            this.googleConnected = true;
             await saveSingleExtensionConfigToCache(CACHE_CONFIG.GOOGLE_SESSION.key, session);
-            await saveSingleExtensionConfigToCache(CACHE_CONFIG.GOOGLE_CONNECTED.key, true);
+            store.dispatch(APPLICATION.reduxSlice.actions.updateSettings({
+                [CACHE_CONFIG.GOOGLE_SESSION.key]: session,
+            }));
             Toast.show({ label: `Connected as ${data.name || data.email}`, variant: 'success' });
         } catch (err) {
             LOGGER.error('Google OAuth error', err);
@@ -381,12 +390,12 @@ export default class App extends ToolkitElement {
             if (token) {
                 await new Promise(resolve => chrome.identity.removeCachedAuthToken({ token }, resolve));
             }
-            this.googleConnected = false;
-            this.googleUser = null;
-            this.googleDriveConnected = false;
-            await saveSingleExtensionConfigToCache(CACHE_CONFIG.GOOGLE_CONNECTED.key, false);
             await saveSingleExtensionConfigToCache(CACHE_CONFIG.GOOGLE_SESSION.key, null);
             await saveSingleExtensionConfigToCache(CACHE_CONFIG.GOOGLE_DRIVE_CONNECTED.key, false);
+            store.dispatch(APPLICATION.reduxSlice.actions.updateSettings({
+                [CACHE_CONFIG.GOOGLE_SESSION.key]: null,
+                [CACHE_CONFIG.GOOGLE_DRIVE_CONNECTED.key]: false,
+            }));
             Toast.show({ label: 'Disconnected from Google', variant: 'success' });
         } catch (err) {
             LOGGER.error('Google disconnect error', err);
@@ -409,8 +418,10 @@ export default class App extends ToolkitElement {
                     }
                 });
             });
-            this.googleDriveConnected = true;
             await saveSingleExtensionConfigToCache(CACHE_CONFIG.GOOGLE_DRIVE_CONNECTED.key, true);
+            store.dispatch(APPLICATION.reduxSlice.actions.updateSettings({
+                [CACHE_CONFIG.GOOGLE_DRIVE_CONNECTED.key]: true,
+            }));
             Toast.show({ label: 'Google Drive & Sheets connected', variant: 'success' });
         } catch (err) {
             LOGGER.error('Google Drive OAuth error', err);
@@ -419,10 +430,16 @@ export default class App extends ToolkitElement {
     };
 
     handleDisconnectGoogleDrive = async () => {
-        this.googleDriveConnected = false;
         await saveSingleExtensionConfigToCache(CACHE_CONFIG.GOOGLE_DRIVE_CONNECTED.key, false);
+        store.dispatch(APPLICATION.reduxSlice.actions.updateSettings({
+            [CACHE_CONFIG.GOOGLE_DRIVE_CONNECTED.key]: false,
+        }));
         Toast.show({ label: 'Google Drive & Sheets disconnected', variant: 'success' });
     };
+
+    get googleConnected() {
+        return !!this.googleUser?.token;
+    }
 
     get googleUserDisplayName() {
         return this.googleUser?.name || this.googleUser?.email || '';
@@ -465,8 +482,10 @@ export default class App extends ToolkitElement {
             LOGGER.log('overlayEnabled changed', this.config[CACHE_CONFIG.OVERLAY_ENABLED.key]);
             this.sendToggleOverlayMessage(this.config[CACHE_CONFIG.OVERLAY_ENABLED.key]);
         }
-        // Use the new CacheManager to save config
+        // Persist to chrome.storage / localStorage then mirror into the Redux store so
+        // any component subscribed via storeChange picks up the new values immediately.
         await cacheManager.saveConfig(config);
+        store.dispatch(APPLICATION.reduxSlice.actions.updateSettings(config));
         store.dispatch(APPLICATION.reduxSlice.actions.updateProviderConfigs({ providerConfigs }));
         store.dispatch(
             APPLICATION.reduxSlice.actions.updateAiProvider({
@@ -569,10 +588,8 @@ export default class App extends ToolkitElement {
             this.isChromeSyncSettingsEnabled = cacheManager.isChromeSyncSettingsEnabled; // Manually added to the cacheManager
         }
 
-        // Google Integration status
-        this.googleConnected = !!config[CACHE_CONFIG.GOOGLE_CONNECTED.key];
-        this.googleUser = config[CACHE_CONFIG.GOOGLE_SESSION.key] || null;
-        this.googleDriveConnected = !!config[CACHE_CONFIG.GOOGLE_DRIVE_CONNECTED.key];
+        // Google session state is now driven by application.settings via storeChange;
+        // no manual assignment needed here.
     };
 
     loadMetadataStorageTypeOptions = async () => {

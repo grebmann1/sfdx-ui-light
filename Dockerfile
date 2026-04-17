@@ -12,9 +12,11 @@
 # =============================================================================
 FROM node:22-alpine
 
-# nginx — static file server for docs / ui / vscode
+# nginx     — static file server for docs / ui / vscode
 # supervisor — manages nginx + node processes as PID 1
-RUN apk add --no-cache nginx supervisor
+# gettext   — provides `envsubst`, used at container start to render the
+#             nginx config template with the Heroku-assigned $PORT
+RUN apk add --no-cache nginx supervisor gettext
 
 WORKDIR /app
 
@@ -51,8 +53,10 @@ COPY packages/vscode/dist   packages/vscode/dist
 # ---------------------------------------------------------------------------
 # Process-manager and web-server configuration
 # ---------------------------------------------------------------------------
-COPY docker/supervisord.conf /etc/supervisord.conf
-COPY docker/nginx.conf       /etc/nginx/nginx.conf
+COPY docker/supervisord.conf     /etc/supervisord.conf
+# Template is rendered to /etc/nginx/nginx.conf at container start
+# by the [program:nginx] command in supervisord.conf.
+COPY docker/nginx.conf.template  /etc/nginx/nginx.conf.template
 
 # ---------------------------------------------------------------------------
 # Expose all service ports

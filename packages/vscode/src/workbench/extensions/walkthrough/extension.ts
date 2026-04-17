@@ -1,5 +1,5 @@
-import { buildOrgContext, ORG_ENVIRONMENT_TYPES } from '../../workbenchConnection';
-import { getWorkbenchOrgContext } from '../../workbenchPlatform';
+import { buildOrgContext, ORG_ENVIRONMENT_TYPES } from '../../connection/orgContext';
+import { getWorkbenchOrgContext } from '../../platform/workbenchServices';
 import { EXTENSION_PUBLISHER } from '../core/constants';
 import { buildSalesforceExtensionConfig } from '../core/extensionManifest';
 import {

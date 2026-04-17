@@ -37,6 +37,10 @@
             },
             { "name": "shared/sf", "path": "$rootDir/packages/shared/dist/modules/sf/sf.js" },
             {
+                "name": "shared/salesforceUrl",
+                "path": "$rootDir/packages/shared/dist/modules/salesforceUrl/salesforceUrl.js"
+            },
+            {
                 "name": "shared/store",
                 "path": "$rootDir/packages/shared/dist/modules/store/store.js"
             },
@@ -73,6 +77,18 @@
             {
                 "name": "feature-input-quick-pick",
                 "path": "$rootDir/packages/lwc/web-extension/feature/inputQuickPick/inputQuickPick.js"
+            },
+            {
+                "name": "vscode/metadataApi",
+                "path": "$rootDir/packages/shared/dist/modules/metadataApi/metadataApi.js"
+            },
+            {
+                "name": "vscode/toolingApi",
+                "path": "$rootDir/packages/shared/dist/modules/toolingApi/toolingApi.js"
+            },
+            {
+                "name": "vscode/sourceTracking",
+                "path": "$rootDir/packages/shared/dist/modules/sourceTracking/sourceTracking.js"
             }
         ]
     },

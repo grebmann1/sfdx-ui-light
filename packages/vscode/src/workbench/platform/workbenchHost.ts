@@ -1,4 +1,4 @@
-import { hasUsableConnection } from '../workbenchConnection';
+import { hasUsableConnection } from '../connection/connectionFactory';
 import { createDeployAndSourceTracking } from '../extensions/metadata/commands/deployAndSourceTracking';
 import { createActivationContext } from '../extensions/metadata/core/activationContext';
 import {

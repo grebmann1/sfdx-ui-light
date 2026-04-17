@@ -1,4 +1,4 @@
-import { DEFAULT_SOURCE_API_VERSION, normalizeSfApiVersion } from '../../../workbenchWorkspace';
+import { DEFAULT_SOURCE_API_VERSION, normalizeSfApiVersion } from '../../../workspace/sfdxProject';
 import { ensureDir, writeTextFile } from '../core/workspaceCache';
 
 function toUri(vscode, value) {

@@ -36,30 +36,25 @@ import {
     IFRAME_AI_BRIDGE_QUERY_FLAG,
     IFRAME_AI_BRIDGE_QUERY_VERSION_PARAM,
 } from './constants';
-import { getActiveSalesforceWorkbenchHost } from 'vscode/workbench/salesforceWorkbenchHost';
 import { IFRAME_JSFORCE_BRIDGE_VERSION } from './bridge/iframeJsforceBridgeContract';
 import { createIframeJsforceBridgeHost } from './bridge/iframeJsforceBridgeHost';
-import { createIframeJsforceBridgeRuntime } from 'vscode/workbench/iframeJsforceBridgeRuntime';
+import { createIframeJsforceBridgeRuntime } from './bridge/iframeJsforceBridgeRuntime';
 import {
     buildOrgContext,
     buildWorkbenchConnection,
-    deriveConnectionWorkspaceRoot,
-    clearSharedCurrentConnectionContext,
-    hasUsableConnection,
-    normalizeWorkspaceRoot,
-    shareCurrentConnectionContext,
-} from 'vscode/workbench/workbenchConnection';
-import {
     buildWorkspaceBootstrap,
     DEFAULT_SOURCE_API_VERSION,
+    deriveConnectionWorkspaceRoot,
+    hasUsableConnection,
     normalizeSfApiVersion,
+    normalizeWorkspaceRoot,
     seedWorkspaceFiles,
-} from 'vscode/workbench/workbenchWorkspace';
+} from './workbench';
 import { IFRAME_FS_BRIDGE_VERSION } from './bridge/iframeFsBridgeContract';
 import { createIframeFsBridgeHost } from './bridge/iframeFsBridgeHost';
 import { IFRAME_AI_BRIDGE_VERSION } from './bridge/iframeAiBridgeContract';
 import { createIframeAiBridgeHost } from './bridge/iframeAiBridgeHost';
-import { createIframeAiBridgeRuntime } from 'vscode/workbench/iframeAiBridgeRuntime';
+import { createIframeAiBridgeRuntime } from './bridge/iframeAiBridgeRuntime';
 
 export default class VscodeWorkbenchApp extends ToolkitElement {
     @api sessionId;
@@ -86,8 +81,6 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     _workspaceRoot = DEFAULT_WORKSPACE_ROOT;
     _appFs = null;
     _workspaceBootstrap = null;
-    _currentConnectionProvider = null;
-    _sharedConnectionContext = null;
     _connectionBootstrapPromise = null;
     _sessionRecoveryPromise = null;
     _workspaceSyncPromise = Promise.resolve();
@@ -105,16 +98,12 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         const didSessionExpire = !this.sessionHasExpired && Boolean(application?.sessionHasExpired);
         this.sessionHasExpired = Boolean(application?.sessionHasExpired);
         this._syncConnectionState(application);
-        void this._syncWorkbenchConnectionUi({ announceExpired: didSessionExpire });
         if (didSessionExpire) {
             void this.tryRecoverExpiredSession({ silent: true });
         }
     }
 
     connectedCallback() {
-        this._sharedConnectionContext = this._createSharedConnectionContext();
-        this._currentConnectionProvider = () => this._sharedConnectionContext;
-        shareCurrentConnectionContext(this._currentConnectionProvider);
         this._syncConnectionState(store.getState()?.application);
         void this._ensureInitialConnectionBootstrap();
     }
@@ -133,47 +122,9 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     }
 
     disconnectedCallback() {
-        clearSharedCurrentConnectionContext(this._currentConnectionProvider);
-        this._currentConnectionProvider = null;
         this._disposeIframeAiBridgeHost();
         this._disposeIframeJsforceBridgeHost();
         this._disposeIframeFsBridgeHost();
-    }
-
-    // ── Shared connection context ─────────────────────────────────────────────
-
-    _createSharedConnectionContext() {
-        if (this._sharedConnectionContext) {
-            return this._sharedConnectionContext;
-        }
-        const getComponent = () => this;
-        this._sharedConnectionContext = {
-            get connector() {
-                return getComponent().connector;
-            },
-            get connection() {
-                return getComponent().connector?.conn || null;
-            },
-            get workspaceRoot() {
-                return getComponent()._workspaceRoot;
-            },
-            get apiVersion() {
-                return getComponent().sfApiVersion;
-            },
-            get sessionHasExpired() {
-                return getComponent().sessionHasExpired;
-            },
-            get hasError() {
-                return getComponent().connectorHasError;
-            },
-            get errorMessage() {
-                return getComponent().connectorErrorMessage;
-            },
-            getConnectionRecord() {
-                return getComponent()._buildCurrentConnection();
-            },
-        };
-        return this._sharedConnectionContext;
     }
 
     // ── Connection state ──────────────────────────────────────────────────────
@@ -257,35 +208,6 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
 
     _hasUsableWorkbenchConnection(connection = this._buildCurrentConnection()) {
         return hasUsableConnection(connection);
-    }
-
-    async _syncWorkbenchConnectionUi({ announceExpired = false } = {}) {
-        const host = getActiveSalesforceWorkbenchHost();
-        const connectionRuntime = host?.connectionRuntime;
-        if (!connectionRuntime) {
-            return;
-        }
-
-        const currentConnection = connectionRuntime.loadStoredConn();
-        connectionRuntime.setStatus(currentConnection);
-
-        const message =
-            currentConnection?.instanceUrl ||
-            currentConnection?.sessionHasExpired ||
-            currentConnection?.hasError
-                ? connectionRuntime.getConnectionProblemMessage(currentConnection)
-                : null;
-        await host?.setLoginProblem?.(
-            currentConnection?.accessToken &&
-                !currentConnection?.sessionHasExpired &&
-                !currentConnection?.hasError
-                ? null
-                : message || null
-        );
-
-        if (announceExpired && currentConnection?.sessionHasExpired && message) {
-            await host?.context?.vscode?.window?.showErrorMessage?.(message);
-        }
     }
 
     // ── Bootstrap / Connector ─────────────────────────────────────────────────
@@ -445,7 +367,6 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
                 apiVersion: this.sfApiVersion,
             });
         }
-        await this._syncWorkbenchConnectionUi();
         this._emitIframeConnectionState('connection.applied', { force: true });
         return connector;
     }
@@ -923,10 +844,6 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         }
     }
 
-    _getVscodeWindow() {
-        return getActiveSalesforceWorkbenchHost()?.context?.vscode?.window || null;
-    }
-
     _normalizeServerUrl(value) {
         const normalized = String(value || '').trim();
         if (!normalized) {
@@ -941,10 +858,6 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     async _showInputBox(
         options: { prompt?: string; title?: string; value?: string; [key: string]: unknown } = {}
     ) {
-        const vscodeWindow = this._getVscodeWindow();
-        if (typeof vscodeWindow?.showInputBox === 'function') {
-            return await vscodeWindow.showInputBox({ ignoreFocusOut: true, ...options });
-        }
         const fallbackValue = window.prompt(
             options?.prompt || options?.title || '',
             options?.value || ''
@@ -952,20 +865,16 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
         return typeof fallbackValue === 'string' ? fallbackValue : undefined;
     }
 
-    async _showQuickPick(items = [], options = {}) {
-        const vscodeWindow = this._getVscodeWindow();
-        if (typeof vscodeWindow?.showQuickPick === 'function') {
-            return await vscodeWindow.showQuickPick(items, { ignoreFocusOut: true, ...options });
-        }
+    async _showQuickPick(items = [], _options = {}) {
         return items?.[0];
     }
 
-    async _showInformationMessage(message) {
-        await this._getVscodeWindow()?.showInformationMessage?.(message);
+    async _showInformationMessage(_message) {
+        // The LWC host has no VSCode window; the iframe surfaces its own notifications.
     }
 
-    async _showErrorMessage(message) {
-        await this._getVscodeWindow()?.showErrorMessage?.(message);
+    async _showErrorMessage(_message) {
+        // The LWC host has no VSCode window; the iframe surfaces its own notifications.
     }
 
     // ── Public actions ────────────────────────────────────────────────────────

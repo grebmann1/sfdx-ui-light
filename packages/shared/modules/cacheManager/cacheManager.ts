@@ -277,8 +277,8 @@ export const CACHE_CONFIG = {
         'metadata_storage_background_sync_enabled',
         false
     ),
-    // Google Integration
-    GOOGLE_CONNECTED: new CONFIG_OBJECT('google_connected', false),
+    // Google Integration. Connection status is derived from GOOGLE_SESSION.token —
+    // there is no separate "connected" flag to keep in sync.
     GOOGLE_DRIVE_CONNECTED: new CONFIG_OBJECT('google_drive_connected', false),
     // Agent Tools
     TOOL_BRIGHT_DATA_KEY: new CONFIG_OBJECT('tool_bright_data_key', null),

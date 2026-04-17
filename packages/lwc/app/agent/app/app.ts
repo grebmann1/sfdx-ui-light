@@ -106,10 +106,13 @@ export default class App extends ToolkitElement {
     activeProviderBaseUrl;
     isInternal;
 
-    // Google auth state
+    // Google auth state — driven by application.settings via storeChange
     @track isGoogleAuthenticated = false;
     @track googleUser: { token: string; email: string; name: string; picture: string } | null = null;
     @track rateLimitRemaining: number | null = null;
+    // Agent tool settings — driven by application.settings via storeChange
+    brightDataApiKey: string | null = null;
+    googleSheetEnabled = false;
 
     // Better to use a constant than a getter ! (renderCallback is called too many times)
     welcomeMessage = Constants.WELCOME_MESSAGE;
@@ -119,6 +122,30 @@ export default class App extends ToolkitElement {
     @wire(connectStore, { store })
     storeChange({ application, agent }) {
         this._setIfChanged('aiProvider', application.aiProvider);
+
+        // Google session — read from settings so any writer (agent OR settings page)
+        // propagates automatically via the store without any custom subscription.
+        const settings = application?.settings || {};
+        const session = settings[CACHE_CONFIG.GOOGLE_SESSION.key] as
+            | { token: string; email: string; name: string; picture: string }
+            | null
+            | undefined;
+        const nextGoogleUser = session?.token ? session : null;
+        const nextIsAuthenticated = !!nextGoogleUser;
+        if (this.googleUser?.token !== nextGoogleUser?.token) {
+            this.googleUser = nextGoogleUser;
+        }
+        if (this.isGoogleAuthenticated !== nextIsAuthenticated) {
+            this.isGoogleAuthenticated = nextIsAuthenticated;
+            if (nextIsAuthenticated) {
+                this._applyWorkbenchProvider(nextGoogleUser.token, nextGoogleUser.email);
+                void this._refreshRateLimit();
+            } else {
+                this.rateLimitRemaining = null;
+            }
+        }
+        this._setIfChanged('brightDataApiKey', (settings[CACHE_CONFIG.TOOL_BRIGHT_DATA_KEY.key] as string) ?? null);
+        this._setIfChanged('googleSheetEnabled', !!(settings[CACHE_CONFIG.TOOL_GOOGLE_SHEET_ENABLED.key]));
         const nextAvailableModels = buildAvailableAgentModelOptions({
             availableModelsByProvider: application?.availableModelsByProvider,
             providerConfigs: application?.providerConfigs,
@@ -190,34 +217,36 @@ export default class App extends ToolkitElement {
     }
 
     async _restoreGoogleSession() {
-        const session = await cacheManager.getConfigValue<{
-            token: string;
-            email: string;
-            name: string;
-            picture: string;
-        }>(CACHE_CONFIG.GOOGLE_SESSION.key);
+        // Read from the store (already populated by skeleton/app/cache.ts loadFromCache).
+        const session = store.getState().application?.settings?.[CACHE_CONFIG.GOOGLE_SESSION.key] as
+            | { token: string; email: string; name: string; picture: string }
+            | null
+            | undefined;
         if (!session?.token) return;
 
-        // Verify the session is still valid on the backend
+        // Verify the session is still valid on the backend.
         try {
             const resp = await fetch(`${this._serverBaseUrl}/google/me`, {
                 headers: { Authorization: `Bearer ${session.token}` },
                 credentials: 'same-origin',
             });
             if (!resp.ok) {
+                // Backend session gone — clear both the persistent cache and the store.
                 await cacheManager.setConfigValue(CACHE_CONFIG.GOOGLE_SESSION.key, null);
+                await cacheManager.setConfigValue(CACHE_CONFIG.GOOGLE_DRIVE_CONNECTED.key, false);
+                store.dispatch(
+                    APPLICATION.reduxSlice.actions.updateSettings({
+                        [CACHE_CONFIG.GOOGLE_SESSION.key]: null,
+                        [CACHE_CONFIG.GOOGLE_DRIVE_CONNECTED.key]: false,
+                    })
+                );
                 return;
             }
-            this.googleUser = session;
-            this.isGoogleAuthenticated = true;
-            this._applyWorkbenchProvider(session.token, session.email);
         } catch {
-            // Network error — keep session locally, will fail on first AI request
-            this.googleUser = session;
-            this.isGoogleAuthenticated = true;
-            this._applyWorkbenchProvider(session.token, session.email);
+            // Network error — keep the existing session; it will fail on first AI call.
         }
-        await this._refreshRateLimit();
+        // storeChange will pick up the session from application.settings and set
+        // isGoogleAuthenticated, so nothing else needed here.
     }
 
     _applyWorkbenchProvider(token: string, email: string) {
@@ -247,22 +276,33 @@ export default class App extends ToolkitElement {
         const { token, email, name, picture } = event.detail || {};
         if (!token) return;
         const session = { token, email, name, picture };
+        // Persist to cache for next startup, then update the store so storeChange
+        // propagates isGoogleAuthenticated / googleUser reactively.
         await cacheManager.setConfigValue(CACHE_CONFIG.GOOGLE_SESSION.key, session);
-        await cacheManager.setConfigValue(CACHE_CONFIG.GOOGLE_CONNECTED.key, true);
-        this.googleUser = session;
-        this.isGoogleAuthenticated = true;
-        this._applyWorkbenchProvider(token, email);
-        await this._refreshRateLimit();
+        store.dispatch(
+            APPLICATION.reduxSlice.actions.updateSettings({
+                [CACHE_CONFIG.GOOGLE_SESSION.key]: session,
+            })
+        );
     };
 
     handleDriveConnected = async (event: CustomEvent) => {
         const { accessToken } = event.detail || {};
         if (!accessToken) return;
         await cacheManager.setConfigValue(CACHE_CONFIG.GOOGLE_DRIVE_CONNECTED.key, true);
+        store.dispatch(
+            APPLICATION.reduxSlice.actions.updateSettings({
+                [CACHE_CONFIG.GOOGLE_DRIVE_CONNECTED.key]: true,
+            })
+        );
     };
 
     async _refreshRateLimit() {
-        const token = this.googleUser?.token;
+        const session = store.getState().application?.settings?.[CACHE_CONFIG.GOOGLE_SESSION.key] as
+            | { token: string; email: string }
+            | null
+            | undefined;
+        const token = session?.token || this.googleUser?.token;
         if (!token || !this.isWorkbenchUser) return;
         try {
             const resp = await fetch(`${this._serverBaseUrl}/google/rate-limit`, {
@@ -390,10 +430,9 @@ export default class App extends ToolkitElement {
             ? state.agent.messagesById[conversationId]
             : [];
 
-        const [brightDataApiKey, googleSheetEnabled] = await Promise.all([
-            cacheManager.getConfigValue<string>(CACHE_CONFIG.TOOL_BRIGHT_DATA_KEY.key),
-            cacheManager.getConfigValue<boolean>(CACHE_CONFIG.TOOL_GOOGLE_SHEET_ENABLED.key),
-        ]);
+        const appSettings = state.application?.settings || {};
+        const brightDataApiKey = (appSettings[CACHE_CONFIG.TOOL_BRIGHT_DATA_KEY.key] as string) ?? null;
+        const googleSheetEnabled = !!(appSettings[CACHE_CONFIG.TOOL_GOOGLE_SHEET_ENABLED.key]);
 
         return {
             conversationId,

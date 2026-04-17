@@ -1,4 +1,5 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { cacheManager, CACHE_CONFIG } from 'shared/cacheManager';
 import {
     createDefaultProviderConfigMap,
     DEFAULT_LLM_PROVIDER,
@@ -43,6 +44,9 @@ type ApplicationState = {
     openaiUrl: string;
     mistralKey: string | null;
     isInternal: boolean;
+    /** Flat mirror of CACHE_CONFIG. Written on startup and whenever settings are saved.
+     *  Components subscribe via storeChange instead of reading from cache directly. */
+    settings: Record<string, unknown>;
 };
 
 function getActiveProviderConfig(state: ApplicationState) {
@@ -86,6 +90,7 @@ const initialState: ApplicationState = {
     openaiUrl: createDefaultProviderConfigMap().openai.baseUrl,
     mistralKey: null,
     isInternal: false,
+    settings: {},
 };
 
 const applicationSlice = createSlice({
@@ -194,7 +199,24 @@ const applicationSlice = createSlice({
             });
             syncLegacyProviderFields(state);
         },
+        /** Merges a partial settings patch into `state.settings`.
+         *  Pass the full saved config object or a single-key patch. */
+        updateSettings: (state, action) => {
+            state.settings = { ...state.settings, ...(action.payload || {}) };
+        },
     },
 });
+
+/** Thunk: reads all CACHE_CONFIG keys from chrome.storage / localStorage and
+ *  dispatches updateSettings so every component can read from the store
+ *  rather than calling cacheManager directly. */
+export const loadSettingsAsync = createAsyncThunk(
+    'application/loadSettings',
+    async (_, { dispatch }) => {
+        const keys = Object.values(CACHE_CONFIG).map(x => x.key);
+        const config = await cacheManager.loadConfig(keys);
+        dispatch(applicationSlice.actions.updateSettings(config));
+    }
+);
 
 export const reduxSlice = applicationSlice;
