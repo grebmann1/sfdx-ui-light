@@ -150,7 +150,7 @@ loadAllDocuments = async (items) => {
     
 
     //const actual = fs.readFileSync(filePath, 'utf-8');
-    const pathFile = `./assets/data/salesforce/${version}.json`;
+    const pathFile = `./assets/server/data/salesforce/${version}.json`;
     const formattedData = {
         contents : finalResult,
         version,
@@ -169,7 +169,7 @@ loadAllDocumentAsSeparateFile = async (items) => {
     // Process each items
     const results = [];
     for await (const x of items.map(x => ({url:x.a_attr.href,...x}))) {
-        const fileName = `./assets/data/salesforce/${version}/${x.url}.json`;
+        const fileName = `./assets/server/data/salesforce/${version}/${x.url}.json`;
         const fileExist = fs.existsSync(fileName);
         if(!fileExist){
             const data = await fetchContentDocument(x.documentationId,x.url);

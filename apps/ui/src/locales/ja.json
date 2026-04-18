@@ -1,0 +1,116 @@
+{
+    "chrome": {
+        "announce": "<bold>Salesforce Workbench</bold> と <bold>Benchpress</bold> の現代的な代替ツール",
+        "nav": {
+            "github": "GitHub",
+            "docs": "ドキュメント",
+            "install": "インストール"
+        },
+        "footer": {
+            "documentation": "ドキュメント",
+            "github": "GitHub",
+            "copyright": "© {{year}} Workbench"
+        },
+        "screenshotComingSoon": "スクリーンショットは近日公開予定"
+    },
+    "home": {
+        "hero": {
+            "eyebrow": "Salesforce 管理者向けツールキット",
+            "title": "Salesforce 管理者のための統合ツールキット",
+            "body": "Workbench は Salesforce に直接組み込まれ、ページオーバーレイ、ブラウザ内 VS Code エディタ、フルメタデータエクスプローラー、ブラウザを操作できる AI エージェントをひとつの拡張機能として提供します。",
+            "cta": "拡張機能を追加"
+        },
+        "features": {
+            "overlay": {
+                "kicker": "いつでも手元に",
+                "title": "Salesforce ページに組み込まれたオーバーレイパネル",
+                "description": "すべての Salesforce ページに控えめなパネルが表示され、現在の作業コンテキストを離れることなく、ツール・ログ・Org データに即座にアクセスできます。"
+            },
+            "editor": {
+                "kicker": "コンテキストを切り替えずにコーディング",
+                "title": "ブラウザで動く VS Code エディタ",
+                "description": "VS Code と同じエンジンを搭載したフル機能のコードエディタがブラウザ内に直接開きます。ウィンドウを切り替えることなく Apex の作成・実行・デバッグが可能です。"
+            },
+            "workbench": {
+                "kicker": "Org を完全に把握",
+                "title": "メタデータの操作と探索のための統合 Workbench",
+                "description": "すべてのオブジェクト、項目、権限セット、メタデータコンポーネントを閲覧できます。SOQL の実行、レコードの比較、変更のデプロイ、Org の管理をひとつの画面で行えます。"
+            },
+            "soql": {
+                "kicker": "自信を持ってクエリを実行",
+                "title": "Salesforce 向けに構築された最新 SOQL エディタ",
+                "description": "すべての SObject を確認し、オートコンプリート付きで SOQL を記述して、結果を即座に確認できます。旧 Workbench クエリツールを置き換えるために設計された専用インターフェースです。"
+            },
+            "agent": {
+                "kicker": "実際に動く AI",
+                "title": "ブラウザを操作できる強力な AI エージェント",
+                "description": "AI エージェントは質問に答えるだけでなく、実際に行動します。Salesforce ページの移動、フォームの入力、クエリの実行、複数ステップの Org タスクを自律的に処理します。"
+            }
+        },
+        "platforms": {
+            "kicker": "作業場所を選ばない",
+            "title": "利用可能なプラットフォーム",
+            "webExtension": {
+                "name": "ブラウザ拡張機能",
+                "description": "Salesforce で作業しながら、ブラウザ内で直接すべてのツールにアクセスできます。",
+                "badge": "おすすめ",
+                "cta": "Chrome に追加"
+            },
+            "desktop": {
+                "name": "デスクトップアプリ",
+                "description": "macOS と Windows 向けのネイティブデスクトップアプリ。ブラウザ不要の完全なツールキット。",
+                "badge": "開発中",
+                "cta": "近日公開"
+            }
+        },
+        "download": {
+            "title": "数分で始められます",
+            "body": "拡張機能を追加して Org を接続するだけで、オーバーレイパネル、VS Code エディタ、メタデータツール、AI エージェントがブラウザ内で使えるようになります。",
+            "cta": "拡張機能を追加"
+        }
+    },
+    "welcome": {
+        "hero": {
+            "eyebrow": "準備完了",
+            "title": "Workbench へようこそ",
+            "body": "インストールありがとうございます。拡張機能をピン留めして、いつでもワンクリックでアクセスできるようにしましょう。"
+        },
+        "pin": {
+            "kicker": "ステップ 1 · ピン留め",
+            "title": "Workbench を Chrome ツールバーにピン留めする",
+            "instructions": "Chrome の右上にある <puzzle/> 拡張機能アイコンをクリックし、<strong>Workbench</strong> の横にある <pin/> ピンをクリックしてください。ツールバーに常駐し、どこからでも起動できます。",
+            "hint": "すでにピン留め済みの場合は、そのまま下のアプリに進んでください。"
+        },
+        "overlay": {
+            "kicker": "ステップ 2 · パネルを探索",
+            "title": "Salesforce 内に直接表示されるパネル",
+            "body": "Workbench パネルはすべての Salesforce ページに自動的に表示されます。画面の端のボタンをクリックして開くと、Org 情報の確認、オブジェクトの閲覧、設定リンクへのジャンプなど、現在のページを離れることなく多くの操作が行えます。"
+        },
+        "steps": {
+            "kicker": "次のステップ",
+            "title": "Workbench の使い方",
+            "openSalesforce": {
+                "title": "任意の Salesforce ページを開く",
+                "description": "Workbench パネルはすべての Salesforce タブに自動的に表示されます。ログインや設定は不要です。"
+            },
+            "launchWorkbench": {
+                "title": "フル Workbench を起動",
+                "description": "ピン留めされた Workbench アイコンをクリック（または Ctrl/Cmd+Shift+Space を押す）して、すべてのツールが揃ったサイドパネルを開きます。"
+            },
+            "tryAgent": {
+                "title": "AI エージェントを試す",
+                "description": "SOQL の実行、メタデータの探索、Salesforce のナビゲーションをエージェントに依頼してみましょう — ブラウザを自律的に操作します。"
+            }
+        },
+        "cta": {
+            "title": "始める準備はできましたか？",
+            "body": "Workbench アプリを開いて、最初の Org に接続しましょう。",
+            "button": "Workbench を開く"
+        },
+        "toolbar": {
+            "extensions": "拡張機能",
+            "workbench": "Workbench",
+            "otherExtension": "他の拡張機能"
+        }
+    }
+}

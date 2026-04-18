@@ -26,13 +26,12 @@ COPY package.json package-lock.json ./
 RUN npm ci --omit=dev --ignore-scripts
 
 # ---------------------------------------------------------------------------
-# Compiled Express server + its static assets
+# Compiled Express server
 # ---------------------------------------------------------------------------
 COPY packages/server/dist   packages/server/dist
-COPY packages/server/assets packages/server/assets
 
-# Root assets — server-prod.js reads ./assets/data/salesforce/*.json from CWD
-COPY assets assets
+# Server runtime data — server-prod.js reads ./assets/server/data/salesforce/*.json from CWD
+COPY assets/server assets/server
 
 # ---------------------------------------------------------------------------
 # Pre-built static sites

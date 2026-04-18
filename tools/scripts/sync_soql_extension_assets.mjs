@@ -13,7 +13,7 @@ const repoRoot = path.resolve(scriptDir, '../..');
 const upstreamRoot = path.resolve(process.env.SOQL_UPSTREAM_ROOT || DEFAULT_UPSTREAM_ROOT);
 const destinationRoot = path.join(
     repoRoot,
-    'packages/vscode/assets/libs/extensions/salesforcedx-vscode-soql'
+    'assets/shared/libs/extensions/salesforcedx-vscode-soql'
 );
 
 const requiredCopySpecs = [

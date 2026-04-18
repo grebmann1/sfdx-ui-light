@@ -32,6 +32,7 @@ export const IFRAME_JSFORCE_BRIDGE_METHODS = [
     'schema.describeCustomObject',
     'metadata.deployViaToolingApi',
     'metadata.deployViaMetadataApi',
+    'metadata.createBundleViaToolingApi',
 ] as const;
 
 export type IframeJsforceBridgeMethod = (typeof IFRAME_JSFORCE_BRIDGE_METHODS)[number];

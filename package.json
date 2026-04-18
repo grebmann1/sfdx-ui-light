@@ -61,8 +61,8 @@
         "lint:eslint:fix": "eslint \"{packages,tools}/**/*.{js,jsx,ts,tsx,mjs}\" --fix",
         "lint": "npm run lint:eslint && npm run format:check",
         "check": "npm run lint && npm run format:check",
-        "build:vendor:openai": "cd packages/vendor-bundles/openai && npm install && npm run build && cp dist/* ../../../packages/server/assets/libs/openai/",
-        "build:vendor:just-bash": "cd packages/vendor-bundles/just-bash && npm install && npm run build && cp dist/* ../../../packages/server/assets/libs/just-bash/",
+        "build:vendor:openai": "cd packages/vendor-bundles/openai && npm install && npm run build && cp dist/* ../../../assets/extension/libs/openai/",
+        "build:vendor:just-bash": "cd packages/vendor-bundles/just-bash && npm install && npm run build && cp dist/* ../../../assets/extension/libs/just-bash/",
         "sync:soql-extension-assets": "node tools/scripts/sync_soql_extension_assets.mjs",
         "build:vendor": "npm-run-all build:vendor:openai build:vendor:just-bash",
         "build:all": "npm-run-all site:build build:workers build:extension build:desktop",
@@ -83,11 +83,11 @@
     "copyFiles": [
         {
             "from": "node_modules/@salesforce-ux/design-system/assets",
-            "to": "packages/server/assets"
+            "to": "assets/extension"
         },
         {
             "from": "node_modules/xterm/css/xterm.css",
-            "to": "packages/server/assets/styles"
+            "to": "assets/extension/styles"
         }
     ],
     "dependencies": {

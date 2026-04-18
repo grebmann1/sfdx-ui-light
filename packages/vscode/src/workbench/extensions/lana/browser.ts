@@ -2881,7 +2881,7 @@ export const initialize = (vscode: any) => {
     /**
     * Root path under which the log-viewer webview assets are served.
     * In sf-toolkit-web, these files are copied to:
-    *   packages/vscode/assets/libs/extensions/lana/out/
+    *   assets/shared/libs/extensions/lana/out/
     * and served at this URL path by Vite's dev server / production build.
     */
     const LANA_BROWSER_ASSETS_ROOT = "/libs/extensions/lana/dist";

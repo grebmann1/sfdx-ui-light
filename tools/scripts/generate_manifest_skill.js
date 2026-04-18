@@ -10,8 +10,8 @@ const fs = require('fs');
 const path = require('path');
 
 const PROJECT_ROOT = path.resolve(__dirname, '../..');
-const ALL_SKILLS_ROOT = path.join(PROJECT_ROOT, 'assets/skills');
-const MANIFEST_FILE = path.join(PROJECT_ROOT, 'assets/skills/manifest.json');
+const ALL_SKILLS_ROOT = path.join(PROJECT_ROOT, 'assets/shared/skills');
+const MANIFEST_FILE = path.join(PROJECT_ROOT, 'assets/shared/skills/manifest.json');
 
 /** Recursively collect all *.SKILL.md paths relative to `baseDir`. */
 function collectSkillPaths(dir, baseDir) {

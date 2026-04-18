@@ -6,7 +6,7 @@ import { initialize } from './browser';
 /**
  * Root path where lana's browser dist assets are served as static files.
  * Copy the contents of debug-log-analyzer/lana/dist/ to
- * packages/vscode/assets/libs/extensions/lana/dist/ using `npm run copy:lana-assets`.
+ * assets/shared/libs/extensions/lana/dist/ using `npm run copy:lana-assets`.
  *
  * Files served from this path:
  *   - browser.js       (extension host entry → registered at LANA_BROWSER_ENTRY)

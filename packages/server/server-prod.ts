@@ -16,7 +16,7 @@ dotenv.config({ path: '.env.prod' });
 /** Documentation index **/
 const VERSION = process.env.DOC_VERSION || '260.0';
 const DATA_DOCUMENTATION = JSON.parse(
-    fs.readFileSync(`./assets/data/salesforce/${VERSION}.json`, 'utf-8')
+    fs.readFileSync(`./assets/server/data/salesforce/${VERSION}.json`, 'utf-8')
 );
 initDocumentationIndex(DATA_DOCUMENTATION.contents);
 

@@ -53,6 +53,18 @@ type BridgeClient = {
     pollIntervalMs?: number
     timeoutMs?: number
   }) => Promise<{ id: string; success: boolean; status: string; errorMessage: string; details: unknown }>
+  createBundleViaToolingApi: (args: {
+    type: 'LightningComponentBundle' | 'AuraDefinitionBundle'
+    developerName: string
+    masterLabel?: string
+    apiVersion?: string
+    files: Array<{ filePath: string; source: string; format: string; defType?: string }>
+  }) => Promise<{
+    bundleId: string
+    bundleName: string
+    type: string
+    resources: Array<{ id: string; filePath: string; format: string; defType?: string }>
+  }>
 }
 
 type ConnectionRecord = {
@@ -260,6 +272,14 @@ function createMockBridgeClient(workspaceRoot: string): BridgeClient {
         status: 'Succeeded',
         errorMessage: '',
         details: null
+      }
+    },
+    async createBundleViaToolingApi() {
+      return {
+        bundleId: `mock-bundle-${Date.now()}`,
+        bundleName: 'mockBundle',
+        type: 'LightningComponentBundle',
+        resources: []
       }
     },
     emitNotification() {

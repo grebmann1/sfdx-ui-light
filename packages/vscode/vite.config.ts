@@ -13,6 +13,7 @@ export default defineConfig({
   build: {
     target: 'esnext'
   },
+  publicDir: '../../assets/shared',
   worker: {
     format: 'es'
   },
@@ -57,8 +58,8 @@ export default defineConfig({
       apply: 'serve',
       configureServer(server) {
         const distExtensionDir = path.resolve(__dirname, '../../dist/extension')
-        const vscodeAssetsDir = path.resolve(__dirname, './assets')
-        const serverAssetsDir = path.resolve(__dirname, '../../packages/server/assets')
+        const vscodeAssetsDir = path.resolve(__dirname, '../../assets/shared')
+        const serverAssetsDir = path.resolve(__dirname, '../../assets/extension')
         const STATIC_PREFIXES = ['/libs/', '/scripts/', '/views/', '/styles/']
         const mimeTypes: Record<string, string> = {
           '.html': 'text/html',
@@ -76,7 +77,7 @@ export default defineConfig({
           if (req.originalUrl != null) {
             const pathname = new URL(req.originalUrl, import.meta.url).pathname
             if (STATIC_PREFIXES.some(prefix => pathname.startsWith(prefix))) {
-              // Try dist/extension first, then packages/vscode/assets, then fall back to packages/server/assets
+              // Try dist/extension first, then assets/shared, then fall back to assets/extension
               const candidates = [
                 path.join(distExtensionDir, pathname),
                 path.join(vscodeAssetsDir, pathname),
@@ -131,7 +132,7 @@ export default defineConfig({
     port: 5173,
     host: '0.0.0.0',
     fs: {
-      allow: ['../', './assets', '../../dist/extension', '../../packages/server/assets']
+      allow: ['../', '../../assets/shared', '../../assets/extension', '../../dist/extension']
     }
   },
   define: {

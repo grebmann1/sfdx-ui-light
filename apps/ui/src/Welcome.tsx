@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import screenshotOverlay from './assets/screenshot-overlay.png';
 import { FakeBrowser, SiteShell } from './SiteChrome';
 
@@ -97,6 +98,7 @@ function PinIcon({ className, size = 16 }: { className?: string; size?: number }
 }
 
 function FakeToolbar() {
+    const { t } = useTranslation();
     return (
         <div className="pin-toolbar" aria-hidden="true">
             <div className="pin-toolbar-row">
@@ -115,19 +117,19 @@ function FakeToolbar() {
                 </span>
             </div>
             <div className="pin-toolbar-popover">
-                <div className="pin-toolbar-popover-title">Extensions</div>
+                <div className="pin-toolbar-popover-title">{t('welcome.toolbar.extensions')}</div>
                 <div className="pin-toolbar-popover-row pin-toolbar-popover-row--target">
                     <span className="pin-toolbar-brand">
                         <CloudIcon size={14} />
                     </span>
-                    <span className="pin-toolbar-name">Workbench</span>
+                    <span className="pin-toolbar-name">{t('welcome.toolbar.workbench')}</span>
                     <span className="pin-toolbar-pin">
                         <PinIcon size={14} />
                     </span>
                 </div>
                 <div className="pin-toolbar-popover-row">
                     <span className="pin-toolbar-brand pin-toolbar-brand--muted" />
-                    <span className="pin-toolbar-name pin-toolbar-name--muted">Other extension</span>
+                    <span className="pin-toolbar-name pin-toolbar-name--muted">{t('welcome.toolbar.otherExtension')}</span>
                     <span className="pin-toolbar-pin pin-toolbar-pin--muted">
                         <PinIcon size={14} />
                     </span>
@@ -137,11 +139,9 @@ function FakeToolbar() {
     );
 }
 
-const steps = [
+const STEPS_META = [
     {
-        title: 'Open any Salesforce page',
-        description:
-            'The Workbench overlay appears automatically on every Salesforce tab — no login or setup needed.',
+        id: 'openSalesforce',
         icon: (
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0" />
@@ -153,9 +153,7 @@ const steps = [
         ),
     },
     {
-        title: 'Launch the full workbench',
-        description:
-            'Click the pinned Workbench icon (or press Ctrl/Cmd+Shift+Space) to open the side panel with every tool.',
+        id: 'launchWorkbench',
         icon: (
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -164,9 +162,7 @@ const steps = [
         ),
     },
     {
-        title: 'Try the AI agent',
-        description:
-            'Ask the agent to run SOQL, explore metadata, or navigate Salesforce for you — it controls the browser itself.',
+        id: 'tryAgent',
         icon: (
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M12 2v4" />
@@ -178,9 +174,10 @@ const steps = [
             </svg>
         ),
     },
-];
+] as const;
 
 export default function Welcome() {
+    const { t } = useTranslation();
     const [heroRef, heroInView] = useInView<HTMLElement>(0.05);
     const [stepsRef, stepsInView] = useInView<HTMLElement>(0.12);
     const workbenchAppUrl = useMemo(resolveWorkbenchAppUrl, []);
@@ -192,31 +189,28 @@ export default function Welcome() {
                 className={`welcome-hero${heroInView ? ' is-visible' : ''}`}
                 aria-labelledby="welcome-hero-title"
             >
-                <p className="eyebrow">You're in</p>
-                <h1 id="welcome-hero-title">
-                    Welcome to Workbench
-                </h1>
-                <p className="hero-text">
-                    Thanks for installing. Let's pin the extension so it's always one click away,
-                    then you're ready to go.
-                </p>
+                <p className="eyebrow">{t('welcome.hero.eyebrow')}</p>
+                <h1 id="welcome-hero-title">{t('welcome.hero.title')}</h1>
+                <p className="hero-text">{t('welcome.hero.body')}</p>
             </section>
 
             <section className="pin-callout" aria-labelledby="pin-title">
                 <div className="pin-callout-inner">
                     <div className="pin-callout-body">
-                        <p className="section-kicker">Step 1 · Pin it</p>
-                        <h2 id="pin-title">Pin Workbench to your Chrome toolbar</h2>
+                        <p className="section-kicker">{t('welcome.pin.kicker')}</p>
+                        <h2 id="pin-title">{t('welcome.pin.title')}</h2>
                         <p className="pin-callout-text">
-                            Click the <PuzzleIcon className="pin-inline-icon" size={16} /> puzzle
-                            icon at the top-right of Chrome, then hit the{' '}
-                            <PinIcon className="pin-inline-icon" size={14} /> pin next to{' '}
-                            <strong>Workbench</strong>. It will stay in your toolbar so you can
-                            launch it from anywhere.
+                            <Trans
+                                t={t}
+                                i18nKey="welcome.pin.instructions"
+                                components={{
+                                    puzzle: <PuzzleIcon className="pin-inline-icon" size={16} />,
+                                    pin: <PinIcon className="pin-inline-icon" size={14} />,
+                                    strong: <strong />,
+                                }}
+                            />
                         </p>
-                        <p className="pin-callout-hint">
-                            Already pinned? You're good — jump straight into the app below.
-                        </p>
+                        <p className="pin-callout-hint">{t('welcome.pin.hint')}</p>
                     </div>
                     <div className="pin-callout-visual">
                         <FakeToolbar />
@@ -230,14 +224,9 @@ export default function Welcome() {
                         <FakeBrowser url="yourorg.salesforce.com" screenshot={screenshotOverlay} />
                     </div>
                     <div className="overlay-callout-body">
-                        <p className="section-kicker">Step 2 · Explore the overlay</p>
-                        <h2 id="overlay-title">A panel right inside Salesforce</h2>
-                        <p className="overlay-callout-text">
-                            The Workbench overlay appears on every Salesforce page automatically.
-                            Click the button at the edge of the screen to open it — inspect org info,
-                            browse objects, jump to Setup links, and more without leaving your
-                            current page.
-                        </p>
+                        <p className="section-kicker">{t('welcome.overlay.kicker')}</p>
+                        <h2 id="overlay-title">{t('welcome.overlay.title')}</h2>
+                        <p className="overlay-callout-text">{t('welcome.overlay.body')}</p>
                     </div>
                 </div>
             </section>
@@ -248,29 +237,29 @@ export default function Welcome() {
                 aria-labelledby="steps-title"
             >
                 <div className="section-heading">
-                    <p className="section-kicker">Next up</p>
-                    <h2 id="steps-title">How to use Workbench</h2>
+                    <p className="section-kicker">{t('welcome.steps.kicker')}</p>
+                    <h2 id="steps-title">{t('welcome.steps.title')}</h2>
                 </div>
                 <div className="steps-grid">
-                    {steps.map((step, i) => (
-                        <article key={step.title} className="step-card">
+                    {STEPS_META.map((step, i) => (
+                        <article key={step.id} className="step-card">
                             <div className="step-card-header">
                                 <span className="step-badge">{i + 3}</span>
                                 <span className="step-icon">{step.icon}</span>
                             </div>
-                            <h3>{step.title}</h3>
-                            <p>{step.description}</p>
+                            <h3>{t(`welcome.steps.${step.id}.title`)}</h3>
+                            <p>{t(`welcome.steps.${step.id}.description`)}</p>
                         </article>
                     ))}
                 </div>
             </section>
 
             <section className="welcome-cta" aria-labelledby="welcome-cta-title">
-                <h2 id="welcome-cta-title">Ready to start?</h2>
-                <p>Open the Workbench app and connect your first org.</p>
+                <h2 id="welcome-cta-title">{t('welcome.cta.title')}</h2>
+                <p>{t('welcome.cta.body')}</p>
                 <div className="hero-actions">
                     <a className="button" href={workbenchAppUrl}>
-                        Open Workbench
+                        {t('welcome.cta.button')}
                     </a>
                 </div>
             </section>

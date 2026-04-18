@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const RELEASE_MD_PATH = path.resolve(__dirname, '../../release.md');
-const OUTPUT_JSON_PATH = path.resolve(__dirname, '../../packages/server/assets/releaseNotes.json');
+const OUTPUT_JSON_PATH = path.resolve(__dirname, '../../assets/extension/releaseNotes.json');
 
 const md = fs.readFileSync(RELEASE_MD_PATH, 'utf-8');
 

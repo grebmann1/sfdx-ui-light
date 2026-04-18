@@ -228,6 +228,31 @@ export class IframeJsforceBridgeClient {
         };
     }
 
+    async createBundleViaToolingApi({
+        type,
+        developerName,
+        masterLabel,
+        apiVersion,
+        files,
+    }: {
+        type: 'LightningComponentBundle' | 'AuraDefinitionBundle';
+        developerName: string;
+        masterLabel?: string;
+        apiVersion?: string;
+        files: Array<{ filePath: string; source: string; format: string; defType?: string }>;
+    }) {
+        return (await this.request(
+            'metadata.createBundleViaToolingApi',
+            { type, developerName, masterLabel, apiVersion, files },
+            { timeoutMs: 60_000 }
+        )) as {
+            bundleId: string;
+            bundleName: string;
+            type: string;
+            resources: Array<{ id: string; filePath: string; format: string; defType?: string }>;
+        };
+    }
+
     async deployViaMetadataApi({
         zipBase64,
         checkOnly = false,
@@ -341,7 +366,7 @@ export class IframeJsforceBridgeClient {
             }
             const payload =
                 event.data.payload && typeof event.data.payload === 'object'
-                    ? event.data.payload
+                    ? (event.data.payload as Record<string, unknown>)
                     : null;
             const hostEvent: IframeJsforceBridgeHostEvent = {
                 eventName,

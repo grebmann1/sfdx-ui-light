@@ -1,0 +1,116 @@
+{
+    "chrome": {
+        "announce": "The modern replacement for <bold>Salesforce Workbench</bold> and <bold>Benchpress</bold>",
+        "nav": {
+            "github": "GitHub",
+            "docs": "Docs",
+            "install": "Install"
+        },
+        "footer": {
+            "documentation": "Documentation",
+            "github": "GitHub",
+            "copyright": "© {{year}} Workbench"
+        },
+        "screenshotComingSoon": "Screenshot coming soon"
+    },
+    "home": {
+        "hero": {
+            "eyebrow": "Salesforce Administration Toolkit",
+            "title": "The toolkit built for Salesforce admins",
+            "body": "Workbench embeds directly into Salesforce with a page overlay, brings a VS Code editor to your browser, a full metadata explorer, and an AI agent that can control your browser — all in one extension.",
+            "cta": "Add Web Extension"
+        },
+        "features": {
+            "overlay": {
+                "kicker": "Always at hand",
+                "title": "Overlay embedded in your Salesforce pages",
+                "description": "A non-intrusive panel appears on every Salesforce page, giving you instant access to tools, logs, and org data without ever leaving your current context."
+            },
+            "editor": {
+                "kicker": "Code without context switching",
+                "title": "VS Code editor running in your local browser",
+                "description": "A full-featured code editor opens directly inside your browser, powered by the same engine as VS Code. Write, run, and debug Apex without switching windows."
+            },
+            "workbench": {
+                "kicker": "Full visibility into your org",
+                "title": "Full workbench to interact and explore metadata",
+                "description": "Browse every object, field, permission set, and metadata component. Run SOQL, compare records, push changes, and manage your org from one focused interface."
+            },
+            "soql": {
+                "kicker": "Query with confidence",
+                "title": "Modern SOQL editor built for Salesforce",
+                "description": "Browse every SObject, write SOQL with autocomplete, and see results instantly. A focused query interface designed to replace the old Workbench query tool."
+            },
+            "agent": {
+                "kicker": "AI that actually does work",
+                "title": "Powerful AI agent capable of controlling your browser",
+                "description": "The AI agent doesn't just answer questions — it takes actions. Navigate Salesforce pages, fill forms, run queries, and complete multi-step org tasks autonomously."
+            }
+        },
+        "platforms": {
+            "kicker": "Works where you work",
+            "title": "Available platforms",
+            "webExtension": {
+                "name": "Web Extension",
+                "description": "Access all tools directly in your browser while working inside Salesforce.",
+                "badge": "Recommended",
+                "cta": "Add to Chrome"
+            },
+            "desktop": {
+                "name": "Desktop",
+                "description": "A native desktop app for macOS and Windows. Full toolkit without a browser.",
+                "badge": "In development",
+                "cta": "Coming Soon"
+            }
+        },
+        "download": {
+            "title": "Get started in minutes",
+            "body": "Add the web extension, connect your org, and get an overlay, a VS Code editor, metadata tools, and an AI agent — right inside your browser.",
+            "cta": "Add Web Extension"
+        }
+    },
+    "welcome": {
+        "hero": {
+            "eyebrow": "You're in",
+            "title": "Welcome to Workbench",
+            "body": "Thanks for installing. Let's pin the extension so it's always one click away, then you're ready to go."
+        },
+        "pin": {
+            "kicker": "Step 1 · Pin it",
+            "title": "Pin Workbench to your Chrome toolbar",
+            "instructions": "Click the <puzzle/> puzzle icon at the top-right of Chrome, then hit the <pin/> pin next to <strong>Workbench</strong>. It will stay in your toolbar so you can launch it from anywhere.",
+            "hint": "Already pinned? You're good — jump straight into the app below."
+        },
+        "overlay": {
+            "kicker": "Step 2 · Explore the overlay",
+            "title": "A panel right inside Salesforce",
+            "body": "The Workbench overlay appears on every Salesforce page automatically. Click the button at the edge of the screen to open it — inspect org info, browse objects, jump to Setup links, and more without leaving your current page."
+        },
+        "steps": {
+            "kicker": "Next up",
+            "title": "How to use Workbench",
+            "openSalesforce": {
+                "title": "Open any Salesforce page",
+                "description": "The Workbench overlay appears automatically on every Salesforce tab — no login or setup needed."
+            },
+            "launchWorkbench": {
+                "title": "Launch the full workbench",
+                "description": "Click the pinned Workbench icon (or press Ctrl/Cmd+Shift+Space) to open the side panel with every tool."
+            },
+            "tryAgent": {
+                "title": "Try the AI agent",
+                "description": "Ask the agent to run SOQL, explore metadata, or navigate Salesforce for you — it controls the browser itself."
+            }
+        },
+        "cta": {
+            "title": "Ready to start?",
+            "body": "Open the Workbench app and connect your first org.",
+            "button": "Open Workbench"
+        },
+        "toolbar": {
+            "extensions": "Extensions",
+            "workbench": "Workbench",
+            "otherExtension": "Other extension"
+        }
+    }
+}

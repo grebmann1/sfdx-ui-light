@@ -230,7 +230,7 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
         const root = getWorkspaceDefaultRootUri(vscode);
         const rootPath = `${root.path.replace(/\/+$/, '')}/`;
         const pathToBytes: Record<string, Uint8Array> = {
-            'unpackaged/package.xml': new TextEncoder().encode(packageXmlText),
+            'package.xml': new TextEncoder().encode(packageXmlText),
         };
 
         for (const deployPath of allDeployPaths) {
@@ -241,7 +241,7 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
             try {
                 // eslint-disable-next-line no-await-in-loop
                 const bytes = await vscode.workspace.fs.readFile(vscode.Uri.file(deployPath));
-                pathToBytes[`unpackaged/${relativePath}`] = bytes;
+                pathToBytes[relativePath] = bytes;
             } catch {
                 // file may not be accessible; skip
             }
@@ -277,6 +277,35 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
             );
         }
         return status;
+    }
+
+    function lwcFormatFromFilename(name: string) {
+        const lower = String(name || '').toLowerCase();
+        if (lower.endsWith('.html')) return 'html';
+        if (lower.endsWith('.js')) return 'js';
+        if (lower.endsWith('.css')) return 'css';
+        if (lower.endsWith('.svg')) return 'svg';
+        if (lower.endsWith('.xml')) return 'xml';
+        if (lower.endsWith('.json')) return 'json';
+        return 'txt';
+    }
+
+    function auraDefTypeFromFilename(bundleName: string, name: string) {
+        const b = String(bundleName || '').toLowerCase();
+        const n = String(name || '').toLowerCase();
+        if (n === `${b}.app`) return 'APPLICATION';
+        if (n === `${b}.cmp`) return 'COMPONENT';
+        if (n === `${b}.evt`) return 'EVENT';
+        if (n === `${b}.intf`) return 'INTERFACE';
+        if (n === `${b}controller.js`) return 'CONTROLLER';
+        if (n === `${b}helper.js`) return 'HELPER';
+        if (n === `${b}renderer.js`) return 'RENDERER';
+        if (n === `${b}.css`) return 'STYLE';
+        if (n === `${b}.design`) return 'DESIGN';
+        if (n === `${b}.auradoc`) return 'DOCUMENTATION';
+        if (n === `${b}.svg`) return 'SVG';
+        if (n === `${b}.tokens`) return 'TOKENS';
+        return '';
     }
 
     async function deployAndRetrieveNewBundle(
@@ -321,23 +350,27 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
             );
         }
 
-        const types = Array.from(membersByKey.values()).map(m => ({
-            xmlName: m.type,
-            member: m.fullName,
-        }));
-        const packageXmlText = buildTargetedPackageXml(types, apiVersion);
-        const pathToBytes: Record<string, Uint8Array> = {
-            'unpackaged/package.xml': new TextEncoder().encode(packageXmlText),
+        // Read all bundle files into memory once for both code paths
+        type FileEntry = {
+            absolutePath: string;
+            relPath: string;   // e.g. lwc/helloWorld/helloWorld.html
+            filename: string;
+            source: string;
+            bytes: Uint8Array;
+            bundleName: string;
+            bundleType: string;
         };
+        const fileEntries: FileEntry[] = [];
+        const pathToBytes: Record<string, Uint8Array> = {};
 
-        for (const { bundleDirPath } of membersByKey.values()) {
+        for (const { type: bundleType, fullName: bundleName, bundleDirPath } of membersByKey.values()) {
             const bundleDirUri = vscode.Uri.file(bundleDirPath);
             try {
                 // eslint-disable-next-line no-await-in-loop
                 const entries = await vscode.workspace.fs.readDirectory(bundleDirUri);
-                for (const [name, fileType] of entries) {
+                for (const [filename, fileType] of entries) {
                     if (fileType !== 1 /* FileType.File */) continue;
-                    const fileUri = vscode.Uri.joinPath(bundleDirUri, name);
+                    const fileUri = vscode.Uri.joinPath(bundleDirUri, filename);
                     const absolutePath = fileUri.path;
                     const relPath = absolutePath.startsWith(rootPath)
                         ? absolutePath.slice(rootPath.length)
@@ -346,7 +379,9 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
                     try {
                         // eslint-disable-next-line no-await-in-loop
                         const bytes = await vscode.workspace.fs.readFile(fileUri);
-                        pathToBytes[`unpackaged/${relPath}`] = bytes;
+                        const source = new TextDecoder().decode(bytes);
+                        pathToBytes[relPath] = bytes;
+                        fileEntries.push({ absolutePath, relPath, filename, source, bytes, bundleName, bundleType });
                     } catch {
                         // skip unreadable files
                     }
@@ -356,7 +391,91 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
             }
         }
 
-        const zipBytes = zipUnpackagedFiles(pathToBytes);
+        // --- Try Tooling API create (fast path, no polling) ---
+        if (membersByKey.size === 1) {
+            const [{ type: bundleType, fullName: bundleName }] = Array.from(membersByKey.values());
+            const isLwc = bundleType === 'LightningComponentBundle';
+            const toolingFiles = fileEntries
+                .filter(e => e.bundleName === bundleName)
+                .map(e => {
+                    const format = isLwc
+                        ? lwcFormatFromFilename(e.filename)
+                        : lwcFormatFromFilename(e.filename); // format derived same way
+                    const defType = isLwc ? undefined : auraDefTypeFromFilename(bundleName, e.filename);
+                    const sfFilePath = isLwc ? e.relPath : '';
+                    return { filePath: sfFilePath, source: e.source, format, ...(defType ? { defType } : {}) };
+                })
+                .filter(f => f.format !== 'txt' && (isLwc ? Boolean(f.filePath) : Boolean(f.defType)));
+
+            if (toolingFiles.length > 0) {
+                try {
+                    const result = await bridgeClient.createBundleViaToolingApi({
+                        type: bundleType as 'LightningComponentBundle' | 'AuraDefinitionBundle',
+                        developerName: bundleName,
+                        masterLabel: bundleName,
+                        apiVersion,
+                        files: toolingFiles,
+                    });
+
+                    // Populate tooling-map directly from Tooling API response
+                    if (result?.bundleId && Array.isArray(result.resources) && deployTools?.mergeToolingMapItems) {
+                        const resourceSObject = isLwc ? 'LightningComponentResource' : 'AuraDefinition';
+                        const newItems: Record<string, unknown> = {};
+                        // Build relPath → absolutePath lookup
+                        const relPathToAbs: Record<string, string> = {};
+                        for (const e of fileEntries) {
+                            relPathToAbs[e.relPath] = e.absolutePath;
+                        }
+                        // Also build defType → absolutePath for Aura
+                        const defTypeToAbs: Record<string, string> = {};
+                        if (!isLwc) {
+                            for (const e of fileEntries) {
+                                const dt = auraDefTypeFromFilename(e.bundleName, e.filename);
+                                if (dt) defTypeToAbs[dt] = e.absolutePath;
+                            }
+                        }
+                        for (const resource of result.resources) {
+                            const absPath = isLwc
+                                ? relPathToAbs[resource.filePath]
+                                : (resource.defType ? defTypeToAbs[resource.defType] : undefined);
+                            if (!absPath || !resource.id) continue;
+                            newItems[absPath] = {
+                                type: resourceSObject,
+                                id: resource.id,
+                                format: resource.format,
+                                ...(isLwc ? { filePath: resource.filePath } : { defType: resource.defType }),
+                            };
+                        }
+                        if (Object.keys(newItems).length > 0) {
+                            await deployTools.mergeToolingMapItems(newItems);
+                        }
+                    }
+
+                    context.logLines([
+                        '',
+                        `=== Tooling API Create (${new Date().toLocaleString()}) ===`,
+                        `Bundle: ${bundleType} / ${bundleName}`,
+                        `Resources: ${result.resources?.length ?? 0} created`,
+                    ]);
+                    return result;
+                } catch {
+                    // Fall through to Metadata API
+                }
+            }
+        }
+
+        // --- Metadata API fallback ---
+        const types = Array.from(membersByKey.values()).map(m => ({
+            xmlName: m.type,
+            member: m.fullName,
+        }));
+        const packageXmlText = buildTargetedPackageXml(types, apiVersion);
+        const deployPathToBytes: Record<string, Uint8Array> = {
+            'package.xml': new TextEncoder().encode(packageXmlText),
+            ...pathToBytes,
+        };
+
+        const zipBytes = zipUnpackagedFiles(deployPathToBytes);
         const zipBase64 = zipBytesToBase64(zipBytes);
         const progressTitle = options?.title || 'Deploying new component to Salesforce…';
 
@@ -385,7 +504,7 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
             );
         }
 
-        // Retrieve the bundles to populate tooling-map.json so subsequent deploys use Tooling API
+        // Retrieve to populate tooling-map so subsequent saves use Tooling API
         const typesMap = new Map<string, Set<string>>();
         for (const { type, fullName } of membersByKey.values()) {
             if (!typesMap.has(type)) typesMap.set(type, new Set());
@@ -480,7 +599,7 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
         const root = getWorkspaceDefaultRootUri(vscode);
         const { files } = await listFilesAndDirsRecursive(vscode, root);
         const pathToBytes = {
-            'unpackaged/package.xml': new TextEncoder().encode(String(packageXmlText || '')),
+            'package.xml': new TextEncoder().encode(String(packageXmlText || '')),
         };
         for (const uri of files || []) {
             const path = uri?.path || '';
@@ -492,7 +611,7 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
             if (!relativePath) continue;
             // eslint-disable-next-line no-await-in-loop
             const bytes = await vscode.workspace.fs.readFile(uri);
-            pathToBytes[`unpackaged/${relativePath}`] = bytes;
+            pathToBytes[relativePath] = bytes;
         }
 
         const zipBytes = zipUnpackagedFiles(pathToBytes);

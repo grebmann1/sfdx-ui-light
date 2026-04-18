@@ -1,0 +1,116 @@
+{
+    "chrome": {
+        "announce": "Der moderne Ersatz für <bold>Salesforce Workbench</bold> und <bold>Benchpress</bold>",
+        "nav": {
+            "github": "GitHub",
+            "docs": "Docs",
+            "install": "Installieren"
+        },
+        "footer": {
+            "documentation": "Dokumentation",
+            "github": "GitHub",
+            "copyright": "© {{year}} Workbench"
+        },
+        "screenshotComingSoon": "Screenshot demnächst verfügbar"
+    },
+    "home": {
+        "hero": {
+            "eyebrow": "Salesforce-Administrations-Toolkit",
+            "title": "Das Toolkit für Salesforce-Admins",
+            "body": "Workbench bettet sich direkt in Salesforce ein – mit einem seitlichen Panel, einem VS Code-Editor im Browser, einem vollständigen Metadaten-Explorer und einem KI-Agenten, der Ihren Browser steuern kann – alles in einer Erweiterung.",
+            "cta": "Erweiterung hinzufügen"
+        },
+        "features": {
+            "overlay": {
+                "kicker": "Immer griffbereit",
+                "title": "Panel direkt in Ihren Salesforce-Seiten",
+                "description": "Ein dezentes Panel erscheint auf jeder Salesforce-Seite und gibt Ihnen sofortigen Zugriff auf Tools, Logs und Org-Daten – ohne Ihren aktuellen Kontext zu verlassen."
+            },
+            "editor": {
+                "kicker": "Programmieren ohne Kontextwechsel",
+                "title": "VS Code-Editor direkt im Browser",
+                "description": "Ein vollwertiger Code-Editor öffnet sich direkt in Ihrem Browser, angetrieben von derselben Engine wie VS Code. Schreiben, ausführen und debuggen Sie Apex ohne Fensterwechsel."
+            },
+            "workbench": {
+                "kicker": "Vollständige Übersicht über Ihre Org",
+                "title": "Vollständige Workbench zur Verwaltung von Metadaten",
+                "description": "Durchsuchen Sie jedes Objekt, Feld, Berechtigungsset und Metadaten-Komponente. Führen Sie SOQL aus, vergleichen Sie Datensätze, übertragen Sie Änderungen und verwalten Sie Ihre Org über eine fokussierte Oberfläche."
+            },
+            "soql": {
+                "kicker": "Sicher abfragen",
+                "title": "Moderner SOQL-Editor für Salesforce",
+                "description": "Durchsuchen Sie jedes SObject, schreiben Sie SOQL mit Autovervollständigung und sehen Sie Ergebnisse sofort. Eine fokussierte Abfrageoberfläche als Ersatz für das alte Workbench-Tool."
+            },
+            "agent": {
+                "kicker": "KI, die wirklich arbeitet",
+                "title": "Leistungsstarker KI-Agent zur Browser-Steuerung",
+                "description": "Der KI-Agent beantwortet nicht nur Fragen – er handelt. Navigieren Sie durch Salesforce-Seiten, füllen Sie Formulare aus, führen Sie Abfragen durch und erledigen Sie mehrstufige Org-Aufgaben vollautomatisch."
+            }
+        },
+        "platforms": {
+            "kicker": "Überall einsetzbar",
+            "title": "Verfügbare Plattformen",
+            "webExtension": {
+                "name": "Web-Erweiterung",
+                "description": "Greifen Sie direkt im Browser auf alle Tools zu, während Sie in Salesforce arbeiten.",
+                "badge": "Empfohlen",
+                "cta": "Zu Chrome hinzufügen"
+            },
+            "desktop": {
+                "name": "Desktop-App",
+                "description": "Eine native Desktop-App für macOS und Windows. Das vollständige Toolkit ohne Browser.",
+                "badge": "In Entwicklung",
+                "cta": "Demnächst verfügbar"
+            }
+        },
+        "download": {
+            "title": "In wenigen Minuten loslegen",
+            "body": "Fügen Sie die Erweiterung hinzu, verbinden Sie Ihre Org und erhalten Sie ein Panel, einen VS Code-Editor, Metadaten-Tools und einen KI-Agenten – direkt in Ihrem Browser.",
+            "cta": "Erweiterung hinzufügen"
+        }
+    },
+    "welcome": {
+        "hero": {
+            "eyebrow": "Bereit",
+            "title": "Willkommen bei Workbench",
+            "body": "Danke für die Installation. Lassen Sie uns die Erweiterung anpinnen, damit sie immer mit einem Klick erreichbar ist – dann können Sie loslegen."
+        },
+        "pin": {
+            "kicker": "Schritt 1 · Anpinnen",
+            "title": "Workbench in Ihre Chrome-Toolbar anpinnen",
+            "instructions": "Klicken Sie auf das <puzzle/>-Puzzle-Symbol oben rechts in Chrome und dann auf die <pin/>-Nadel neben <strong>Workbench</strong>. Die Erweiterung bleibt so in Ihrer Toolbar und ist von überall erreichbar.",
+            "hint": "Bereits angepinnt? Prima – öffnen Sie die App einfach unten."
+        },
+        "overlay": {
+            "kicker": "Schritt 2 · Panel entdecken",
+            "title": "Ein Panel direkt in Salesforce",
+            "body": "Das Workbench-Panel erscheint automatisch auf jeder Salesforce-Seite. Klicken Sie auf den Button am Rand des Bildschirms, um es zu öffnen – prüfen Sie Org-Infos, durchsuchen Sie Objekte, springen Sie zu Setup-Links und vieles mehr, ohne Ihre aktuelle Seite zu verlassen."
+        },
+        "steps": {
+            "kicker": "Als nächstes",
+            "title": "So verwenden Sie Workbench",
+            "openSalesforce": {
+                "title": "Beliebige Salesforce-Seite öffnen",
+                "description": "Das Workbench-Panel erscheint automatisch auf jedem Salesforce-Tab – kein Login oder Setup erforderlich."
+            },
+            "launchWorkbench": {
+                "title": "Die vollständige Workbench starten",
+                "description": "Klicken Sie auf das angeheftete Workbench-Symbol (oder drücken Sie Strg/Cmd+Umschalt+Leertaste), um das Seitenpanel mit allen Tools zu öffnen."
+            },
+            "tryAgent": {
+                "title": "Den KI-Agenten ausprobieren",
+                "description": "Bitten Sie den Agenten, SOQL auszuführen, Metadaten zu erkunden oder durch Salesforce zu navigieren – er steuert den Browser selbst."
+            }
+        },
+        "cta": {
+            "title": "Bereit loszulegen?",
+            "body": "Öffnen Sie die Workbench-App und verbinden Sie Ihre erste Org.",
+            "button": "Workbench öffnen"
+        },
+        "toolbar": {
+            "extensions": "Erweiterungen",
+            "workbench": "Workbench",
+            "otherExtension": "Andere Erweiterung"
+        }
+    }
+}

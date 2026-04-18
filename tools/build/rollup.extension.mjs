@@ -370,16 +370,16 @@ const monacoWrapperInlineScriptExtractor = () => ({
 
 // Copy targets extracted for clarity
 const assetCopyTargets = [
-    { src: r('../../packages/server/assets/styles'), dest: r('../../dist/extension') },
-    { src: r('../../packages/server/assets/libs'), dest: r('../../dist/extension') },
-    { src: r('../../packages/vscode/assets/libs/extensions'), dest: r('../../dist/extension/libs') },
-    { src: r('../../packages/server/assets/images'), dest: r('../../dist/extension') },
+    { src: r('../../assets/extension/styles'), dest: r('../../dist/extension') },
+    { src: r('../../assets/extension/libs'), dest: r('../../dist/extension') },
+    { src: r('../../assets/shared/libs/extensions'), dest: r('../../dist/extension/libs') },
+    { src: r('../../assets/extension/images'), dest: r('../../dist/extension') },
     { src: r('../../node_modules/@salesforce-ux/design-system/assets'), dest: r('../../dist/extension') },
     // Default skills are fetched from /public/skills at runtime.
     // Note: copying a directory into ".../public/skills" would create ".../public/skills/skills/...".
     // We want "/public/skills/<...>".
-    { src: r('../../assets/skills'), dest: r('../../dist/extension/public') },
-    { src: r('../../packages/server/assets/releaseNotes.json'), dest: r('../../dist/extension') }
+    { src: r('../../assets/shared/skills'), dest: r('../../dist/extension/public') },
+    { src: r('../../assets/extension/releaseNotes.json'), dest: r('../../dist/extension') }
 ];
 
 const getChromeCopyTargets = (isProduction) => [
@@ -427,7 +427,7 @@ const modules = [
     { npm: 'lightning-base-components' },
     { name: 'lwr/profiler', path: r('../../node_modules/@lwrjs/client-modules/build/modules/lwr/profiler/profiler.js') },
     { name: 'lwr/metrics', path: r('../../node_modules/@lwrjs/client-modules/build/modules/lwr/metrics/metrics.js') },
-    { name: 'just-bash', path: r('../../packages/server/assets/libs/just-bash/just-bash.browser.js') },
+    { name: 'just-bash', path: r('../../assets/extension/libs/just-bash/just-bash.browser.js') },
     { dir: r('../../node_modules/@lwrjs/router/build/modules') },
     { name: 'core/bash', path: r('../../packages/lwc/app/core/bash/bash.ts') },
     { name: 'core/connector', path: r('../../packages/lwc/app/core/connector/connector.ts') },
@@ -437,8 +437,8 @@ const modules = [
     ...sharedModules,
     //{ name: 'jspdf', path: r('src/client/assets/libs/jspdf/jspdf.es.js') },
     //{ name: 'jspdf-autotable', path: r('src/client/assets/libs/jspdf/jspdf.plugin.autotable.js') },
-    { name: 'imported/jsforce', path: r('../../packages/server/assets/libs/jsforce/jsforce.js') },
-    { name: 'imported/openapi-parser', path: r('../../packages/server/assets/libs/openapi-parser/openapi-parser.esm.min.js') },
+    { name: 'imported/jsforce', path: r('../../assets/extension/libs/jsforce/jsforce.js') },
+    { name: 'imported/openapi-parser', path: r('../../assets/extension/libs/openapi-parser/openapi-parser.esm.min.js') },
     { name: 'vscode/metadataApi', path: r('../../packages/shared/modules/metadataApi/metadataApi.ts') },
     { name: 'vscode/toolingApi', path: r('../../packages/shared/modules/toolingApi/toolingApi.ts') },
     { name: 'vscode/sourceTracking', path: r('../../packages/shared/modules/sourceTracking/sourceTracking.ts') },
@@ -466,7 +466,7 @@ const injectedModules = [
     { name: 'core/store/storeRef', path: r('../../packages/lwc/app/core/store/storeRef.ts') },
     ...sharedModules,
     { npm: 'lightning-base-components' },
-    { name: 'imported/jsforce', path: r('../../packages/server/assets/libs/jsforce/jsforce.js') },
+    { name: 'imported/jsforce', path: r('../../assets/extension/libs/jsforce/jsforce.js') },
     { name: 'smartinput/utils', path: r('../../packages/lwc/app/tools/smartinput/utils/utils.js') },
 ];
 

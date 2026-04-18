@@ -1,0 +1,116 @@
+{
+    "chrome": {
+        "announce": "El reemplazo moderno de <bold>Salesforce Workbench</bold> y <bold>Benchpress</bold>",
+        "nav": {
+            "github": "GitHub",
+            "docs": "Docs",
+            "install": "Instalar"
+        },
+        "footer": {
+            "documentation": "Documentación",
+            "github": "GitHub",
+            "copyright": "© {{year}} Workbench"
+        },
+        "screenshotComingSoon": "Captura de pantalla próximamente"
+    },
+    "home": {
+        "hero": {
+            "eyebrow": "Kit de herramientas para administradores de Salesforce",
+            "title": "El toolkit creado para admins de Salesforce",
+            "body": "Workbench se integra directamente en Salesforce con un panel superpuesto, trae un editor VS Code a tu navegador, un explorador completo de metadatos y un agente de IA que puede controlar tu navegador — todo en una sola extensión.",
+            "cta": "Añadir extensión web"
+        },
+        "features": {
+            "overlay": {
+                "kicker": "Siempre a mano",
+                "title": "Panel superpuesto integrado en tus páginas de Salesforce",
+                "description": "Un panel discreto aparece en cada página de Salesforce, dándote acceso instantáneo a herramientas, registros y datos de la org sin abandonar tu contexto actual."
+            },
+            "editor": {
+                "kicker": "Programa sin cambiar de contexto",
+                "title": "Editor VS Code en tu navegador local",
+                "description": "Un editor de código completo se abre directamente en tu navegador, impulsado por el mismo motor que VS Code. Escribe, ejecuta y depura Apex sin cambiar de ventana."
+            },
+            "workbench": {
+                "kicker": "Visibilidad total de tu org",
+                "title": "Workbench completo para interactuar y explorar metadatos",
+                "description": "Explora cada objeto, campo, conjunto de permisos y componente de metadatos. Ejecuta SOQL, compara registros, publica cambios y gestiona tu org desde una interfaz centralizada."
+            },
+            "soql": {
+                "kicker": "Consulta con confianza",
+                "title": "Editor SOQL moderno diseñado para Salesforce",
+                "description": "Explora cada SObject, escribe SOQL con autocompletado y visualiza resultados al instante. Una interfaz de consulta enfocada diseñada para reemplazar la antigua herramienta Workbench."
+            },
+            "agent": {
+                "kicker": "IA que realmente trabaja",
+                "title": "Potente agente de IA capaz de controlar tu navegador",
+                "description": "El agente de IA no solo responde preguntas — toma acción. Navega por páginas de Salesforce, rellena formularios, ejecuta consultas y completa tareas de org de varios pasos de forma autónoma."
+            }
+        },
+        "platforms": {
+            "kicker": "Disponible donde trabajas",
+            "title": "Plataformas disponibles",
+            "webExtension": {
+                "name": "Extensión Web",
+                "description": "Accede a todas las herramientas directamente en tu navegador mientras trabajas en Salesforce.",
+                "badge": "Recomendado",
+                "cta": "Añadir a Chrome"
+            },
+            "desktop": {
+                "name": "Escritorio",
+                "description": "Una app nativa para macOS y Windows. El toolkit completo sin navegador.",
+                "badge": "En desarrollo",
+                "cta": "Próximamente"
+            }
+        },
+        "download": {
+            "title": "Empieza en minutos",
+            "body": "Añade la extensión web, conecta tu org y obtén un panel superpuesto, un editor VS Code, herramientas de metadatos y un agente de IA — directamente en tu navegador.",
+            "cta": "Añadir extensión web"
+        }
+    },
+    "welcome": {
+        "hero": {
+            "eyebrow": "Ya estás dentro",
+            "title": "Bienvenido a Workbench",
+            "body": "Gracias por instalarla. Vamos a fijar la extensión para que esté siempre a un clic de distancia y ya estarás listo."
+        },
+        "pin": {
+            "kicker": "Paso 1 · Fíjala",
+            "title": "Fija Workbench en tu barra de herramientas de Chrome",
+            "instructions": "Haz clic en el icono <puzzle/> de extensiones en la esquina superior derecha de Chrome y luego pulsa el pin <pin/> junto a <strong>Workbench</strong>. Permanecerá en tu barra de herramientas para que puedas abrirla desde cualquier lugar.",
+            "hint": "¿Ya la has fijado? Genial — ve directamente a la aplicación a continuación."
+        },
+        "overlay": {
+            "kicker": "Paso 2 · Explora el panel",
+            "title": "Un panel directamente en Salesforce",
+            "body": "El panel de Workbench aparece automáticamente en cada página de Salesforce. Haz clic en el botón en el borde de la pantalla para abrirlo — inspecciona la info de la org, explora objetos, accede a enlaces de Configuración y mucho más sin salir de tu página actual."
+        },
+        "steps": {
+            "kicker": "A continuación",
+            "title": "Cómo usar Workbench",
+            "openSalesforce": {
+                "title": "Abre cualquier página de Salesforce",
+                "description": "El panel de Workbench aparece automáticamente en cada pestaña de Salesforce — sin inicio de sesión ni configuración."
+            },
+            "launchWorkbench": {
+                "title": "Inicia el workbench completo",
+                "description": "Haz clic en el icono de Workbench fijado (o pulsa Ctrl/Cmd+Shift+Espacio) para abrir el panel lateral con todas las herramientas."
+            },
+            "tryAgent": {
+                "title": "Prueba el agente de IA",
+                "description": "Pide al agente que ejecute SOQL, explore metadatos o navegue por Salesforce por ti — controla el navegador por sí mismo."
+            }
+        },
+        "cta": {
+            "title": "¿Listo para empezar?",
+            "body": "Abre la app Workbench y conecta tu primera org.",
+            "button": "Abrir Workbench"
+        },
+        "toolbar": {
+            "extensions": "Extensiones",
+            "workbench": "Workbench",
+            "otherExtension": "Otra extensión"
+        }
+    }
+}

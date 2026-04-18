@@ -1,21 +1,43 @@
 import type { ReactNode } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
+import { SUPPORTED_LANGUAGES } from './i18n';
 
 export const DOCS_URL = import.meta.env.VITE_DOCS_URL || '/docs';
 export const GITHUB_URL = 'https://github.com/grebmann1/sfdx-ui-light';
 export const CHROME_STORE_URL =
     'https://chromewebstore.google.com/detail/salesforce-toolkit/konbmllgicfccombdckckakhnmejjoei?hl=en';
 
+function LanguageSwitcher() {
+    const { i18n } = useTranslation();
+    return (
+        <div className="lang-switcher" role="group" aria-label="Language">
+            {SUPPORTED_LANGUAGES.map(lang => (
+                <button
+                    key={lang.code}
+                    className={`lang-switcher-btn${i18n.resolvedLanguage === lang.code ? ' lang-switcher-btn--active' : ''}`}
+                    onClick={() => i18n.changeLanguage(lang.code)}
+                    aria-label={lang.name}
+                    aria-pressed={i18n.resolvedLanguage === lang.code}
+                >
+                    {lang.label}
+                </button>
+            ))}
+        </div>
+    );
+}
+
 export function AnnounceBar() {
+    const { t } = useTranslation();
     return (
         <div className="announce-bar" role="note">
             <span className="announce-dot" aria-hidden="true" />
-            The modern replacement for <strong>Salesforce Workbench</strong> and{' '}
-            <strong>Benchpress</strong>
+            <Trans t={t} i18nKey="chrome.announce" components={{ bold: <strong /> }} />
         </div>
     );
 }
 
 export function SiteHeader({ showInstall = true }: { showInstall?: boolean }) {
+    const { t } = useTranslation();
     return (
         <header className="header">
             <a className="brand" href="/">
@@ -39,16 +61,17 @@ export function SiteHeader({ showInstall = true }: { showInstall?: boolean }) {
                 Workbench
             </a>
             <nav className="header-nav">
+                <LanguageSwitcher />
                 <a
                     className="header-link"
                     href={GITHUB_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                 >
-                    GitHub
+                    {t('chrome.nav.github')}
                 </a>
                 <a className="header-link" href={DOCS_URL}>
-                    Docs
+                    {t('chrome.nav.docs')}
                 </a>
                 {showInstall && (
                     <a
@@ -57,7 +80,7 @@ export function SiteHeader({ showInstall = true }: { showInstall?: boolean }) {
                         target="_blank"
                         rel="noopener noreferrer"
                     >
-                        Install
+                        {t('chrome.nav.install')}
                     </a>
                 )}
             </nav>
@@ -66,21 +89,25 @@ export function SiteHeader({ showInstall = true }: { showInstall?: boolean }) {
 }
 
 export function SiteFooter() {
+    const { t } = useTranslation();
     return (
         <footer className="footer">
             <span className="footer-brand">Workbench</span>
             <div className="footer-links">
-                <a href={DOCS_URL}>Documentation</a>
+                <a href={DOCS_URL}>{t('chrome.footer.documentation')}</a>
                 <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
-                    GitHub
+                    {t('chrome.footer.github')}
                 </a>
             </div>
-            <span className="footer-copy">© {new Date().getFullYear()} Workbench</span>
+            <span className="footer-copy">
+                {t('chrome.footer.copyright', { year: new Date().getFullYear() })}
+            </span>
         </footer>
     );
 }
 
 export function FakeBrowser({ url = 'app.workbench.io', screenshot }: { url?: string; screenshot?: string }) {
+    const { t } = useTranslation();
     return (
         <div className="fake-browser">
             <div className="fake-browser-bar">
@@ -115,7 +142,7 @@ export function FakeBrowser({ url = 'app.workbench.io', screenshot }: { url?: st
                             <path d="M3 9h18" />
                             <path d="M9 21V9" />
                         </svg>
-                        <span>Screenshot coming soon</span>
+                        <span>{t('chrome.screenshotComingSoon')}</span>
                     </div>
                 )}
             </div>

@@ -31,7 +31,7 @@ export default (args) => {
 		{
 			input: 'packages/workers/src/metadata.worker.js', // your source file
 			output: {
-				file: 'packages/server/assets/libs/workers/metadata.worker.js',
+				file: 'assets/extension/libs/workers/metadata.worker.js',
 				format: 'es',
 				intro: 'var global = typeof globalThis !== "undefined" ? globalThis : self;',
 				sourcemap: true // optional but helpful for debugging
@@ -42,34 +42,34 @@ export default (args) => {
 				alias({
 					entries: [
 						{ find: 'buffer', replacement: path.resolve(__dirname, "../../node_modules/buffer/index.js") },
-						{ find: 'imported/jsforce', replacement: path.resolve(__dirname, "../../packages/server/assets/libs/jsforce/jsforce.js") }
-					]
-				}),
-				inject({
-					Buffer: ['buffer', 'Buffer']
-				}),
-				commonjs(), // converts CommonJS modules to ES6, so they can be included in a Rollup bundle
-				nodePolyfills(),
-				babel({
-					babelHelpers: 'bundled',
-					presets: ['@babel/preset-env']
-				})
-			]
+					{ find: 'imported/jsforce', replacement: path.resolve(__dirname, "../../assets/extension/libs/jsforce/jsforce.js") }
+				]
+			}),
+			inject({
+				Buffer: ['buffer', 'Buffer']
+			}),
+			commonjs(), // converts CommonJS modules to ES6, so they can be included in a Rollup bundle
+			nodePolyfills(),
+			babel({
+				babelHelpers: 'bundled',
+				presets: ['@babel/preset-env']
+			})
+		]
+	},
+	{
+		input: 'packages/workers/src/accessAnalyzer.worker.js', // your source file
+		output: {
+			file: 'assets/extension/libs/workers/accessAnalyzer.worker.js',
+			format: 'es',
+			sourcemap: true // optional but helpful for debugging
 		},
-		{
-			input: 'packages/workers/src/accessAnalyzer.worker.js', // your source file
-			output: {
-				file: 'packages/server/assets/libs/workers/accessAnalyzer.worker.js',
-				format: 'es',
-				sourcemap: true // optional but helpful for debugging
-			},
-			plugins: [
-				json(),
-				resolve(), // tells Rollup how to find node modules in node_modules
-				alias({
-					entries: [
-						{ find: 'buffer', replacement: path.resolve(__dirname, "../../node_modules/buffer/index.js") },
-						{ find: 'imported/jsforce', replacement: path.resolve(__dirname, "../../packages/server/assets/libs/jsforce/jsforce.js") },
+		plugins: [
+			json(),
+			resolve(), // tells Rollup how to find node modules in node_modules
+			alias({
+				entries: [
+					{ find: 'buffer', replacement: path.resolve(__dirname, "../../node_modules/buffer/index.js") },
+					{ find: 'imported/jsforce', replacement: path.resolve(__dirname, "../../assets/extension/libs/jsforce/jsforce.js") },
 						{ find: 'imported/sf', replacement: path.resolve(__dirname, "../../packages/shared/dist/modules/sf/sf.js") }
 					]
 				}),

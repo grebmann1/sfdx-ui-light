@@ -107,13 +107,18 @@ http {
         server_name doc.workbench-salesforce.com;
         root /app/dist/docs;
 
-        location / {
+        location /docs/ {
+            alias /app/dist/docs/;
             try_files $uri $uri/ /index.html;
         }
 
         location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
             expires 1y;
             add_header Cache-Control "public, immutable";
+        }
+
+        location / {
+            try_files $uri $uri/ /index.html;
         }
     }
 
@@ -122,18 +127,27 @@ http {
     # =========================================================================
 
     # apps/docs — Docusaurus static site
+    # Built with DOCS_BASE_PATH=/docs/, so all asset URLs are /docs/assets/...
     server {
         listen 4000;
         server_name _;
         root /app/dist/docs;
 
-        location / {
+        # Handle the /docs/ base path Docusaurus was built with.
+        # Aliases /docs/* → /app/dist/docs/* so assets, pages, and SPA
+        # fallback all resolve correctly.
+        location /docs/ {
+            alias /app/dist/docs/;
             try_files $uri $uri/ /index.html;
         }
 
         location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
             expires 1y;
             add_header Cache-Control "public, immutable";
+        }
+
+        location / {
+            try_files $uri $uri/ /index.html;
         }
     }
 

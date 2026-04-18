@@ -453,6 +453,8 @@ class IframeJsforceBridgeRuntime {
                 return await this.deployViaToolingApi(args);
             case 'metadata.deployViaMetadataApi':
                 return await this.deployViaMetadataApi(args);
+            case 'metadata.createBundleViaToolingApi':
+                return await this.createBundleViaToolingApi(args);
             default:
                 throw {
                     code: 'EMETHOD',
@@ -1256,6 +1258,87 @@ class IframeJsforceBridgeRuntime {
                 };
             }
         }
+    }
+    private async createBundleViaToolingApi(args: Record<string, unknown>) {
+        const type = String(args.type || '');
+        const developerName = String(args.developerName || '').trim();
+        const masterLabel = String(args.masterLabel || developerName).trim() || developerName;
+        const apiVersion = parseFloat(this.normalizeApiVersion(args.apiVersion));
+        const files = Array.isArray(args.files) ? args.files : [];
+
+        if (!type || !developerName) {
+            throw { code: 'EINVAL', message: 'createBundleViaToolingApi requires type and developerName.' };
+        }
+
+        const isLwc = type === 'LightningComponentBundle';
+        const resourceSObject = isLwc ? 'LightningComponentResource' : 'AuraDefinition';
+        const bundleIdField = isLwc ? 'LightningComponentBundleId' : 'AuraDefinitionBundleId';
+
+        const bundleResult = (await this.toolingRequestJson(`/tooling/sobjects/${type}`, {
+            method: 'POST',
+            body: {
+                DeveloperName: developerName,
+                MasterLabel: masterLabel,
+                ApiVersion: apiVersion,
+                Description: '',
+            },
+        })) as Record<string, unknown>;
+
+        const bundleId = String(bundleResult?.id || '').trim();
+        if (!bundleId) {
+            throw { code: 'EMETADATA', message: `Failed to create ${type} "${developerName}": no ID returned.` };
+        }
+
+        const resources: Array<{ id: string; filePath: string; format: string; defType?: string }> = [];
+        for (const rawFile of files) {
+            const file = isRecord(rawFile) ? rawFile : {};
+            const filePath = String(file.filePath || '');
+            const source = String(file.source ?? '');
+            const format = String(file.format || '').toUpperCase();
+            const defType = String(file.defType || '').toUpperCase();
+
+            const resourceBody: Record<string, unknown> = {
+                [bundleIdField]: bundleId,
+                Source: source,
+                Format: format,
+            };
+            if (isLwc) {
+                resourceBody.FilePath = filePath;
+            } else {
+                resourceBody.DefType = defType;
+            }
+
+            let resourceId: string;
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                const resourceResult = (await this.toolingRequestJson(`/tooling/sobjects/${resourceSObject}`, {
+                    method: 'POST',
+                    body: resourceBody,
+                })) as Record<string, unknown>;
+                resourceId = String(resourceResult?.id || '').trim();
+                if (!resourceId) {
+                    throw new Error(`No ID returned for ${resourceSObject} ${filePath || defType}`);
+                }
+            } catch (err) {
+                // Roll back: delete the bundle so the org stays clean.
+                try {
+                    // eslint-disable-next-line no-await-in-loop
+                    await this.toolingRequestJson(`/tooling/sobjects/${type}/${bundleId}`, { method: 'DELETE' });
+                } catch {
+                    // ignore rollback errors
+                }
+                throw err;
+            }
+
+            resources.push({
+                id: resourceId,
+                filePath,
+                format: format.toLowerCase(),
+                ...(defType ? { defType } : {}),
+            });
+        }
+
+        return { bundleId, bundleName: developerName, type, resources };
     }
 }
 

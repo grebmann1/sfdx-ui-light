@@ -119,18 +119,22 @@ export class LanguageClientWrapper {
                     type: workerConfig.type,
                     name: workerConfig.workerName
                 });
-
-                this.worker.onerror = (ev) => {
-                    const languageClientError: LanguageClientError = {
-                        message: `languageClientWrapper (${this.languageId}): Illegal worker configuration detected.`,
-                        error: ev.error ?? 'No error was provided.'
-                    };
-                    reject(languageClientError);
-                };
             } else {
                 const workerDirectConfig = lccOptions as WorkerConfigOptionsDirect;
                 this.worker = workerDirectConfig.worker;
             }
+
+            // Attach onerror for both worker types so startup failures surface a real message.
+            if (this.worker) {
+                this.worker.onerror = (ev) => {
+                    const languageClientError: LanguageClientError = {
+                        message: `languageClientWrapper (${this.languageId}): Worker error detected.`,
+                        error: ev.error ?? ev.message ?? 'No error details provided.'
+                    };
+                    reject(languageClientError);
+                };
+            }
+
             if (lccOptions.messagePort !== undefined) {
                 this.port = lccOptions.messagePort;
             }
@@ -158,21 +162,23 @@ export class LanguageClientWrapper {
 
         const mlcConfig = {
             id: this.languageClientConfig.languageId,
-            name: 'Monaco Wrapper Language Client',
+            name: `${this.languageClientConfig.languageId} Language Client`,
             clientOptions: {
-                // disable the default error handler...
+                // Keep the client alive on reader errors: the onClose handler below
+                // stops it when the underlying transport actually closes. Returning
+                // ErrorAction.Continue prevents vscode-languageclient from logging a
+                // misleading "Shutting down server" message on transient errors.
                 errorHandler: {
                     error: (e: Error) => {
                         if (starting) {
-                            reject(`Error occurred in language client: ${e}`);
-                            return { action: ErrorAction.Shutdown };
-                        } else {
-                            return { action: ErrorAction.Continue };
+                            const reason = e?.message ?? String(e ?? 'unknown');
+                            reject(new Error(`Error occurred in language client (${this.languageId}): ${reason}`));
                         }
+                        return { action: ErrorAction.Continue };
                     },
                     closed: () => ({ action: CloseAction.DoNotRestart })
                 },
-                // ...but allowm to override all options
+                // ...but allow overriding all options from outside
                 ...this.languageClientConfig.clientOptions,
             },
             messageTransports
@@ -203,6 +209,10 @@ export class LanguageClientWrapper {
 
             await this.languageClient.start();
 
+            // Mark startup phase over before resolving so post-start errors don't
+            // incorrectly trigger the startup rejection path.
+            starting = false;
+
             if (isWebSocket && conOptions.startOptions !== undefined) {
                 const startOptions = conOptions.startOptions;
                 startOptions.onCall(this.getLanguageClient());
@@ -211,15 +221,16 @@ export class LanguageClientWrapper {
                 }
             }
         } catch (e: unknown) {
+            starting = false;
             const languageClientError: LanguageClientError = {
                 message: `languageClientWrapper (${this.languageId}): Start was unsuccessful.`,
                 error: Object.hasOwn(e ?? {}, 'cause') ? (e as Error) : 'No error was provided.'
             };
             reject(languageClientError);
+            return;
         }
         this.logger?.info(`languageClientWrapper (${this.languageId}): Started successfully.`);
         resolve();
-        starting = false;
     }
 
     protected initRestartConfiguration(messageTransports: MessageTransports, restartOptions?: LanguageClientRestartOptions) {

@@ -1757,6 +1757,21 @@ export function createDeployAndSourceTracking({
                 toolingIdentityResolverFn = fn;
             }
         },
+        async mergeToolingMapItems(newItems: Record<string, unknown>) {
+            try {
+                const existing = await toolingMapStore.loadJson();
+                await toolingMapStore.saveJson({
+                    ...existing,
+                    items: {
+                        ...(existing.items && typeof existing.items === 'object' ? existing.items : {}),
+                        ...newItems,
+                    },
+                });
+            } catch {
+                // ignore persistence errors; the cache will be repopulated on next load
+                invalidateToolingMap();
+            }
+        },
         updateSourceTrackingForPaths,
     };
 }
