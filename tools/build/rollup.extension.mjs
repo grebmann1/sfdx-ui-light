@@ -47,7 +47,7 @@ const resolvePlugin = resolve({
 const cjsPlugin = cjs({ requireReturnsDefault: 'auto' });
 const terserPlugin = terser();
 const workbenchBaseUrl = JSON.stringify(
-    String(process.env.WORKBENCH_BASE_URL || 'https://sf-toolkit.com')
+    String(process.env.WORKBENCH_BASE_URL || 'https://workbench-salesforce.com')
         .trim()
         .replace(/\/+$/, '')
 );
@@ -403,7 +403,7 @@ const getChromeCopyTargets = (isProduction) => [
             newContents = newContents.replace(
                 '__buildWorkbenchOrigin__',
                 isProduction
-                    ? String(process.env.WORKBENCH_BASE_URL || 'https://sf-toolkit.com') + '/'
+                    ? String(process.env.WORKBENCH_BASE_URL || 'https://workbench-salesforce.com') + '/'
                     : 'http://localhost:5173/'
             );
             newContents = newContents.replace(

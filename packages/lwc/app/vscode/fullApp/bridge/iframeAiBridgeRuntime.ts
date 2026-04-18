@@ -13,6 +13,7 @@ import {
     getProviderModelOptions,
     buildAvailableAgentModelOptions,
     resolveAgentProviderBaseUrl,
+    isInternalProviderBaseUrl,
 } from 'shared/llm';
 import {
     getAiProviderFromConfig,
@@ -91,6 +92,7 @@ async function* streamCompletionViaProvider(
         return;
     }
 
+    const isInternal = provider === 'openai' && isInternalProviderBaseUrl(baseUrl);
     const reasoningConfig = getReasoningConfigFromSelection(reasoning);
     const providerInstance = createProviderInstance({ provider, apiKey, baseUrl });
     const systemPrompt = buildSystemPrompt(
@@ -126,7 +128,7 @@ async function* streamCompletionViaProvider(
         model: resolveProviderModelInstance(providerInstance, {
             provider,
             modelId: selectedModel,
-            isInternal: false,
+            isInternal,
         }),
         system: systemPrompt,
         messages: messages as Parameters<typeof streamText>[0]['messages'],
@@ -137,7 +139,7 @@ async function* streamCompletionViaProvider(
         providerOptions: resolveProviderOptions({
             provider,
             reasoningConfig,
-            isInternal: false,
+            isInternal,
         }),
     });
 

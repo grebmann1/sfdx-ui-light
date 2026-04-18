@@ -4,8 +4,8 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
     title: 'Workbench Docs',
-    tagline: 'Documentation for Workbench web app, extension, and workflows.',
-    url: 'https://sf-toolkit.com',
+    tagline: 'Documentation for Workbench extension, desktop app, and workflows.',
+    url: 'https://workbench-salesforce.com',
     baseUrl: process.env.DOCS_BASE_PATH || '/docs/',
     onBrokenLinks: 'warn',
     onBrokenMarkdownLinks: 'warn',
@@ -47,12 +47,12 @@ const config: Config = {
                     label: 'Developer',
                 },
                 {
-                    href: 'https://sf-toolkit.com',
+                    href: 'https://workbench-salesforce.com',
                     label: 'Website',
                     position: 'right',
                 },
                 {
-                    href: 'https://app.sf-toolkit.com',
+                    href: 'https://app.workbench-salesforce.com',
                     label: 'Open App',
                     position: 'right',
                 },
@@ -83,8 +83,8 @@ const config: Config = {
                 {
                     title: 'Product',
                     items: [
-                        { label: 'Website', href: 'https://sf-toolkit.com' },
-                        { label: 'Application', href: 'https://app.sf-toolkit.com' },
+                        { label: 'Website', href: 'https://workbench-salesforce.com' },
+                        { label: 'Application', href: 'https://app.workbench-salesforce.com' },
                         { label: 'Chrome Extension', href: 'https://chromewebstore.google.com/detail/salesforce-toolkit/konbmllgicfccombdckckakhnmejjoei?hl=en' },
                         { label: 'GitHub', href: 'https://github.com/grebmann1/sfdx-ui-light' },
                     ],

@@ -565,7 +565,7 @@ export default class App extends ToolkitElement {
             let url = new URL(
                 isChromeExtension()
                     ? chrome.runtime.getURL('/views/app.html')
-                    : 'https://sf-toolkit.com/extension'
+                    : 'https://workbench-salesforce.com/extension'
             );
 
             const { alias, credentialType, ...settings } = this.data.find(x => x.id == row.id);

@@ -491,7 +491,14 @@ export default class App extends ToolkitElement {
                 });
         }
 
-        const userMessages = [createUserModelMessage({ text: prompt, filesData })];
+        const fileRefs = filesData
+            .filter(f => f && f.path)
+            .map(f => `- ${f.path}`)
+            .join('\n');
+        const augmentedPrompt = fileRefs.length
+            ? `${prompt}\n\n[Attached files written to workspace filesystem:\n${fileRefs}\nYou can read them with bash or the readFile tool.]`
+            : prompt;
+        const userMessages = [createUserModelMessage({ text: augmentedPrompt, filesData: [] })];
 
         const agent = await Agent.create({
             messages: currentMessages as ModelMessage[],

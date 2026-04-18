@@ -25,6 +25,7 @@ export const WORKBENCH_AI_COMPLETIONS_SETTING = 'workbenchAICompletionsEnabled';
 export const WORKBENCH_AI_NEXT_EDIT_SUGGESTIONS_SETTING = 'workbenchAINextEditSuggestionsEnabled';
 export const LIGHT_COLOR_THEME = 'Default Light+';
 export const DARK_COLOR_THEME = 'Default Dark+';
+export const WORKBENCH_THEME_STORAGE_KEY = 'vscode.workbench.themeMode';
 export const WORKBENCH_IFRAME_URL = 'http://localhost:5173/';
 export const WORKBENCH_IFRAME_ORIGIN = 'http://localhost:5173';
 export const DEFAULT_WORKSPACE_ROOT = '/workspace';

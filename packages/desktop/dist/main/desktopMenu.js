@@ -70,7 +70,7 @@ function registerDesktopMenu(options) {
                 {
                     label: 'SF Toolkit Web',
                     click: () => {
-                        void electron_1.shell.openExternal('https://sf-toolkit.com');
+                        void electron_1.shell.openExternal('https://workbench-salesforce.com');
                     },
                 },
             ],

@@ -135,7 +135,13 @@ export default class App extends ToolkitElement {
 
     isSupportedFile = (file: File) => {
         if (!file || !file.type) return false;
-        return file.type.startsWith('image/') || file.type === 'application/pdf';
+        return (
+            file.type.startsWith('image/') ||
+            file.type === 'application/pdf' ||
+            file.type === 'text/csv' ||
+            file.type === 'application/json' ||
+            file.type === 'text/plain'
+        );
     };
 
     triggerFileInput = () => {
@@ -200,7 +206,7 @@ export default class App extends ToolkitElement {
     }
 
     removeSelectedFile = event => {
-        const name = event.target?.dataset?.filename;
+        const name = event.currentTarget?.dataset?.filename;
         if (!name) return;
         this.selectedFiles = this.selectedFiles.filter(f => f.name !== name);
         const previews = { ...this.imagePreviews };

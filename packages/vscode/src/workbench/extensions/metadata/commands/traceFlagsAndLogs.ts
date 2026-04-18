@@ -16,9 +16,9 @@ const DEBUG_LEVEL_PRESET = {
     Workflow: 'INFO',
 };
 
-const LOG_LEVELS = ['NONE', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'FINE', 'FINER', 'FINEST'];
+export const LOG_LEVELS = ['NONE', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'FINE', 'FINER', 'FINEST'];
 
-const DEBUG_LEVEL_CATEGORIES = [
+export const DEBUG_LEVEL_CATEGORIES = [
     { key: 'ApexCode', label: 'Apex code', default: 'DEBUG' },
     { key: 'ApexProfiling', label: 'Apex profiling', default: 'NONE' },
     { key: 'Callout', label: 'Callout', default: 'NONE' },
@@ -128,27 +128,34 @@ export function createTraceFlagServices(connectionRuntime) {
         return await connectionRuntime.withToolingClientAuthed(conn, async client => {
             const start = new Date();
             const expiration = new Date(start.getTime() + minutes * 60 * 1000);
-            const body = {
-                TracedEntityId: tracedEntityId,
-                LogType: logType,
-                DebugLevelId: effectiveDebugLevelId,
-                StartDate: start.toISOString(),
-                ExpirationDate: expiration.toISOString(),
-            };
             const existing = await client.toolingQueryAll(
                 `SELECT Id FROM TraceFlag WHERE TracedEntityId='${escapeSoql(tracedEntityId)}' AND LogType='${escapeSoql(logType)}' ORDER BY ExpirationDate DESC LIMIT 1`
             );
             const existingId = existing?.[0]?.Id || '';
             if (existingId) {
+                // Salesforce rejects PATCH payloads that include the create-only
+                // fields TracedEntityId and LogType with
+                // "Unable to create/update fields: LogType, TracedEntityId".
+                // Only send mutable fields when updating an existing flag.
                 await client.requestJson(`/tooling/sobjects/TraceFlag/${existingId}`, {
                     method: 'PATCH',
-                    body,
+                    body: {
+                        DebugLevelId: effectiveDebugLevelId,
+                        StartDate: start.toISOString(),
+                        ExpirationDate: expiration.toISOString(),
+                    },
                 });
                 return existingId;
             }
             const created = await client.requestJson('/tooling/sobjects/TraceFlag', {
                 method: 'POST',
-                body,
+                body: {
+                    TracedEntityId: tracedEntityId,
+                    LogType: logType,
+                    DebugLevelId: effectiveDebugLevelId,
+                    StartDate: start.toISOString(),
+                    ExpirationDate: expiration.toISOString(),
+                },
             });
             return String(created?.id || '');
         });
@@ -441,6 +448,7 @@ function createLogAutoCollect({
     let consecutiveEmpty = 0;
     let collecting = 0;
     const known = new Set<string>();
+    const stateListeners = new Set<(state: { running: boolean; collectedCount: number }) => void>();
 
     const statusItem =
         typeof vscode.window?.createStatusBarItem === 'function'
@@ -449,6 +457,21 @@ function createLogAutoCollect({
     if (statusItem) {
         statusItem.command = 'salesforceMetadata.traceFlags.open';
         statusItem.tooltip = 'Click to open Salesforce trace flags';
+    }
+
+    function getState() {
+        return { running: timer !== null, collectedCount: collecting };
+    }
+
+    function fireStateChange() {
+        const snapshot = getState();
+        for (const listener of stateListeners) {
+            try {
+                listener(snapshot);
+            } catch {
+                // ignore listener errors
+            }
+        }
     }
 
     function updateStatus(state: 'idle' | 'active' | 'stopped') {
@@ -496,6 +519,7 @@ function createLogAutoCollect({
                     await writeTextFile(vscode, uri, body || '', { skipCache: true });
                     known.add(logId);
                     collecting++;
+                    fireStateChange();
                     output?.appendLine?.(
                         `[Log Auto-Collect] Saved ${logId} (${log?.LogUser?.Name || 'Unknown'} · ${log?.Operation || ''})`
                     );
@@ -544,6 +568,7 @@ function createLogAutoCollect({
             updateStatus('idle');
             void tick();
             reschedule();
+            fireStateChange();
         },
         stop() {
             if (timer) {
@@ -551,13 +576,24 @@ function createLogAutoCollect({
                 timer = null;
             }
             updateStatus('stopped');
+            fireStateChange();
         },
         isRunning() {
             return timer !== null;
         },
+        getState,
+        addStatusChangeListener(listener: (state: { running: boolean; collectedCount: number }) => void) {
+            stateListeners.add(listener);
+            return {
+                dispose() {
+                    stateListeners.delete(listener);
+                },
+            };
+        },
         dispose() {
             if (timer) clearInterval(timer);
             timer = null;
+            stateListeners.clear();
             try {
                 statusItem?.dispose?.();
             } catch {
@@ -714,6 +750,12 @@ export function registerTraceFlagsAndLogs({
         return picked?.minutes || 0;
     }
 
+    function coerceMinutes(raw: unknown): number | null {
+        if (raw == null) return null;
+        const value = typeof raw === 'string' ? Number(raw) : (raw as number);
+        return Number.isFinite(value) && value > 0 ? Math.floor(value) : null;
+    }
+
     async function pickDebugLevel(conn): Promise<{ id: string; name: string } | null> {
         const levels = await services.listDebugLevels(conn);
         if (!levels?.length) {
@@ -809,7 +851,7 @@ export function registerTraceFlagsAndLogs({
         await showTraceFlagsDocument(conn);
     });
 
-    register('salesforceMetadata.traceFlags.createForCurrentUser', async () => {
+    register('salesforceMetadata.traceFlags.createForCurrentUser', async (...args: unknown[]) => {
         let conn = requireConnection();
         if (!conn) return;
         conn = await ensureCurrentUserId(connectionRuntime, conn);
@@ -817,7 +859,11 @@ export function registerTraceFlagsAndLogs({
             await vscode.window.showErrorMessage('Unable to determine current user id for TraceFlag.');
             return;
         }
-        const minutes = await pickDurationMinutes();
+        // Accept an optional preset duration (in minutes) from callers like the
+        // Salesforce Logs panel button, which already commits to a specific
+        // duration in its label. Falls back to prompting the user otherwise.
+        const presetMinutes = coerceMinutes(args[0]);
+        const minutes = presetMinutes ?? (await pickDurationMinutes());
         if (!minutes) return;
         await vscode.window.withProgress(
             {
@@ -960,7 +1006,23 @@ export function registerTraceFlagsAndLogs({
     register('salesforceMetadata.logs.autoCollect.start', async () => {
         const conn = requireConnection();
         if (!conn) return;
+        // Warn early if no active user trace flags exist: the poller would
+        // otherwise silently run and never collect anything, which looks
+        // identical to "nothing is happening".
+        const flags = await services.listTraceFlags(conn).catch(() => []);
+        const now = Date.now();
+        const hasActiveUserFlag = (flags || []).some(f => {
+            const exp = f?.ExpirationDate ? new Date(f.ExpirationDate).getTime() : 0;
+            return exp > now && String(f?.TracedEntityId || '').startsWith('005');
+        });
         autoCollect.start();
+        if (!hasActiveUserFlag) {
+            await vscode.window.showWarningMessage(
+                'Auto-collect started, but no active user trace flags were found. ' +
+                    'Enable Debug Logs so the collector has something to pick up.'
+            );
+            return;
+        }
         await vscode.window.showInformationMessage(
             'Salesforce log auto-collect started. Logs will be saved under .salesforce/logs.'
         );
@@ -970,6 +1032,63 @@ export function registerTraceFlagsAndLogs({
         autoCollect.stop();
         await vscode.window.showInformationMessage('Salesforce log auto-collect stopped.');
     });
+
+    register('salesforceMetadata.logs.openById', async (logId?: string) => {
+        const conn = requireConnection();
+        if (!conn) return;
+        const id = String(logId || '').trim();
+        if (!id) return;
+        try {
+            const body = await vscode.window.withProgress(
+                {
+                    location: vscode.ProgressLocation.Notification,
+                    title: 'Downloading log…',
+                    cancellable: false,
+                },
+                async () => services.fetchLogBody(conn, id)
+            );
+            const dir = getWorkspaceUri(vscode, '.salesforce/logs');
+            await ensureDir(vscode, dir);
+            const uri = vscode.Uri.joinPath(dir, `${id}.log`);
+            await writeTextFile(vscode, uri, body || '', { skipCache: true });
+            const doc = await vscode.workspace.openTextDocument(uri);
+            await vscode.window.showTextDocument(doc, { preview: false });
+        } catch (error) {
+            const message = String((error as Error)?.message || error);
+            output?.appendLine?.(`[Logs] Failed to open ${id}: ${message}`);
+            await vscode.window.showErrorMessage(`Failed to open log: ${message}`);
+        }
+    });
+
+    register(
+        'salesforceMetadata.logs.setWorkbenchDebugLevel',
+        async (levels?: Record<string, string>) => {
+            const conn = requireConnection();
+            if (!conn) return;
+            const fields: Record<string, string> = {};
+            for (const category of DEBUG_LEVEL_CATEGORIES) {
+                const value = levels?.[category.key];
+                if (typeof value === 'string' && LOG_LEVELS.includes(value)) {
+                    fields[category.key] = value;
+                }
+            }
+            if (!Object.keys(fields).length) return;
+            try {
+                const debugLevelId = await services.ensureDebugLevel(conn, DEBUG_LEVEL_DEFAULT_NAME);
+                await connectionRuntime.withToolingClientAuthed(conn, async client =>
+                    client.requestJson(`/tooling/sobjects/DebugLevel/${debugLevelId}`, {
+                        method: 'PATCH',
+                        body: fields,
+                    })
+                );
+                await refreshView(conn);
+            } catch (error) {
+                const message = String((error as Error)?.message || error);
+                output?.appendLine?.(`[Logs] Failed to update DebugLevel: ${message}`);
+                await vscode.window.showErrorMessage(`Failed to update debug level: ${message}`);
+            }
+        }
+    );
 
     return { services, autoCollect };
 }

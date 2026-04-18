@@ -13,15 +13,9 @@ This guide gets you from install to your first working session in a few minutes.
 3. The Workbench overlay appears — connect your org via OAuth.
 4. Start exploring.
 
-## Option B — Web App
-
-1. Open [app.sf-toolkit.com](https://app.sf-toolkit.com).
-2. Connect your org via OAuth.
-3. You're ready.
-
 ---
 
-## Option C — Local dev setup
+## Option B — Local dev setup
 
 ### 1. Install and start
 

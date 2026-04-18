@@ -24,8 +24,7 @@ import {
 } from './bootstrapState';
 import {
     DEFAULT_WORKSPACE_ROOT,
-    LIGHT_COLOR_THEME,
-    DARK_COLOR_THEME,
+    WORKBENCH_THEME_STORAGE_KEY,
     WORKBENCH_IFRAME_URL,
     WORKBENCH_IFRAME_ORIGIN,
     IFRAME_FS_BRIDGE_QUERY_FLAG,
@@ -104,6 +103,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
     }
 
     connectedCallback() {
+        this.themeMode = this._readPersistedThemeMode();
         this._syncConnectionState(store.getState()?.application);
         void this._ensureInitialConnectionBootstrap();
     }
@@ -823,11 +823,29 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
 
     // ── Workbench UI ──────────────────────────────────────────────────────────
 
+    _readPersistedThemeMode(): 'light' | 'dark' {
+        try {
+            const stored = window.localStorage?.getItem?.(WORKBENCH_THEME_STORAGE_KEY);
+            if (stored === 'dark' || stored === 'light') {
+                return stored;
+            }
+        } catch {
+            // ignore – storage unavailable
+        }
+        return 'light';
+    }
+
+    _persistThemeMode(themeMode: 'light' | 'dark') {
+        try {
+            window.localStorage?.setItem?.(WORKBENCH_THEME_STORAGE_KEY, themeMode);
+        } catch {
+            // ignore – storage unavailable
+        }
+    }
+
     _applyWorkbenchTheme(themeMode) {
         this.themeMode = themeMode === 'light' ? 'light' : 'dark';
-        this._emitIframeHostEvent('theme.apply', {
-            colorTheme: this.themeMode === 'light' ? LIGHT_COLOR_THEME : DARK_COLOR_THEME,
-        });
+        this._persistThemeMode(this.themeMode);
         this._emitIframeThemeState('theme.applied');
     }
 
@@ -840,6 +858,7 @@ export default class VscodeWorkbenchApp extends ToolkitElement {
             if ((themeMode === 'light' || themeMode === 'dark') && themeMode !== this.themeMode) {
                 // Only update the banner; do not re-emit to the iframe to avoid a feedback loop.
                 this.themeMode = themeMode;
+                this._persistThemeMode(themeMode);
             }
         }
     }

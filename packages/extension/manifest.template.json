@@ -41,7 +41,7 @@
     "content_scripts": [
         {
             "matches": [
-                "https://*.sf-toolkit.com/*",
+                "https://*.workbench-salesforce.com/*",
                 "http://localhost:3000/*"
             ],
             "run_at": "document_end",
@@ -98,7 +98,7 @@
     "incognito": "spanning",
     "externally_connectable": {
         "matches": [
-            "*://*.sf-toolkit.com/*"
+            "*://*.workbench-salesforce.com/*"
         ]
     },
     "oauth2": {

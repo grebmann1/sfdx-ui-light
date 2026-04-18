@@ -4,14 +4,14 @@ This runbook deploys the single Docker image built by `./docker/build.sh` to **o
 
 | Subdomain                   | Served by                    | Backend                         |
 | --------------------------- | ---------------------------- | ------------------------------- |
-| `sf-toolkit.com` / `www`    | `nginx` → `dist/ui`          | Vite welcome SPA (static)       |
-| `app.sf-toolkit.com`        | `nginx` → `127.0.0.1:3000`   | Express + LWR web app           |
-| `doc.sf-toolkit.com`        | `nginx` → `dist/docs`        | Docusaurus (static)             |
-| `vscode.sf-toolkit.com`     | `nginx` → `packages/vscode/dist` | Monaco / VS Code web IDE    |
+| `workbench-salesforce.com` / `www`    | `nginx` → `dist/ui`          | Vite welcome SPA (static)       |
+| `app.workbench-salesforce.com`        | `nginx` → `127.0.0.1:3000`   | Express + LWR web app           |
+| `doc.workbench-salesforce.com`        | `nginx` → `dist/docs`        | Docusaurus (static)             |
+| `vscode.workbench-salesforce.com`     | `nginx` → `packages/vscode/dist` | Monaco / VS Code web IDE    |
 
 All four domains share a single dyno. `nginx` inside the container dispatches by `Host` header — this is what `docker/nginx.conf.template` does on the platform-assigned `$PORT`.
 
-As a convenience, `sf-toolkit.com/app` (and any sub-path, e.g. `sf-toolkit.com/app/foo?x=1`) is `301`-redirected to `app.sf-toolkit.com` — `/app` is stripped, query string is preserved. See the `location ~ ^/app(/.*)?$` block on the `sf-toolkit.com` server in `docker/nginx.conf.template`.
+As a convenience, `workbench-salesforce.com/app` (and any sub-path, e.g. `workbench-salesforce.com/app/foo?x=1`) is `301`-redirected to `app.workbench-salesforce.com` — `/app` is stripped, query string is preserved. See the `location ~ ^/app(/.*)?$` block on the `workbench-salesforce.com` server in `docker/nginx.conf.template`.
 
 ---
 
@@ -80,11 +80,11 @@ heroku create sf-toolkit --stack container --region us
 heroku certs:auto:enable -a sf-toolkit
 
 # Add all four public domains
-heroku domains:add sf-toolkit.com          -a sf-toolkit
-heroku domains:add www.sf-toolkit.com      -a sf-toolkit
-heroku domains:add app.sf-toolkit.com      -a sf-toolkit
-heroku domains:add doc.sf-toolkit.com      -a sf-toolkit
-heroku domains:add vscode.sf-toolkit.com   -a sf-toolkit
+heroku domains:add workbench-salesforce.com          -a sf-toolkit
+heroku domains:add www.workbench-salesforce.com      -a sf-toolkit
+heroku domains:add app.workbench-salesforce.com      -a sf-toolkit
+heroku domains:add doc.workbench-salesforce.com      -a sf-toolkit
+heroku domains:add vscode.workbench-salesforce.com   -a sf-toolkit
 
 # Inspect and copy the DNS targets Heroku assigns
 heroku domains -a sf-toolkit
@@ -92,13 +92,13 @@ heroku domains -a sf-toolkit
 
 ### 3.1 DNS records (at the registrar)
 
-For each domain above, create a **CNAME** pointing to the Heroku DNS target shown by `heroku domains`. For the apex `sf-toolkit.com`, use an **ALIAS / ANAME** (or registrar flattening) if your DNS provider supports it; otherwise put the app behind a provider that does (Cloudflare, DNSimple, Route 53 alias, etc.).
+For each domain above, create a **CNAME** pointing to the Heroku DNS target shown by `heroku domains`. For the apex `workbench-salesforce.com`, use an **ALIAS / ANAME** (or registrar flattening) if your DNS provider supports it; otherwise put the app behind a provider that does (Cloudflare, DNSimple, Route 53 alias, etc.).
 
 Typical result:
 
 | Record | Host                   | Target                                     |
 | ------ | ---------------------- | ------------------------------------------ |
-| ALIAS  | `sf-toolkit.com`       | `<whatever>.herokudns.com` (apex)          |
+| ALIAS  | `workbench-salesforce.com`       | `<whatever>.herokudns.com` (apex)          |
 | CNAME  | `www`                  | `<whatever>.herokudns.com`                 |
 | CNAME  | `app`                  | `<whatever>.herokudns.com`                 |
 | CNAME  | `doc`                  | `<whatever>.herokudns.com`                 |
@@ -118,8 +118,8 @@ Mirror the contents of `.env.prod` into Heroku config vars:
 heroku config:set \
   NODE_ENV=production \
   PORT=3000 \
-  WORKBENCH_BASE_URL=https://app.sf-toolkit.com \
-  REDIRECT_URI=https://sf-toolkit.com/oauth2/callback \
+  WORKBENCH_BASE_URL=https://app.workbench-salesforce.com \
+  REDIRECT_URI=https://workbench-salesforce.com/oauth2/callback \
   CLIENT_ID='...' \
   CLIENT_SECRET='...' \
   CHROME_ID='...' \
@@ -180,17 +180,17 @@ You should see:
 ## 6. Smoke tests
 
 ```bash
-curl -I https://sf-toolkit.com
-curl -I https://www.sf-toolkit.com
-curl -I https://app.sf-toolkit.com
-curl -I https://doc.sf-toolkit.com
-curl -I https://vscode.sf-toolkit.com
+curl -I https://workbench-salesforce.com
+curl -I https://www.workbench-salesforce.com
+curl -I https://app.workbench-salesforce.com
+curl -I https://doc.workbench-salesforce.com
+curl -I https://vscode.workbench-salesforce.com
 ```
 
-All should return `200` (or `301/302` for SPA redirects). For `vscode.sf-toolkit.com`, also verify the COEP/COOP headers:
+All should return `200` (or `301/302` for SPA redirects). For `vscode.workbench-salesforce.com`, also verify the COEP/COOP headers:
 
 ```bash
-curl -I https://vscode.sf-toolkit.com | grep -i "cross-origin"
+curl -I https://vscode.workbench-salesforce.com | grep -i "cross-origin"
 ```
 
 Expected:
@@ -217,4 +217,4 @@ heroku rollback v<previous> -a sf-toolkit
 - **Multi-stage Dockerfile + `heroku.yml`** to let Heroku build the image from git on each push (instead of us building locally and using `heroku container:push`). Worth doing once CI is involved so a teammate without Docker installed can still deploy.
 - **Dyno sizing**: the image ships LWR + Docusaurus + Monaco assets and the Express server; start on `standard-1x`, scale up if memory pressure appears under LWR SSR load.
 - **Health check**: add a lightweight `/healthz` in `packages/server/server-prod.ts` and a matching nginx location on each subdomain so Heroku's routing layer surfaces real failures instead of a black-box 503.
-- **Preview / staging app**: duplicate the provisioning section under `sf-toolkit-staging` with different domains (e.g. `staging.sf-toolkit.com`) before shipping risky changes.
+- **Preview / staging app**: duplicate the provisioning section under `sf-toolkit-staging` with different domains (e.g. `staging.workbench-salesforce.com`) before shipping risky changes.

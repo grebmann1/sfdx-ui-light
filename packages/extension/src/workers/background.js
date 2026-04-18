@@ -502,7 +502,7 @@ function injectToolkit(tabId) {
         {
             target: { tabId: tabId },
             files: [
-                'styles/slds-sf-toolkit.css',
+                'styles/slds-workbench-salesforce.css',
                 'styles/inject.css',
                 'styles/shared.css',
                 'styles/extension.css',
@@ -861,7 +861,7 @@ chrome.runtime.onInstalled.addListener(async details => {
     if (reason === 'install') {
         await chrome.storage.local.set({ installedVersion: currentVersion });
         chrome.tabs.create({
-            url: `https://sf-toolkit.com/welcome?redirect_url=${encodeURIComponent(chrome.runtime.getURL('views/app.html'))}`,
+            url: `https://workbench-salesforce.com/welcome?redirect_url=${encodeURIComponent(chrome.runtime.getURL('views/app.html'))}`,
         });
     } else if (
         reason === 'update' &&
@@ -869,7 +869,7 @@ chrome.runtime.onInstalled.addListener(async details => {
         currentVersion &&
         compareMajorMinor(previousVersion, currentVersion)
     ) {
-        chrome.tabs.create({ url: 'https://sf-toolkit.com/app?applicationName=release' });
+        chrome.tabs.create({ url: 'https://workbench-salesforce.com/app?applicationName=release' });
     }
     /* const isEnabled = await loadSingleExtensionConfigFromCache(CACHE_CONFIG.OVERLAY_ENABLED.key);
     if (!data.hasOwnProperty(OVERLAY_ENABLED_VAR)) {

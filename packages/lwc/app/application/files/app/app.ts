@@ -588,7 +588,7 @@ export default class App extends ToolkitElement {
 
     get pageClass() {
         //Overwrite
-        return super.pageClass + ' slds-p-around_small';
+        return super.pageClass;
     }
 
     get selectedPath() {

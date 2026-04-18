@@ -192,11 +192,14 @@ export function buildAvailableAgentModelOptions({
 
     return configuredProviders.flatMap(provider => {
         const config = normalizedConfigs[provider];
+        const serverModels = extractModels(availableModelsByProvider, provider);
         const models =
             provider === 'openai' && isInternalProviderBaseUrl(config.baseUrl)
-                ? resolveOpenAiCompatibleModels(true)
-                : extractModels(availableModelsByProvider, provider).length > 0
-                  ? extractModels(availableModelsByProvider, provider)
+                ? serverModels.length > 0
+                    ? serverModels
+                    : resolveOpenAiCompatibleModels(true)
+                : serverModels.length > 0
+                  ? serverModels
                   : getProviderModelOptions(provider);
 
         return models.map(model => ({

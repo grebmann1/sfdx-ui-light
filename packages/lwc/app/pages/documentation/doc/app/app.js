@@ -602,7 +602,7 @@ export default class App extends ToolkitElement {
     }
 
     get searchHost() {
-        return this.isResponsive ? 'https://sf-toolkit.com/' : '/';
+        return this.isResponsive ? 'https://workbench-salesforce.com/' : '/';
     }
 
     get isNavigationAvailable() {
@@ -627,7 +627,7 @@ export default class App extends ToolkitElement {
 
     get pageClass() {
         //Overwrite
-        return super.pageClass + ' slds-p-around_small';
+        return super.pageClass;
     }
 
     get loadingMessage() {

@@ -29,9 +29,9 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 /* CometD Proxy */
-app.all('/cometd/:splat(*)', proxy({ enableCORS: true }));
+app.all('/cometd{/*splat}', proxy({ enableCORS: true }));
 /* jsForce Proxy */
-app.all('/proxy/:splat(*)', proxy({ enableCORS: true }));
+app.all('/proxy{/*splat}', proxy({ enableCORS: true }));
 /* Google Auth */
 googleAuth(app);
 /* OpenAI Proxy */

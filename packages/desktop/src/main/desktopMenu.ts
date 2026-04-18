@@ -72,7 +72,7 @@ export function registerDesktopMenu(options: DesktopMenuOptions): void {
                 {
                     label: 'Workbench Web',
                     click: () => {
-                        void shell.openExternal('https://sf-toolkit.com');
+                        void shell.openExternal('https://workbench-salesforce.com');
                     },
                 },
             ],

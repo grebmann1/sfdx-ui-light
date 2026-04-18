@@ -21,7 +21,7 @@ export const readFileContent = (file: File) => {
                 content: null,
                 note: 'File too large to include content.',
             });
-        } else if (file.type.startsWith('text/')) {
+        } else if (file.type.startsWith('text/') || file.type === 'application/json') {
             const reader = new FileReader();
             reader.onload = e =>
                 resolve({

@@ -2,7 +2,10 @@
     <div class={rootClass}>
         <section class={orgBannerClass} role="status" aria-live="polite">
             <div class="orgBannerContent">
-                <strong class="orgBannerTitle">{orgBannerTitle}</strong>
+                <div class="orgBannerTitleRow">
+                    <strong class="orgBannerTitle">{orgBannerTitle}</strong>
+                    <span class="betaBadge" title="Beta">Beta</span>
+                </div>
                 <span class="orgBannerMessage">{orgBannerMessage}</span>
             </div>
             <div class="orgBannerMeta">
@@ -81,7 +84,7 @@
 
                 <template if:true={showLoadingOverlay}>
                     <skeleton-loading-overlay
-                        variant={themeMode}
+                        variant="dark"
                         message="Initializing VSCode workbench..."></skeleton-loading-overlay>
                 </template>
 

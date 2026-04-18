@@ -39,6 +39,6 @@ export default class App extends ToolkitElement {
     }
 
     get pageClass() {
-        return super.pageClass + ' slds-p-around_small';
+        return super.pageClass;
     }
 }

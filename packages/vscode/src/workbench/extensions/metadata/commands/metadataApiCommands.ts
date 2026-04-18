@@ -403,6 +403,25 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
         return status;
     }
 
+    async function resolveToolingIdentitiesForPaths(conn, filePaths: string[]) {
+        const metadataApiMap = await loadMetadataApiMapCached();
+        const typesMap = new Map<string, Set<string>>();
+        for (const filePath of Array.isArray(filePaths) ? filePaths : []) {
+            const member = findMemberForPath(filePath, metadataApiMap.members);
+            if (!member?.type || !member?.fullName) continue;
+            if (!typesMap.has(member.type)) typesMap.set(member.type, new Set());
+            typesMap.get(member.type)!.add(member.fullName);
+        }
+        if (typesMap.size === 0) {
+            return { resolvedPaths: [] as string[] };
+        }
+        const result = await retrieveRuntime.resolveToolingIdentitiesForTypes(conn, typesMap);
+        if (deployTools && typeof deployTools.invalidateToolingMap === 'function') {
+            deployTools.invalidateToolingMap();
+        }
+        return { resolvedPaths: result?.resolvedPaths || [] };
+    }
+
     // Expose so that deployAndSourceTracking can call it for metadataApi-mapped files
     if (deployTools && typeof deployTools === 'object') {
         deployTools.deployPathsViaMetadataApi = deployPathsViaMetadataApi;
@@ -411,6 +430,9 @@ export function registerMetadataApiCommands({ connectionRuntime, context, deploy
         }
         if (typeof deployTools.setNewBundleDeploy === 'function') {
             deployTools.setNewBundleDeploy(deployAndRetrieveNewBundle);
+        }
+        if (typeof deployTools.setToolingIdentityResolver === 'function') {
+            deployTools.setToolingIdentityResolver(resolveToolingIdentitiesForPaths);
         }
     }
 

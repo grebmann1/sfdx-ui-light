@@ -4,7 +4,6 @@
 # This Dockerfile PACKAGES pre-built artifacts; it does NOT compile source.
 # Run `npm run docker:prebuild` (or see docker/build.sh) before `docker build`
 # to produce the required build outputs:
-#   dist/web        — LWR web app
 #   dist/docs       — Docusaurus docs
 #   dist/ui         — Vite UI SPA
 #   packages/server/dist — compiled Express server
@@ -38,13 +37,10 @@ COPY assets assets
 # ---------------------------------------------------------------------------
 # Pre-built static sites
 # ---------------------------------------------------------------------------
-# LWR web app  — served by Express at /
-COPY dist/web   dist/web
-
-# Docusaurus   — served by Express at /docs AND by nginx on port 4000
+# Docusaurus   — served by nginx on port 4000
 COPY dist/docs  dist/docs
 
-# Vite UI SPA  — served by Express at /welcome AND by nginx on port 5000
+# Vite UI SPA  — served by nginx on port 5000
 COPY dist/ui    dist/ui
 
 # VS Code / Monaco — served by nginx on port 5173 (requires COEP/COOP headers)
@@ -60,9 +56,9 @@ COPY docker/nginx.conf.template  /etc/nginx/nginx.conf.template
 
 # ---------------------------------------------------------------------------
 # Expose all service ports
-#   3000 — packages/server  (Express: API + web app + /docs + /welcome)
-#   4000 — apps/docs        (nginx static)
-#   5000 — apps/ui          (nginx static)
+#   3000 — packages/server  (Express: API, proxy, OAuth, LLM)
+#   4000 — apps/docs        (nginx static — Docusaurus)
+#   5000 — apps/ui          (nginx static — Vite SPA)
 #   5173 — packages/vscode  (nginx static + COEP/COOP headers)
 # ---------------------------------------------------------------------------
 EXPOSE 3000 4000 5000 5173

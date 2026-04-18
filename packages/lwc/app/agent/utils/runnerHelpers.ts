@@ -108,7 +108,10 @@ export async function persistPromptImageFiles(filesData, fs, conversationId, log
             const filePath = `${baseDir}/${safeName}`;
 
             try {
-                if (file.type?.startsWith?.('text/') && typeof file.content === 'string') {
+                const isTextContent =
+                    (file.type?.startsWith?.('text/') || file.type === 'application/json') &&
+                    typeof file.content === 'string';
+                if (isTextContent) {
                     await fs.writeFile(filePath, file.content, { encoding: 'utf8' });
                     return { ...file, path: filePath };
                 }

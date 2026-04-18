@@ -521,7 +521,7 @@ export default class App extends ToolkitElement {
 
     get pageClass() {
         //Overwrite
-        return super.pageClass + ' slds-p-around_small grid-container';
+        return super.pageClass + ' grid-container';
     }
 
     get loadingMessage() {

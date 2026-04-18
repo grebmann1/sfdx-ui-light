@@ -44,9 +44,28 @@ interface SalesforceTerminalConfig {
 }
 
 let terminalConfig: SalesforceTerminalConfig | null = null;
+let terminalConfigResolve: ((config: SalesforceTerminalConfig) => void) | null = null;
+let terminalConfigReady: Promise<SalesforceTerminalConfig> = new Promise(resolve => {
+    terminalConfigResolve = resolve;
+});
 
 export function configureSalesforceTerminal(config: SalesforceTerminalConfig): void {
     terminalConfig = config;
+    if (terminalConfigResolve) {
+        terminalConfigResolve(config);
+        terminalConfigResolve = null;
+    }
+}
+
+/**
+ * Await the terminal config, but do not block forever: if the terminal
+ * extension never activates (e.g. standalone mode), resolve to null after a
+ * short grace period so `start()` still completes and the banner prints.
+ */
+async function awaitTerminalConfig(timeoutMs = 3000): Promise<SalesforceTerminalConfig | null> {
+    if (terminalConfig) return terminalConfig;
+    const timeout = new Promise<null>(resolve => setTimeout(() => resolve(null), timeoutMs));
+    return Promise.race([terminalConfigReady, timeout]);
 }
 
 // ---------------------------------------------------------------------------
@@ -507,8 +526,14 @@ class SalesforceTerminalBackend extends SimpleTerminalBackend {
                 // registerSalesforceShellCommands() from core/bash.ts only sets
                 // shell.handlers for the agent shell-runner abstraction — it does NOT
                 // call just-bash's registerCommand and therefore has no effect here.
-                if (terminalConfig) {
-                    const { connectionRuntime, vscode: vs } = terminalConfig;
+                //
+                // The terminal backend is registered during monaco setup, so `start()`
+                // may fire before the terminal extension has called
+                // configureSalesforceTerminal(). Wait for it (with a short timeout)
+                // instead of silently skipping registration on cold start.
+                const resolvedConfig = await awaitTerminalConfig();
+                if (resolvedConfig) {
+                    const { connectionRuntime, vscode: vs } = resolvedConfig;
                     const handlers = buildSalesforceHandlers(connectionRuntime, vs);
 
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any

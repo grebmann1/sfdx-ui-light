@@ -4,7 +4,7 @@ title: Architecture Overview
 
 # Architecture Overview
 
-Workbench is a monorepo that builds the same core product across three deployment surfaces: a **web app**, a **browser extension**, and an **Electron desktop app**. All surfaces share a common LWC frontend and TypeScript library.
+Workbench is a monorepo that builds the same core product across two deployment surfaces: a **browser extension** and an **Electron desktop app**. All surfaces share a common LWC frontend and TypeScript library.
 
 ## Monorepo layout
 
@@ -116,11 +116,11 @@ The LWC frontend uses **Redux Toolkit** (`@reduxjs/toolkit`) for global state, w
 
 | Target | Entry | Key build config |
 |---|---|---|
-| Web app | `packages/server` + LWR | `tools/build/rollup.app.mjs` |
 | Browser extension | `packages/extension` | `tools/build/rollup.extension.mjs` |
 | Electron desktop | `packages/desktop` | `tools/build/rollup.desktop.mjs` |
+| Self-hosted server | `packages/server` + LWR | `tools/build/rollup.app.mjs` |
 
-All three targets consume the same compiled `packages/lwc` and `packages/shared` output.
+All targets consume the same compiled `packages/lwc` and `packages/shared` output.
 
 ## Related docs
 

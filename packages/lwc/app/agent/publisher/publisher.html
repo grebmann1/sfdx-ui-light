@@ -10,16 +10,17 @@
                     ondragleave={handleDragLeave}
                     ondrop={handleDrop}>
                     <div class="slds-flex-column slds-align-flex-end">
-                        <div
-                            class="chat-input-model-row slds-flex-row slds-grid slds-gutter_x-small">
-                            <div class="slds-col">
+                        <div class="chat-input-model-row">
+                            <div class="chat-model-select-col">
                                 <select
                                     id="model-picklist"
                                     class="chat-select chat-select-model"
                                     onchange={handleModelChange}
                                     aria-label="Model">
                                     <template lwc:if={hasMultipleProviderGroups}>
-                                        <template for:each={renderedModelOptionGroups} for:item="group">
+                                        <template
+                                            for:each={renderedModelOptionGroups}
+                                            for:item="group">
                                             <optgroup key={group.key} label={group.label}>
                                                 <template for:each={group.options} for:item="model">
                                                     <option
@@ -45,7 +46,7 @@
                                 </select>
                             </div>
                             <template lwc:if={showReasoningSelect}>
-                                <div class="slds-col chat-reasoning-col">
+                                <div class="chat-reasoning-col">
                                     <slds-reasoning
                                         class="chat-reasoning-control"
                                         value={selectedReasoning}
@@ -147,7 +148,7 @@
                             aria-label="File input"
                             tabindex="-1"
                             multiple
-                            accept="image/*,application/pdf" />
+                            accept="image/*,application/pdf,text/csv,application/json,text/plain,.csv,.json,.txt" />
                     </div>
                     <template lwc:if={dragActive}>
                         <div class="file-upload-drag-overlay">Drop images here</div>

@@ -30,6 +30,32 @@ const METADATA_EXTENSION_BASE_CONFIG = buildSalesforceExtensionConfig({
     displayName: 'Salesforce Metadata (Workbench)',
     description: 'Core Salesforce metadata workflows and workspace sync for the workbench',
     contributes: {
+        configuration: {
+            title: 'Salesforce Workbench',
+            properties: {
+                'salesforceMetadata.deploy.autoOnSave': {
+                    type: 'boolean',
+                    default: true,
+                    scope: 'window',
+                    description:
+                        'Automatically deploy tracked Salesforce files to the connected org when you save them.',
+                },
+                'salesforceMetadata.deploy.preferToolingApi': {
+                    type: 'boolean',
+                    default: true,
+                    scope: 'window',
+                    description:
+                        'Try the Tooling API first for supported types (Apex, LWC, Aura) and fall back to the Metadata API when the Tooling deploy is unavailable or fails.',
+                },
+                'salesforceMetadata.deploy.notifyOnSuccess': {
+                    type: 'boolean',
+                    default: true,
+                    scope: 'window',
+                    description:
+                        'Show a toast notification when a manual deploy succeeds. Disable to reduce noise during rapid iteration.',
+                },
+            },
+        },
         viewsContainers: {
             panel: [
                 {
@@ -113,6 +139,14 @@ const METADATA_EXTENSION_BASE_CONFIG = buildSalesforceExtensionConfig({
                 command: 'salesforceMetadata.openNamespaceReport',
                 title: 'Salesforce: Open Namespace/Managed Report',
             },
+            {
+                command: 'salesforceMetadata.togglePreferToolingApi',
+                title: 'Salesforce: Toggle Prefer Tooling API for Deploys',
+            },
+            {
+                command: 'salesforceMetadata.toggleDeployNotifyOnSuccess',
+                title: 'Salesforce: Toggle Deploy Success Notifications',
+            },
         ],
         menus: {
             commandPalette: [
@@ -131,6 +165,8 @@ const METADATA_EXTENSION_BASE_CONFIG = buildSalesforceExtensionConfig({
                 { command: 'salesforceMetadata.installExtensions' },
                 { command: 'salesforceMetadata.refreshProject' },
                 { command: 'salesforceMetadata.openNamespaceReport' },
+                { command: 'salesforceMetadata.togglePreferToolingApi' },
+                { command: 'salesforceMetadata.toggleDeployNotifyOnSuccess' },
             ],
             'editor/context': [
                 {
@@ -230,7 +266,7 @@ function buildApiVersionOptions(apiVersion: string) {
     return options;
 }
 
-async function getSalesforcePanelState(connectionRuntime) {
+async function getSalesforcePanelState(connectionRuntime, deployTools) {
     const conn = connectionRuntime.loadStoredConn();
     const connected = hasUsableConnection(conn);
     let host = '';
@@ -244,12 +280,27 @@ async function getSalesforcePanelState(connectionRuntime) {
               conn?.apiVersion || DEFAULT_SOURCE_API_VERSION
           )
         : '';
+    const preferToolingApi =
+        typeof deployTools?.loadPreferToolingApi === 'function'
+            ? Boolean(deployTools.loadPreferToolingApi())
+            : true;
+    const autoDeployOnSave =
+        typeof deployTools?.loadAutoDeployOnSave === 'function'
+            ? Boolean(deployTools.loadAutoDeployOnSave())
+            : true;
+    const notifyOnSuccess =
+        typeof deployTools?.loadNotifyOnSuccess === 'function'
+            ? Boolean(deployTools.loadNotifyOnSuccess())
+            : true;
     return {
         conn,
         connected,
         host,
         apiVersion,
         apiVersionOptions: connected ? buildApiVersionOptions(apiVersion) : [],
+        preferToolingApi,
+        autoDeployOnSave,
+        notifyOnSuccess,
         problemMessage: connected ? '' : connectionRuntime.getConnectionProblemMessage(conn),
     };
 }
@@ -260,6 +311,9 @@ function getSalesforcePanelHtml({
     host,
     apiVersion,
     apiVersionOptions,
+    preferToolingApi,
+    autoDeployOnSave,
+    notifyOnSuccess,
     problemMessage,
 }: {
     nonce: string;
@@ -267,6 +321,9 @@ function getSalesforcePanelHtml({
     host: string;
     apiVersion: string;
     apiVersionOptions: string[];
+    preferToolingApi: boolean;
+    autoDeployOnSave: boolean;
+    notifyOnSuccess: boolean;
     problemMessage: string;
 }) {
     const statusTone = connected ? '#0f766e' : '#8a2c0d';
@@ -274,10 +331,10 @@ function getSalesforcePanelHtml({
     const statusBorder = connected ? '#99f6e4' : '#fdba74';
     const title = connected ? 'Salesforce connected' : 'Salesforce disconnected';
     const subtitle = connected
-        ? host || 'Your org is ready to use in this workspace.'
+        ? host || 'Org ready in this workspace.'
         : 'Reconnect from the parent Salesforce Toolkit session to enable org features.';
     const detail = connected
-        ? 'Use the actions below to sync metadata, inspect source status, and work with your org.'
+        ? ''
         : problemMessage || 'A connected toolkit session is required for Salesforce features.';
     const primaryLabel = connected ? 'Sync Project' : 'Connect to Salesforce';
     const primaryCommand = connected
@@ -299,18 +356,64 @@ function getSalesforcePanelHtml({
               )
               .join('')
         : '';
+    const deployToggles: Array<{
+        id: string;
+        command: string;
+        label: string;
+        tooltip: string;
+        checked: boolean;
+    }> = [
+        {
+            id: 'sfAutoDeployOnSave',
+            command: 'salesforceMetadata.toggleAutoDeploy',
+            label: 'Auto-deploy on save',
+            tooltip: 'Automatically deploy tracked files to the connected org when you save them.',
+            checked: autoDeployOnSave,
+        },
+        {
+            id: 'sfPreferToolingApi',
+            command: 'salesforceMetadata.togglePreferToolingApi',
+            label: 'Prefer Tooling API',
+            tooltip:
+                'Try the Tooling API first for supported types and fall back to the Metadata API when unavailable.',
+            checked: preferToolingApi,
+        },
+        {
+            id: 'sfNotifyOnSuccess',
+            command: 'salesforceMetadata.toggleDeployNotifyOnSuccess',
+            label: 'Notify on success',
+            tooltip: 'Show a toast when a manual deploy succeeds.',
+            checked: notifyOnSuccess,
+        },
+    ];
+    const deployTogglesHtml = deployToggles
+        .map(
+            toggle => `
+                <label class="sfToggle" for="${toggle.id}" title="${toggle.tooltip}">
+                    <input
+                        id="${toggle.id}"
+                        type="checkbox"
+                        data-toggle-command="${toggle.command}"${toggle.checked ? ' checked' : ''} />
+                    <span class="sfToggleLabel">${toggle.label}</span>
+                </label>`
+        )
+        .join('');
     const footerContent = connected
         ? `
             <div class="sfFooterVersion">
-                <label class="sfFooterLabel" for="sfWorkspaceApiVersion">Workspace API version</label>
-                <div class="sfFooterControls">
-                    <select id="sfWorkspaceApiVersion" class="sfSelect" aria-label="Workspace API version">
-                        ${apiVersionOptionsHtml}
-                    </select>
-                    <button
-                        class="sfButton sfButtonSecondary sfFooterButton"
-                        data-command="salesforceMetadata.setWorkspaceApiVersion"
-                        data-arg-source="sfWorkspaceApiVersion">Apply</button>
+                <label class="sfFooterLabel" for="sfWorkspaceApiVersion">API version</label>
+                <select id="sfWorkspaceApiVersion" class="sfSelect" aria-label="Workspace API version">
+                    ${apiVersionOptionsHtml}
+                </select>
+                <button
+                    class="sfButton sfButtonSecondary sfFooterButton"
+                    data-command="salesforceMetadata.setWorkspaceApiVersion"
+                    data-arg-source="sfWorkspaceApiVersion">Apply</button>
+            </div>
+            <div class="sfOptions">
+                <p class="sfSectionTitle">Deploy options</p>
+                <div class="sfToggleGrid">
+                    ${deployTogglesHtml}
                 </div>
             </div>
         `
@@ -328,66 +431,64 @@ function getSalesforcePanelHtml({
     <style>
         body {
             margin: 0;
-            padding: 12px;
-            font: 12px/1.45 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 8px;
+            font: 12px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             color: var(--vscode-foreground, #1f2328);
             background: transparent;
         }
         .sfCard {
             border: 1px solid var(--vscode-panel-border, rgba(128, 128, 128, 0.35));
-            border-radius: 10px;
+            border-radius: 8px;
             background: var(--vscode-editor-background, #ffffff);
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
             overflow: hidden;
+            max-width: 480px;
+            margin: 0 auto;
         }
         .sfHeader {
-            padding: 12px 12px 10px;
+            padding: 8px 10px;
             border-bottom: 1px solid var(--vscode-panel-border, rgba(128, 128, 128, 0.25));
             background: linear-gradient(180deg, rgba(0, 161, 224, 0.10), rgba(0, 161, 224, 0.02));
         }
-        .sfEyebrow {
-            margin: 0 0 6px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--vscode-descriptionForeground, #6a737d);
-        }
         .sfTitle {
             margin: 0;
-            font-size: 16px;
+            font-size: 13px;
             font-weight: 700;
         }
         .sfSubtitle {
-            margin: 6px 0 0;
+            margin: 2px 0 0;
+            font-size: 11px;
             color: var(--vscode-descriptionForeground, #6a737d);
         }
         .sfBody {
-            padding: 12px;
+            padding: 8px 10px 10px;
             display: grid;
-            gap: 12px;
+            gap: 8px;
         }
         .sfStatus {
-            padding: 10px 12px;
-            border-radius: 8px;
+            padding: 6px 10px;
+            border-radius: 6px;
             border: 1px solid ${statusBorder};
             background: ${statusBackground};
             color: ${statusTone};
+            font-size: 11px;
         }
         .sfStatus strong {
-            display: block;
-            margin-bottom: 4px;
             font-size: 12px;
+        }
+        .sfStatus .sfStatusDetail {
+            display: block;
+            margin-top: 2px;
         }
         .sfActions {
             display: grid;
-            gap: 8px;
+            gap: 6px;
         }
         .sfButton {
             width: 100%;
             border: 1px solid transparent;
-            border-radius: 8px;
-            padding: 9px 10px;
+            border-radius: 6px;
+            padding: 6px 10px;
             font: inherit;
             cursor: pointer;
             text-align: left;
@@ -402,51 +503,84 @@ function getSalesforcePanelHtml({
             border-color: var(--vscode-panel-border, rgba(128, 128, 128, 0.25));
         }
         .sfFooter {
-            margin-top: 2px;
             color: var(--vscode-descriptionForeground, #6a737d);
+            display: grid;
+            gap: 8px;
         }
         .sfFooterVersion {
             display: grid;
-            gap: 8px;
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            gap: 6px;
+            align-items: center;
         }
         .sfFooterLabel {
+            font-size: 11px;
             font-weight: 600;
             color: var(--vscode-foreground, #1f2328);
-        }
-        .sfFooterControls {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
-            gap: 8px;
-            align-items: center;
+            white-space: nowrap;
         }
         .sfFooterButton {
             width: auto;
             text-align: center;
             white-space: nowrap;
+            padding: 5px 10px;
         }
         .sfSelect {
             width: 100%;
             border: 1px solid var(--vscode-panel-border, rgba(128, 128, 128, 0.25));
-            border-radius: 8px;
-            padding: 8px 10px;
+            border-radius: 6px;
+            padding: 4px 8px;
             font: inherit;
             color: var(--vscode-foreground, #1f2328);
             background: var(--vscode-input-background, rgba(128, 128, 128, 0.08));
+        }
+        .sfOptions {
+            display: grid;
+            gap: 4px;
+        }
+        .sfSectionTitle {
+            font-weight: 700;
+            font-size: 10px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--vscode-descriptionForeground, #6a737d);
+            margin: 0;
+        }
+        .sfToggleGrid {
+            display: grid;
+            gap: 4px;
+        }
+        .sfToggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+        .sfToggle input[type="checkbox"] {
+            margin: 0;
+        }
+        .sfToggleLabel {
+            font-weight: 600;
+            color: var(--vscode-foreground, #1f2328);
         }
     </style>
 </head>
 <body>
     <div class="sfCard">
         <div class="sfHeader">
-            <p class="sfEyebrow">Salesforce</p>
             <h2 class="sfTitle">${title}</h2>
             <p class="sfSubtitle">${subtitle}</p>
         </div>
         <div class="sfBody">
-            <div class="sfStatus">
-                <strong>${connected ? 'Org ready' : 'Connection required'}</strong>
-                <span>${detail}</span>
-            </div>
+            ${
+                connected && !detail
+                    ? ''
+                    : `<div class="sfStatus">
+                <strong>${connected ? 'Org ready' : 'Connection required'}</strong>${
+                        detail ? `<span class="sfStatusDetail">${detail}</span>` : ''
+                    }
+            </div>`
+            }
             <div class="sfActions">
                 <button class="sfButton sfButtonPrimary" data-command="${primaryCommand}">${primaryLabel}</button>
                 ${secondaryActions}
@@ -469,12 +603,21 @@ function getSalesforcePanelHtml({
                 });
             });
         });
+        document.querySelectorAll('[data-toggle-command]').forEach(input => {
+            input.addEventListener('change', () => {
+                vscode.postMessage({
+                    type: 'command',
+                    command: input.getAttribute('data-toggle-command'),
+                    args: []
+                });
+            });
+        });
     </script>
 </body>
 </html>`;
 }
 
-function registerSalesforcePanelProvider({ connectionRuntime, context }) {
+function registerSalesforcePanelProvider({ connectionRuntime, context, deployTools }) {
     const { vscode } = context;
     let webviewRegistered = false;
     try {
@@ -490,7 +633,7 @@ function registerSalesforcePanelProvider({ connectionRuntime, context }) {
                 }
                 const currentRenderSequence = ++renderSequence;
                 const nonce = createNonce();
-                const state = await getSalesforcePanelState(connectionRuntime);
+                const state = await getSalesforcePanelState(connectionRuntime, deployTools);
                 if (currentRenderSequence !== renderSequence || !activeView?.webview) {
                     return;
                 }
@@ -503,6 +646,9 @@ function registerSalesforcePanelProvider({ connectionRuntime, context }) {
                     host: state.host,
                     apiVersion: state.apiVersion,
                     apiVersionOptions: state.apiVersionOptions,
+                    preferToolingApi: state.preferToolingApi,
+                    autoDeployOnSave: state.autoDeployOnSave,
+                    notifyOnSuccess: state.notifyOnSuccess,
                     problemMessage: state.problemMessage,
                 });
             };
@@ -895,7 +1041,7 @@ export async function register(
                 if (!connectionRuntime || !context || !deployTools) {
                     return;
                 }
-                registerSalesforcePanelProvider({ connectionRuntime, context });
+                registerSalesforcePanelProvider({ connectionRuntime, context, deployTools });
                 registerMetadataCommands({ connectionRuntime, context });
                 registerShellIntegration({ connectionRuntime, context });
                 deployTools.registerCommandGroups(['metadata']);

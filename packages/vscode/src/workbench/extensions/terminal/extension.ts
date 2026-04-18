@@ -43,17 +43,41 @@ export async function register(
             await core.features.activateOnce?.('salesforce-terminal', async () => {
                 // Provide SF runtime + vscode to the backend so every process
                 // created via createProcess() can register shell commands.
+                // Must run unconditionally — it's what wires the `sf` command
+                // into the Bash instance used by SalesforceTerminalProcess.
                 configureSalesforceTerminal({ connectionRuntime, vscode });
 
                 let terminalInstance = null;
+                let autoOpenDisabled = false;
+
+                // The monaco-vscode-api worker ext host refuses plain
+                // `createTerminal({ name })` calls via createTerminalFromOptions
+                // (it requires remoteAuthority or a pty). Wrap the call so a
+                // NotSupportedError in that environment doesn't tear down
+                // activation or the companion logs/metadata extensions.
+                function tryCreateTerminal() {
+                    if (autoOpenDisabled) return null;
+                    try {
+                        return vscode.window.createTerminal({
+                            name: 'Salesforce Terminal',
+                        });
+                    } catch (err) {
+                        autoOpenDisabled = true;
+                        console.warn(
+                            '[salesforce-terminal] createTerminal is not supported in this host; ' +
+                                'the Salesforce Terminal will not auto-open.',
+                            err
+                        );
+                        return null;
+                    }
+                }
 
                 function ensureTerminal() {
                     if (terminalInstance) return terminalInstance;
                     // createTerminal() without a pty — the SalesforceTerminalBackend
                     // registered in setup.common.ts handles process creation.
-                    terminalInstance = vscode.window.createTerminal({
-                        name: 'Salesforce Terminal',
-                    });
+                    terminalInstance = tryCreateTerminal();
+                    if (!terminalInstance) return null;
                     context.addDisposable?.({
                         dispose() {
                             try {
@@ -71,21 +95,24 @@ export async function register(
                     vscode.window.onDidCloseTerminal(closedTerminal => {
                         if (closedTerminal === terminalInstance) {
                             terminalInstance = null;
+                            if (autoOpenDisabled) return;
                             // Re-create immediately so the panel always has a live terminal.
-                            ensureTerminal().show(true);
+                            ensureTerminal()?.show?.(true);
                         }
                     })
                 );
 
                 context.addDisposable?.(
                     vscode.commands.registerCommand('salesforceTerminal.openTerminal', () => {
-                        ensureTerminal().show(true);
+                        ensureTerminal()?.show?.(true);
                     })
                 );
 
                 // Auto-open the terminal so it appears in the panel on workbench load
                 // without requiring the user to discover the command palette entry.
-                ensureTerminal().show(true);
+                // Best-effort: if the host refuses, tryCreateTerminal() swallows the
+                // error and the command palette entry remains available.
+                ensureTerminal()?.show?.(true);
             });
         }
     );

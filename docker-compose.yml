@@ -6,10 +6,10 @@ services:
     image: sf-toolkit:latest
     ports:
       - "80:80"       # nginx front door — domain-based routing (production)
-      - "3100:3000"   # packages/server  — Express API + LWR web app  (app.sf-toolkit.com)
-      - "4000:4000"   # apps/docs        — Docusaurus documentation   (doc.sf-toolkit.com)
-      - "5100:5000"   # apps/ui          — Vite welcome SPA            (sf-toolkit.com)
-      - "5173:5173"   # packages/vscode  — Monaco/VS Code web IDE      (vscode.sf-toolkit.com)
+      - "3100:3000"   # packages/server  — Express API (proxy, OAuth, LLM)     (app.workbench-salesforce.com)
+      - "4000:4000"   # apps/docs        — Docusaurus documentation   (doc.workbench-salesforce.com)
+      - "5100:5000"   # apps/ui          — Vite welcome SPA            (workbench-salesforce.com)
+      - "5173:5173"   # packages/vscode  — Monaco/VS Code web IDE      (vscode.workbench-salesforce.com)
     env_file:
       - .env
     # PORT here is ONLY consumed by nginx inside the container (the public

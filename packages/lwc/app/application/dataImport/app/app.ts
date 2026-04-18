@@ -1229,7 +1229,7 @@ export default class App extends ToolkitElement {
 
     /** Getters */
     get pageClass() {
-        return super.pageClass + ' slds-p-around_small data-import-root';
+        return super.pageClass + ' data-import-root';
     }
 
     get modeOptions() {

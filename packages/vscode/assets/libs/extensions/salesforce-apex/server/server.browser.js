@@ -65100,7 +65100,17 @@ var CollectingErrorListener = class extends ApexErrorListener {
 function isTriggerUri(uri) {
   return uri.toLowerCase().endsWith(".trigger");
 }
-function validateApex(text, isTrigger) {
+// sf-toolkit-web patch: detect anonymous-apex (.apex) files so we can skip
+// validation for them. The bundled ANTLR `anonymousUnit` rule expects
+// `anonymousMemberDeclaration` shapes (modifiers, class-like members) and does
+// not accept plain top-level statements, so any output here is misleading.
+function isAnonymousApexUri(uri) {
+  return uri.toLowerCase().endsWith(".apex");
+}
+function validateApex(text, isTrigger, isAnonymous) {
+  if (isAnonymous) {
+    return [];
+  }
   const listener = new CollectingErrorListener();
   try {
     const parser = ApexParserFactory.createParser(text, false);
@@ -65152,7 +65162,10 @@ function handleDidOpen(params) {
   const doc = params?.textDocument;
   if (!doc?.uri) return;
   documents.set(doc.uri, { text: doc.text ?? "", version: doc.version ?? 1 });
-  publishDiagnostics(doc.uri, validateApex(doc.text ?? "", isTriggerUri(doc.uri)));
+  publishDiagnostics(
+    doc.uri,
+    validateApex(doc.text ?? "", isTriggerUri(doc.uri), isAnonymousApexUri(doc.uri))
+  );
 }
 function handleDidChange(params) {
   const uri = params?.textDocument?.uri;
@@ -65161,7 +65174,7 @@ function handleDidChange(params) {
   const text = Array.isArray(changes) && changes.length > 0 ? changes[changes.length - 1]?.text : void 0;
   if (typeof text !== "string") return;
   documents.set(uri, { text, version: params?.textDocument?.version ?? 1 });
-  publishDiagnostics(uri, validateApex(text, isTriggerUri(uri)));
+  publishDiagnostics(uri, validateApex(text, isTriggerUri(uri), isAnonymousApexUri(uri)));
 }
 function handleDidClose(params) {
   const uri = params?.textDocument?.uri;
@@ -65178,11 +65191,10 @@ function handleRequest(req) {
             openClose: true,
             change: 1
             // Full
-          },
-          completionProvider: {
-            resolveProvider: false,
-            triggerCharacters: ["."]
           }
+          // sf-toolkit-web patch: drop the completionProvider capability because
+          // the server always answers []; letting VS Code fall back to snippets
+          // and word-based completions yields a better UX.
         },
         serverInfo: { name: "sf-apex-ls-worker", version: "0.1.0" }
       });

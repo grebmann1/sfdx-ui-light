@@ -781,6 +781,41 @@ a:focus-visible {
     justify-content: flex-end;
 }
 
+/* ─── Overlay Callout ─────────────────────────────────────── */
+
+.overlay-callout {
+    margin: 0 0 3rem;
+    padding: 2rem 2.25rem;
+    border-radius: 1.2rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+}
+
+.overlay-callout-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    align-items: center;
+}
+
+.overlay-callout-visual {
+    min-width: 0;
+}
+
+.overlay-callout-body h2 {
+    margin: 0.45rem 0 0.85rem;
+    font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+}
+
+.overlay-callout-text {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 1.02rem;
+    line-height: 1.7;
+}
+
 .pin-toolbar {
     position: relative;
     width: 100%;
@@ -1012,6 +1047,15 @@ a:focus-visible {
 
     .pin-callout-visual {
         justify-content: center;
+    }
+
+    .overlay-callout {
+        padding: 1.75rem 1.5rem;
+    }
+
+    .overlay-callout-inner {
+        grid-template-columns: 1fr;
+        gap: 1.75rem;
     }
 }
 

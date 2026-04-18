@@ -4,7 +4,7 @@ title: Installation
 
 # Installation
 
-Workbench is available as a **Chrome extension** (recommended), a **web app**, and a **desktop app** (in development). For most users, the Chrome extension is the fastest path.
+Workbench is available as a **Chrome extension** (recommended) and a **desktop app** (in development). For most users, the Chrome extension is the fastest path.
 
 ---
 
@@ -18,13 +18,7 @@ No configuration required. OAuth happens through your active browser session.
 
 ---
 
-## Option 2 — Web App
-
-Open **[app.sf-toolkit.com](https://app.sf-toolkit.com)** in any browser, connect your org via OAuth, and start working. No installation needed.
-
----
-
-## Option 3 — Self-hosted / Developer setup
+## Option 2 — Self-hosted / Developer setup
 
 Use this path if you want to run Workbench locally, contribute to the codebase, or host your own instance.
 

@@ -16,12 +16,23 @@ import {
     classifyDeployPath,
     classifyToolingCommandPath,
     DEPLOYABLE_TOOLING_TYPES,
+    deriveWorkspaceRelativePath,
     partitionChangedPathsForDeploy,
     pruneChangedPathsForSuccessfulDeploys,
 } from './deployAndSourceTrackingHelpers';
 
-const AUTO_DEPLOY_KEY = 'sf_ext_autoDeployOnSave';
+const DEPLOY_CONFIG_SECTION = 'salesforceMetadata.deploy';
+const AUTO_DEPLOY_SETTING = 'autoOnSave';
+const PREFER_TOOLING_SETTING = 'preferToolingApi';
+const NOTIFY_ON_SUCCESS_SETTING = 'notifyOnSuccess';
 const METADATA_API_MAP_PATH = '.salesforce/metadata-api-map.json';
+
+const TOOLING_UPGRADABLE_METADATA_TYPES = new Set([
+    'ApexClass',
+    'ApexTrigger',
+    'LightningComponentBundle',
+    'AuraDefinitionBundle',
+]);
 
 type ToolingMapEntry = {
     id?: string;
@@ -46,25 +57,143 @@ export function createDeployAndSourceTracking({
     const toolingMapStore = createToolingMapStore(vscode, state);
     let metadataApiDeployFn: ((conn: unknown, paths: string[], options?: Record<string, unknown>) => Promise<unknown>) | null = null;
     let newBundleDeployFn: ((conn: unknown, paths: string[], options?: Record<string, unknown>) => Promise<unknown>) | null = null;
+    let toolingIdentityResolverFn:
+        | ((conn: unknown, paths: string[]) => Promise<{ resolvedPaths?: string[] }>)
+        | null = null;
 
-    function loadAutoDeployOnSave() {
+    function getDeployConfig() {
+        if (typeof vscode?.workspace?.getConfiguration !== 'function') {
+            return null;
+        }
         try {
-            const raw = localStorage.getItem(AUTO_DEPLOY_KEY);
-            if (raw === null) {
-                return connectionRuntime.isChromeExtensionEnv();
-            }
-            return raw === 'true';
+            return vscode.workspace.getConfiguration(DEPLOY_CONFIG_SECTION);
         } catch {
-            return false;
+            return null;
         }
     }
 
-    function saveAutoDeployOnSave(value) {
-        try {
-            localStorage.setItem(AUTO_DEPLOY_KEY, value ? 'true' : 'false');
-        } catch {
-            // ignore
+    function readBooleanSetting(key: string, fallback: boolean) {
+        const config = getDeployConfig();
+        if (!config || typeof config.get !== 'function') {
+            return fallback;
         }
+        try {
+            const value = config.get(key, fallback);
+            return typeof value === 'boolean' ? value : fallback;
+        } catch {
+            return fallback;
+        }
+    }
+
+    async function writeBooleanSetting(key: string, value: boolean) {
+        const config = getDeployConfig();
+        if (!config || typeof config.update !== 'function') {
+            return;
+        }
+        const target = vscode?.ConfigurationTarget?.Global;
+        try {
+            await config.update(key, !!value, target);
+        } catch {
+            try {
+                await config.update(key, !!value);
+            } catch {
+                // ignore persistence errors; the in-memory value still applies for this session
+            }
+        }
+    }
+
+    function loadAutoDeployOnSave() {
+        return readBooleanSetting(AUTO_DEPLOY_SETTING, true);
+    }
+
+    function saveAutoDeployOnSave(value) {
+        return writeBooleanSetting(AUTO_DEPLOY_SETTING, !!value);
+    }
+
+    function loadPreferToolingApi() {
+        return readBooleanSetting(PREFER_TOOLING_SETTING, true);
+    }
+
+    function savePreferToolingApi(value) {
+        return writeBooleanSetting(PREFER_TOOLING_SETTING, !!value);
+    }
+
+    function loadNotifyOnSuccess() {
+        return readBooleanSetting(NOTIFY_ON_SUCCESS_SETTING, true);
+    }
+
+    function saveNotifyOnSuccess(value) {
+        return writeBooleanSetting(NOTIFY_ON_SUCCESS_SETTING, !!value);
+    }
+
+    function findMemberForPath(
+        filePath: string,
+        membersMap: Record<string, { type?: string; fullName?: string; paths?: string[] }> | null
+    ) {
+        if (!membersMap) return null;
+        for (const entry of Object.values(membersMap)) {
+            if (!entry?.type || !entry?.fullName) continue;
+            const paths = Array.isArray(entry.paths) ? entry.paths : [];
+            if (paths.includes(filePath)) {
+                return { type: entry.type, fullName: entry.fullName };
+            }
+        }
+        return null;
+    }
+
+    async function loadMetadataApiMapMembers() {
+        await loadMetadataApiMapItems();
+        const cached = state?.metadataApiMapCache as
+            | { members?: Record<string, { type?: string; fullName?: string; paths?: string[] }> }
+            | undefined;
+        return cached?.members || {};
+    }
+
+    async function tryUpgradePathsToTooling(paths: string[]) {
+        if (!Array.isArray(paths) || !paths.length) {
+            return { upgradedPaths: [] as string[], remainingPaths: [] as string[] };
+        }
+        if (!loadPreferToolingApi() || typeof toolingIdentityResolverFn !== 'function') {
+            return { upgradedPaths: [], remainingPaths: [...paths] };
+        }
+        const members = await loadMetadataApiMapMembers();
+        const upgradeCandidates: string[] = [];
+        const nonUpgradable: string[] = [];
+        for (const path of paths) {
+            const member = findMemberForPath(path, members);
+            if (!member || !TOOLING_UPGRADABLE_METADATA_TYPES.has(member.type)) {
+                nonUpgradable.push(path);
+                continue;
+            }
+            upgradeCandidates.push(path);
+        }
+        if (!upgradeCandidates.length) {
+            return { upgradedPaths: [], remainingPaths: nonUpgradable };
+        }
+        const conn = connectionRuntime.loadStoredConn();
+        if (!conn.instanceUrl || !conn.accessToken) {
+            return { upgradedPaths: [], remainingPaths: [...paths] };
+        }
+        try {
+            await toolingIdentityResolverFn(conn, upgradeCandidates);
+        } catch {
+            return { upgradedPaths: [], remainingPaths: [...paths] };
+        }
+        const toolingMapItems = await loadToolingMapItems({ force: true });
+        const upgradedPaths: string[] = [];
+        const stillMetadataOnly: string[] = [];
+        for (const path of upgradeCandidates) {
+            const entry = toolingMapItems?.[path];
+            if (entry?.id && entry?.type && !entry?.readOnly) {
+                upgradedPaths.push(path);
+            } else {
+                stillMetadataOnly.push(path);
+            }
+        }
+        return {
+            upgradedPaths,
+            remainingPaths: [...nonUpgradable, ...stillMetadataOnly],
+        };
     }
 
     const autoDeployStatusItem = vscode.window.createStatusBarItem(
@@ -314,7 +443,7 @@ export function createDeployAndSourceTracking({
             } else {
                 await vscode.window.showErrorMessage(message);
             }
-        } else if (showProgress) {
+        } else if (showProgress && loadNotifyOnSuccess()) {
             await vscode.window.showInformationMessage('Deploy complete.');
         }
 
@@ -456,9 +585,26 @@ export function createDeployAndSourceTracking({
 
     const changedPaths = new Set<string>();
     const deployInFlight = new Set<string>();
-    const deployPending = new Map<string, { uri?: { path?: string } }>();
+    const deployPending = new Map<
+        string,
+        { uri?: { path?: string }; text?: string }
+    >();
     let deployTimer = null;
     let autoDeployUiLock = false;
+
+    function logAutoDeploySkip(path: string | undefined, reason: string) {
+        if (!path) return;
+        try {
+            context.logLines([
+                '',
+                `=== Auto deploy skip (${new Date().toLocaleString()}) ===`,
+                `Path: ${path}`,
+                `Reason: ${reason || 'unknown'}`,
+            ]);
+        } catch {
+            // ignore
+        }
+    }
 
     function setAutoDeployBusyState(isBusy, options: { pendingCount?: number } = {}) {
         const pendingCount = Number(options?.pendingCount || 0);
@@ -487,22 +633,29 @@ export function createDeployAndSourceTracking({
         deployPending.clear();
         if (!docs.length) return;
 
-        const paths = [];
-        for (const doc of docs) {
-            const path = doc?.uri?.path;
+        const paths: string[] = [];
+        const textOverrides: Record<string, string> = {};
+        for (const entry of docs) {
+            const path = entry?.uri?.path;
             if (!path) continue;
             if (deployInFlight.has(path)) {
-                deployPending.set(path, doc);
+                deployPending.set(path, entry);
                 continue;
             }
             deployInFlight.add(path);
             paths.push(path);
+            if (typeof entry?.text === 'string') {
+                textOverrides[path] = entry.text;
+            }
         }
 
         if (!paths.length) return;
         try {
             setAutoDeployBusyState(true, { pendingCount: deployPending.size });
-            const summary = await deployPaths(paths, { showProgress: false });
+            const summary = await deployPaths(paths, {
+                showProgress: false,
+                textOverrides,
+            });
             const failures = summary?.failures || [];
             if (failures.length) {
                 const first = failures[0];
@@ -546,10 +699,19 @@ export function createDeployAndSourceTracking({
         }
     }
 
-    function enqueueAutoDeploy(doc) {
-        const path = doc?.uri?.path;
+    function enqueueAutoDeploy(
+        doc,
+        options: { path?: string; text?: string } = {}
+    ) {
+        const path = options?.path || doc?.uri?.path;
         if (!path) return;
-        deployPending.set(path, doc);
+        const entry: { uri: { path: string }; text?: string } = {
+            uri: { path },
+        };
+        if (typeof options?.text === 'string') {
+            entry.text = options.text;
+        }
+        deployPending.set(path, entry);
         if (deployTimer) clearTimeout(deployTimer);
         if (!autoDeployUiLock && loadAutoDeployOnSave()) {
             try {
@@ -801,37 +963,106 @@ export function createDeployAndSourceTracking({
                     }
                     try {
                         if (!loadAutoDeployOnSave()) return;
-                        const conn = connectionRuntime.loadStoredConn();
-                        if (!conn.instanceUrl || !conn.accessToken) return;
                         const path = doc?.uri?.path;
                         if (!path) return;
-                        const toolingMapItems = await loadToolingMapItems();
-                        if (toolingMapItems?.[path]) {
-                            enqueueAutoDeploy(doc);
+                        const conn = connectionRuntime.loadStoredConn();
+                        if (!conn.instanceUrl || !conn.accessToken) {
+                            logAutoDeploySkip(path, 'noConnection');
                             return;
                         }
-                        if (typeof metadataApiDeployFn === 'function') {
-                            const metaApiItems = await loadMetadataApiMapItems();
-                            if (metaApiItems?.[path]) {
-                                void (async () => {
-                                    try {
-                                        await metadataApiDeployFn(conn, [path], {
-                                            showProgress: false,
-                                        });
-                                    } catch (error) {
-                                        try {
-                                            await vscode.window.showErrorMessage(
-                                                `Auto deploy failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-                                            );
-                                        } catch {
-                                            // ignore
-                                        }
-                                    }
-                                })();
-                            }
+
+                        const resolution = await resolveCurrentDeployPath(path);
+                        const deployPath = resolution?.path || path;
+                        const liveText = doc?.getText?.() ?? undefined;
+
+                        if (resolution?.status === 'deployable') {
+                            enqueueAutoDeploy(doc, {
+                                path: deployPath,
+                                text: liveText,
+                            });
+                            return;
                         }
-                    } catch {
-                        // ignore
+
+                        if (
+                            resolution?.status === 'unsupported' &&
+                            resolution?.reason === 'metadataApi' &&
+                            typeof metadataApiDeployFn === 'function'
+                        ) {
+                            if (loadPreferToolingApi()) {
+                                try {
+                                    const { upgradedPaths } =
+                                        await tryUpgradePathsToTooling([deployPath]);
+                                    if (upgradedPaths.includes(deployPath)) {
+                                        enqueueAutoDeploy(doc, {
+                                            path: deployPath,
+                                            text: liveText,
+                                        });
+                                        return;
+                                    }
+                                } catch {
+                                    // fall through to metadata API deploy
+                                }
+                            }
+                            void (async () => {
+                                try {
+                                    await metadataApiDeployFn(conn, [deployPath], {
+                                        showProgress: false,
+                                    });
+                                } catch (error) {
+                                    const message =
+                                        error instanceof Error
+                                            ? error.message
+                                            : 'Unknown error';
+                                    logAutoDeploySkip(
+                                        deployPath,
+                                        `metadataApiError: ${message}`
+                                    );
+                                    try {
+                                        await vscode.window.showErrorMessage(
+                                            `Auto deploy failed: ${message}`
+                                        );
+                                    } catch {
+                                        // ignore
+                                    }
+                                }
+                            })();
+                            return;
+                        }
+
+                        const canNewBundle =
+                            resolution?.status === 'missing' &&
+                            typeof newBundleDeployFn === 'function' &&
+                            Boolean(deriveWorkspaceRelativePath(deployPath));
+                        if (canNewBundle) {
+                            void (async () => {
+                                try {
+                                    await newBundleDeployFn(conn, [deployPath], {
+                                        showProgress: false,
+                                    });
+                                } catch (error) {
+                                    const message =
+                                        error instanceof Error
+                                            ? error.message
+                                            : 'Unknown error';
+                                    logAutoDeploySkip(
+                                        deployPath,
+                                        `newBundleError: ${message}`
+                                    );
+                                }
+                            })();
+                            return;
+                        }
+
+                        logAutoDeploySkip(
+                            deployPath,
+                            resolution?.reason ||
+                                resolution?.status ||
+                                'unresolved'
+                        );
+                    } catch (error) {
+                        const message =
+                            error instanceof Error ? error.message : 'Unknown error';
+                        logAutoDeploySkip(doc?.uri?.path, `handlerError: ${message}`);
                     }
                 })
             );
@@ -918,12 +1149,26 @@ export function createDeployAndSourceTracking({
                         );
                         return;
                     }
+                    if (loadPreferToolingApi()) {
+                        const { upgradedPaths } = await tryUpgradePathsToTooling([path]);
+                        if (upgradedPaths.includes(path)) {
+                            const doc = vscode.window?.activeTextEditor?.document;
+                            const summary = await deployPaths([path], {
+                                showProgress: true,
+                                textOverrides: { [path]: doc?.getText?.() ?? '' },
+                                title: 'Deploying current file (Tooling API)...',
+                            });
+                            if (summary && !summary.failures?.length) return;
+                        }
+                    }
                     try {
                         await metadataApiDeployFn(conn, [path], {
                             showProgress: true,
                             title: 'Deploying current file (Metadata API)...',
                         });
-                        await vscode.window.showInformationMessage('Deploy succeeded.');
+                        if (loadNotifyOnSuccess()) {
+                            await vscode.window.showInformationMessage('Deploy succeeded.');
+                        }
                     } catch (error) {
                         await vscode.window.showErrorMessage(
                             error instanceof Error
@@ -1173,8 +1418,33 @@ export function createDeployAndSourceTracking({
                         );
                         return;
                     }
+                    let metaApiFallbackPaths = selectedMetaApiPaths;
+                    if (loadPreferToolingApi()) {
+                        const { upgradedPaths, remainingPaths } =
+                            await tryUpgradePathsToTooling(selectedMetaApiPaths);
+                        if (upgradedPaths.length) {
+                            const toolingSummary = await deployPaths(upgradedPaths, {
+                                showProgress: true,
+                                title: 'Deploying changed files (Tooling API)...',
+                            });
+                            const failedPaths = new Set(
+                                (toolingSummary?.failures || [])
+                                    .map(failure => failure?.path)
+                                    .filter(Boolean)
+                            );
+                            metaApiFallbackPaths = [
+                                ...remainingPaths,
+                                ...upgradedPaths.filter(path => failedPaths.has(path)),
+                            ];
+                        } else {
+                            metaApiFallbackPaths = remainingPaths;
+                        }
+                    }
+                    if (!metaApiFallbackPaths.length) {
+                        return;
+                    }
                     try {
-                        await metadataApiDeployFn(conn, selectedMetaApiPaths, {
+                        await metadataApiDeployFn(conn, metaApiFallbackPaths, {
                             showProgress: true,
                             title: 'Deploying changed files (Metadata API)...',
                         });
@@ -1193,10 +1463,26 @@ export function createDeployAndSourceTracking({
 
             register('salesforceMetadata.toggleAutoDeploy', async () => {
                 const next = !loadAutoDeployOnSave();
-                saveAutoDeployOnSave(next);
+                await saveAutoDeployOnSave(next);
                 setAutoDeployStatus();
                 await vscode.window.showInformationMessage(
                     `Auto deploy on save: ${next ? 'ON' : 'OFF'}.`
+                );
+            });
+
+            register('salesforceMetadata.togglePreferToolingApi', async () => {
+                const next = !loadPreferToolingApi();
+                await savePreferToolingApi(next);
+                await vscode.window.showInformationMessage(
+                    `Prefer Tooling API for deploys: ${next ? 'ON' : 'OFF'}.`
+                );
+            });
+
+            register('salesforceMetadata.toggleDeployNotifyOnSuccess', async () => {
+                const next = !loadNotifyOnSuccess();
+                await saveNotifyOnSuccess(next);
+                await vscode.window.showInformationMessage(
+                    `Deploy success notifications: ${next ? 'ON' : 'OFF'}.`
                 );
             });
 
@@ -1438,9 +1724,15 @@ export function createDeployAndSourceTracking({
         deployPaths,
         fetchPathFromSalesforce,
         invalidateToolingMap,
+        loadAutoDeployOnSave,
+        loadNotifyOnSuccess,
+        loadPreferToolingApi,
         loadToolingMapItems,
         resolveCurrentToolingPath,
         registerCommandGroups,
+        saveAutoDeployOnSave,
+        saveNotifyOnSuccess,
+        savePreferToolingApi,
         setLwcDocumentTools(next) {
             const tools = next || {};
             if (typeof tools.isLwcDoc === 'function') {
@@ -1458,6 +1750,11 @@ export function createDeployAndSourceTracking({
         setNewBundleDeploy(fn) {
             if (typeof fn === 'function') {
                 newBundleDeployFn = fn;
+            }
+        },
+        setToolingIdentityResolver(fn) {
+            if (typeof fn === 'function') {
+                toolingIdentityResolverFn = fn;
             }
         },
         updateSourceTrackingForPaths,

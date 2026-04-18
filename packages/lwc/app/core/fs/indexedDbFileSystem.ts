@@ -475,6 +475,12 @@ export class IndexedDbFileSystem {
     async writeFile(path, content, options?: WriteOptions | FileEncoding) {
         await this.ready;
         const normalized = normalizeAbsolutePath(path);
+        // Auto-create parent directories so that redirect operators (e.g. `> /a/b/c.json`)
+        // work without requiring an explicit `mkdir -p` first.
+        const parent = dirname(normalized);
+        if (parent && parent !== ROOT_PATH) {
+            await this.mkdir(parent, { recursive: true }).catch(() => {});
+        }
         return this.runMutation(async () => {
             await this.writeFileInternal(normalized, content, {
                 mode: undefined,

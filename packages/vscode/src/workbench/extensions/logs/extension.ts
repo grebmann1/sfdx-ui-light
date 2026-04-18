@@ -1,8 +1,28 @@
 import { buildSalesforceExtensionConfig } from '../core/extensionManifest';
-import { registerSalesforceExtension, type VscodeBundle } from '../core/extensionRegistration';
+import {
+    registerCommand,
+    registerSalesforceExtension,
+    type VscodeBundle,
+} from '../core/extensionRegistration';
 import type { RegisterContext } from '../../orchestration/extensionRegistryRuntime';
 import { resolveCoreServices, type CoreServices } from '../core/coreServices';
 import { registerTraceFlagsAndLogs } from '../metadata/commands/traceFlagsAndLogs';
+import { registerSalesforceLogsPanelProvider } from './salesforceLogsPanel';
+
+const SVG_MIME_TYPE = 'image/svg+xml';
+const LOGS_PANEL_ICON_PATH = '/workspace/vscode/salesforce-logs-panel-icon.svg';
+const OPEN_LOGS_PANEL_COMMAND = 'salesforceMetadata.logs.openPanel';
+
+const LOGS_INLINE_ASSETS = [
+    {
+        targetPath: LOGS_PANEL_ICON_PATH,
+        mimeType: SVG_MIME_TYPE,
+        content: `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <path fill="#000" d="M11 2a4 4 0 0 0-3.87 3H6a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3V8a3 3 0 0 0-3-3h-1.13A4 4 0 0 0 13 2h-2zm0 2h2a2 2 0 0 1 2 2H9a2 2 0 0 1 2-2zM7 11h10v2H7v-2zm0 4h7v2H7v-2z"/>
+</svg>`,
+    },
+];
 
 function buildLogsExtensionConfig() {
     return buildSalesforceExtensionConfig({
@@ -11,6 +31,24 @@ function buildLogsExtensionConfig() {
         description:
             'Manage Salesforce TraceFlag and DebugLevel records, browse recent ApexLogs, and auto-collect new debug logs.',
         contributes: {
+            viewsContainers: {
+                activitybar: [
+                    {
+                        id: 'salesforceLogsPanel',
+                        title: 'Salesforce Logs',
+                        icon: LOGS_PANEL_ICON_PATH,
+                    },
+                ],
+            },
+            views: {
+                salesforceLogsPanel: [
+                    {
+                        id: 'salesforceMetadata.salesforceLogsPanel',
+                        name: 'Salesforce Logs',
+                        type: 'webview',
+                    },
+                ],
+            },
             commands: [
                 {
                     command: 'salesforceMetadata.traceFlags.open',
@@ -52,6 +90,10 @@ function buildLogsExtensionConfig() {
                     command: 'salesforceMetadata.logs.autoCollect.stop',
                     title: 'Salesforce Logs: Stop Auto-Collect',
                 },
+                {
+                    command: OPEN_LOGS_PANEL_COMMAND,
+                    title: 'Salesforce Logs: Open Panel',
+                },
             ],
             menus: {
                 commandPalette: [
@@ -62,6 +104,7 @@ function buildLogsExtensionConfig() {
                     { command: 'salesforceMetadata.traceFlags.createLogLevel' },
                     { command: 'salesforceMetadata.logs.autoCollect.start' },
                     { command: 'salesforceMetadata.logs.autoCollect.stop' },
+                    { command: OPEN_LOGS_PANEL_COMMAND },
                     // CodeLens-only targets: hide from the palette.
                     { command: 'salesforceMetadata.traceFlags.deleteForId', when: 'false' },
                     { command: 'salesforceMetadata.traceFlags.changeDebugLevel', when: 'false' },
@@ -81,7 +124,10 @@ export async function register(
 ) {
     return registerSalesforceExtension(
         vscodeBundle,
-        { config: buildLogsExtensionConfig() },
+        {
+            config: buildLogsExtensionConfig(),
+            inlineAssets: LOGS_INLINE_ASSETS,
+        },
         async () => {
             const core = await resolveCoreServices(coreServices, vscodeBundle);
             if (!core?.connection?.runtime || !core?.workspace?.context || !core.features) {
@@ -91,7 +137,44 @@ export async function register(
             const context = core.workspace.context;
 
             await core.features.activateOnce?.('salesforce-logs', async () => {
-                registerTraceFlagsAndLogs({ connectionRuntime, context });
+                const { services, autoCollect } = registerTraceFlagsAndLogs({
+                    connectionRuntime,
+                    context,
+                });
+
+                const vscode = context.vscode as {
+                    commands?: {
+                        registerCommand?: (
+                            command: string,
+                            handler: (...args: unknown[]) => unknown
+                        ) => unknown;
+                        executeCommand?: (command: string, ...args: unknown[]) => Promise<unknown>;
+                    };
+                    window?: { showInformationMessage?: (message: string) => Promise<unknown> };
+                };
+                registerCommand(
+                    context as { addDisposable: (value: unknown) => unknown },
+                    vscode,
+                    OPEN_LOGS_PANEL_COMMAND,
+                    async () => {
+                        try {
+                            await vscode.commands?.executeCommand?.(
+                                'workbench.view.extension.salesforceLogsPanel'
+                            );
+                        } catch {
+                            await vscode.window?.showInformationMessage?.(
+                                'Open the Salesforce Logs view from the activity bar if it is not visible yet.'
+                            );
+                        }
+                    }
+                );
+
+                registerSalesforceLogsPanelProvider({
+                    connectionRuntime,
+                    context,
+                    services,
+                    autoCollect,
+                });
             });
         }
     );

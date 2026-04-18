@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { SiteShell } from './SiteChrome';
+import screenshotOverlay from './assets/screenshot-overlay.png';
+import { FakeBrowser, SiteShell } from './SiteChrome';
 
 const DEFAULT_WORKBENCH_APP_URL =
     'chrome-extension://dncmipbpdapfjancbhmbodlhllapmagf/views/app.html';
@@ -223,6 +224,24 @@ export default function Welcome() {
                 </div>
             </section>
 
+            <section className="overlay-callout" aria-labelledby="overlay-title">
+                <div className="overlay-callout-inner">
+                    <div className="overlay-callout-visual">
+                        <FakeBrowser url="yourorg.salesforce.com" screenshot={screenshotOverlay} />
+                    </div>
+                    <div className="overlay-callout-body">
+                        <p className="section-kicker">Step 2 · Explore the overlay</p>
+                        <h2 id="overlay-title">A panel right inside Salesforce</h2>
+                        <p className="overlay-callout-text">
+                            The Workbench overlay appears on every Salesforce page automatically.
+                            Click the button at the edge of the screen to open it — inspect org info,
+                            browse objects, jump to Setup links, and more without leaving your
+                            current page.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
             <section
                 ref={stepsRef}
                 className={`welcome-steps${stepsInView ? ' is-visible' : ''}`}
@@ -236,7 +255,7 @@ export default function Welcome() {
                     {steps.map((step, i) => (
                         <article key={step.title} className="step-card">
                             <div className="step-card-header">
-                                <span className="step-badge">{i + 2}</span>
+                                <span className="step-badge">{i + 3}</span>
                                 <span className="step-icon">{step.icon}</span>
                             </div>
                             <h3>{step.title}</h3>

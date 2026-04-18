@@ -9,6 +9,8 @@
     width: 100%;
     display: flex;
     flex-direction: column;
+    max-width: 100%;
+    min-width: 0;
 }
 .slds-tree__group-header {
     padding: 0.5rem;

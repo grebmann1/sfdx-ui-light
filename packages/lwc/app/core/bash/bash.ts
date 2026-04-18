@@ -32,10 +32,21 @@ export function createBashInstance(options = {}) {
         env = {},
     } = options;
 
+    // just-bash resolves `2>&1` by reading its internal /proc/self/fd/1 → "/dev/stdout",
+    // then writes stderr via our fs to "/dev/stdout". Without /dev in the virtual fs,
+    // the parent-directory assertion throws ENOENT. Seed empty device files so all
+    // writes to /dev/null|stdout|stderr|stdin succeed silently.
+    const DEV_DEVICE_FILES = {
+        '/dev/null': '',
+        '/dev/stdin': '',
+        '/dev/stdout': '',
+        '/dev/stderr': '',
+    };
+
     const fs = getIndexedDbFileSystem({
         ...(indexedDbName ? { dbName: indexedDbName } : {}),
-        initialFiles: extraFiles,
-        ensureDirectories: ['/workspace', '/workspace/skills'],
+        initialFiles: { ...DEV_DEVICE_FILES, ...extraFiles },
+        ensureDirectories: ['/workspace', '/workspace/skills', '/dev'],
     });
 
     const bashEnv = new Bash({

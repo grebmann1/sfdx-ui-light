@@ -288,9 +288,18 @@ export function createMetadataRetrieveRuntime({
         return { writtenPaths };
     }
 
-    async function retrieveToolingTypes(conn, typesMap, { title }: { title?: string } = {}) {
+    async function retrieveToolingTypes(
+        conn,
+        typesMap,
+        {
+            title,
+            writeSources = true,
+            showProgress = true,
+        }: { title?: string; writeSources?: boolean; showProgress?: boolean } = {}
+    ) {
         const toolingMap = await toolingMapStore.loadJson();
         const pulledPaths = [];
+        const resolvedPaths = [];
 
         const ensureDefaultDirs = async () => {
             await ensureDir(vscode, getWorkspaceUri(vscode, 'force-app/main/default/classes'));
@@ -302,10 +311,11 @@ export function createMetadataRetrieveRuntime({
 
         const pullApex = async (client, sobject, dir, ext, members) => {
             const { all, members: names } = membersOrAll(members);
+            const bodyField = writeSources ? ', Body' : '';
             const soql =
                 all || !names.length
-                    ? `SELECT Id, Name, Body FROM ${sobject} ORDER BY Name`
-                    : `SELECT Id, Name, Body FROM ${sobject} WHERE Name IN (${names.map(name => `'${escapeSoqlLiteral(name)}'`).join(',')}) ORDER BY Name`;
+                    ? `SELECT Id, Name${bodyField} FROM ${sobject} ORDER BY Name`
+                    : `SELECT Id, Name${bodyField} FROM ${sobject} WHERE Name IN (${names.map(name => `'${escapeSoqlLiteral(name)}'`).join(',')}) ORDER BY Name`;
             const rows = await client.toolingQueryAll(soql);
             for (const row of rows || []) {
                 if (!row?.Id || !row?.Name) {
@@ -315,9 +325,12 @@ export function createMetadataRetrieveRuntime({
                     vscode,
                     `force-app/main/default/${dir}/${safeSeg(row.Name)}.${ext}`
                 );
-                // eslint-disable-next-line no-await-in-loop
-                await writeTextFile(vscode, uri, row.Body || '');
-                pulledPaths.push(uri.path);
+                if (writeSources) {
+                    // eslint-disable-next-line no-await-in-loop
+                    await writeTextFile(vscode, uri, row.Body || '');
+                    pulledPaths.push(uri.path);
+                }
+                resolvedPaths.push(uri.path);
                 toolingMap.items[uri.path] = { type: sobject, id: row.Id };
             }
         };
@@ -338,14 +351,22 @@ export function createMetadataRetrieveRuntime({
                     vscode,
                     `force-app/main/default/lwc/${bundleName}`
                 );
-                // eslint-disable-next-line no-await-in-loop
-                await ensureDir(vscode, bundlePath);
+                if (writeSources) {
+                    // eslint-disable-next-line no-await-in-loop
+                    await ensureDir(vscode, bundlePath);
+                }
+                const resourceFields = writeSources
+                    ? 'Id, FilePath, Format, Source'
+                    : 'Id, FilePath, Format';
                 // eslint-disable-next-line no-await-in-loop
                 const resources = await client.toolingQueryAll(
-                    `SELECT Id, FilePath, Format, Source FROM LightningComponentResource WHERE LightningComponentBundleId='${escapeSoqlLiteral(bundle.Id)}' ORDER BY FilePath`
+                    `SELECT ${resourceFields} FROM LightningComponentResource WHERE LightningComponentBundleId='${escapeSoqlLiteral(bundle.Id)}' ORDER BY FilePath`
                 );
                 for (const resource of resources || []) {
-                    if (!resource?.Id || !resource?.Source) {
+                    if (!resource?.Id) {
+                        continue;
+                    }
+                    if (writeSources && !resource?.Source) {
                         continue;
                     }
                     const relativePath = normalizeLwcResourceRelPath(
@@ -358,9 +379,12 @@ export function createMetadataRetrieveRuntime({
                         .map(safeSeg)
                         .filter(part => part && part !== '.' && part !== '..');
                     const target = vscode.Uri.joinPath(bundlePath, ...parts);
-                    // eslint-disable-next-line no-await-in-loop
-                    await writeTextFile(vscode, target, resource.Source || '');
-                    pulledPaths.push(target.path);
+                    if (writeSources) {
+                        // eslint-disable-next-line no-await-in-loop
+                        await writeTextFile(vscode, target, resource.Source || '');
+                        pulledPaths.push(target.path);
+                    }
+                    resolvedPaths.push(target.path);
                     toolingMap.items[target.path] = {
                         type: 'LightningComponentResource',
                         id: resource.Id,
@@ -387,15 +411,23 @@ export function createMetadataRetrieveRuntime({
                     vscode,
                     `force-app/main/default/aura/${bundleName}`
                 );
-                // eslint-disable-next-line no-await-in-loop
-                await ensureDir(vscode, bundlePath);
+                if (writeSources) {
+                    // eslint-disable-next-line no-await-in-loop
+                    await ensureDir(vscode, bundlePath);
+                }
+                const definitionFields = writeSources
+                    ? 'Id, DefType, Format, Source'
+                    : 'Id, DefType, Format';
                 // eslint-disable-next-line no-await-in-loop
                 const defs = await client.toolingQueryAll(
-                    `SELECT Id, DefType, Format, Source FROM AuraDefinition WHERE AuraDefinitionBundleId='${escapeSoqlLiteral(bundle.Id)}' ORDER BY DefType`
+                    `SELECT ${definitionFields} FROM AuraDefinition WHERE AuraDefinitionBundleId='${escapeSoqlLiteral(bundle.Id)}' ORDER BY DefType`
                 );
                 const used = new Set();
                 for (const definition of defs || []) {
-                    if (!definition?.Id || !definition?.Source) {
+                    if (!definition?.Id) {
+                        continue;
+                    }
+                    if (writeSources && !definition?.Source) {
                         continue;
                     }
                     let fileName = safeSeg(
@@ -406,9 +438,12 @@ export function createMetadataRetrieveRuntime({
                     }
                     used.add(fileName);
                     const target = vscode.Uri.joinPath(bundlePath, fileName);
-                    // eslint-disable-next-line no-await-in-loop
-                    await writeTextFile(vscode, target, definition.Source || '');
-                    pulledPaths.push(target.path);
+                    if (writeSources) {
+                        // eslint-disable-next-line no-await-in-loop
+                        await writeTextFile(vscode, target, definition.Source || '');
+                        pulledPaths.push(target.path);
+                    }
+                    resolvedPaths.push(target.path);
                     toolingMap.items[target.path] = {
                         type: 'AuraDefinition',
                         id: definition.Id,
@@ -419,51 +454,67 @@ export function createMetadataRetrieveRuntime({
             }
         };
 
-        await ensureDefaultDirs();
-        await vscode.window.withProgress(
-            {
-                location: vscode.ProgressLocation.Notification,
-                title: title || 'Retrieving manifest contents...',
-                cancellable: false,
-            },
-            async () =>
-                await connectionRuntime.withToolingClientAuthed(conn, async client => {
-                    if (typesMap.has('ApexClass')) {
-                        await pullApex(
-                            client,
-                            'ApexClass',
-                            'classes',
-                            'cls',
-                            typesMap.get('ApexClass')
-                        );
-                    }
-                    if (typesMap.has('ApexTrigger')) {
-                        await pullApex(
-                            client,
-                            'ApexTrigger',
-                            'triggers',
-                            'trigger',
-                            typesMap.get('ApexTrigger')
-                        );
-                    }
-                    if (typesMap.has('LightningComponentBundle')) {
-                        await pullLwcBundles(client, typesMap.get('LightningComponentBundle'));
-                    }
-                    if (typesMap.has('AuraDefinitionBundle')) {
-                        await pullAuraBundles(client, typesMap.get('AuraDefinitionBundle'));
-                    }
-                })
-        );
+        if (writeSources) {
+            await ensureDefaultDirs();
+        }
+        const runQueries = async () =>
+            await connectionRuntime.withToolingClientAuthed(conn, async client => {
+                if (typesMap.has('ApexClass')) {
+                    await pullApex(
+                        client,
+                        'ApexClass',
+                        'classes',
+                        'cls',
+                        typesMap.get('ApexClass')
+                    );
+                }
+                if (typesMap.has('ApexTrigger')) {
+                    await pullApex(
+                        client,
+                        'ApexTrigger',
+                        'triggers',
+                        'trigger',
+                        typesMap.get('ApexTrigger')
+                    );
+                }
+                if (typesMap.has('LightningComponentBundle')) {
+                    await pullLwcBundles(client, typesMap.get('LightningComponentBundle'));
+                }
+                if (typesMap.has('AuraDefinitionBundle')) {
+                    await pullAuraBundles(client, typesMap.get('AuraDefinitionBundle'));
+                }
+            });
+
+        if (showProgress) {
+            await vscode.window.withProgress(
+                {
+                    location: vscode.ProgressLocation.Notification,
+                    title: title || 'Retrieving manifest contents...',
+                    cancellable: false,
+                },
+                async () => await runQueries()
+            );
+        } else {
+            await runQueries();
+        }
 
         await toolingMapStore.saveJson(toolingMap);
         if (typeof updateSourceTrackingForPaths === 'function' && pulledPaths.length) {
             await updateSourceTrackingForPaths(pulledPaths);
         }
-        return { writtenPaths: pulledPaths };
+        return { writtenPaths: pulledPaths, resolvedPaths };
+    }
+
+    async function resolveToolingIdentitiesForTypes(conn, typesMap) {
+        return await retrieveToolingTypes(conn, typesMap, {
+            writeSources: false,
+            showProgress: false,
+        });
     }
 
     return {
         loadMetadataApiMapJson: async () => await loadMetadataApiMapJson(vscode, state),
+        resolveToolingIdentitiesForTypes,
         retrieveToolingTypes,
         retrieveViaMetadataApi,
         saveMetadataApiMapJson: async value => await saveMetadataApiMapJson(vscode, state, value),

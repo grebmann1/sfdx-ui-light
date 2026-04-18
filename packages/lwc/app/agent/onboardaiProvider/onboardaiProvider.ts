@@ -6,10 +6,10 @@ import {
 } from 'shared/cacheManager';
 import { store, APPLICATION } from 'core/store';
 
-const EMPLOYEE_AI_SETUP_URL = 'https://example.com/salesforce-employee-ai-setup';
+const EMPLOYEE_AI_SETUP_URL = 'https://eng-ai-model-gateway.sfproxy.devx-preprod.aws-esvc1-useast2.aws.sfdc.cl';
 const EMPLOYEE_OPENAI_PROXY_URL =
-    'https://eng-ai-model-gateway.sfproxy.devx-preprod.aws-esvc1-useast2.aws.sfdc.cl';
-const KEY_PATTERN = /^sk-[A-Za-z0-9]+$/;
+    'https://eng-ai-model-gateway.sfproxy.devx-preprod.aws-esvc1-useast2.aws.sfdc.cl/v1';
+const EXTERNAL_KEY_PATTERN = /^sk-[A-Za-z0-9]+$/;
 
 export default class OnboardaiProvider extends LightningElement {
     selectedAudience = null;
@@ -49,11 +49,11 @@ export default class OnboardaiProvider extends LightningElement {
     };
 
     get isEmployeeKeyValid() {
-        return KEY_PATTERN.test(this.employeeKey);
+        return this.employeeKey.length > 0;
     }
 
     get isExternalKeyValid() {
-        return KEY_PATTERN.test(this.externalKey);
+        return EXTERNAL_KEY_PATTERN.test(this.externalKey);
     }
 
     handleInstallEmployeeKey = async () => {

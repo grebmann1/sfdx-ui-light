@@ -1,6 +1,6 @@
 ---
-
-## title: VS Code Extension Parity
+title: VS Code Extension Parity
+---
 
 # VS Code Extension Parity
 

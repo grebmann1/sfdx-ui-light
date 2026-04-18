@@ -92,7 +92,7 @@ const injectCSS = () => {
     try {
         safeAddStylesheet(
             'sf-toolkit-slds-css',
-            chrome.runtime.getURL('/styles/slds-sf-toolkit.css')
+            chrome.runtime.getURL('/styles/slds-workbench-salesforce.css')
         );
         safeAddStylesheet(
             'sf-toolkit-extension-css',

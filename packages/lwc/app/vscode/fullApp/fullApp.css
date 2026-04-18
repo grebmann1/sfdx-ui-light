@@ -53,6 +53,27 @@
     align-items: flex-start;
 }
 
+.orgBannerTitleRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.betaBadge {
+    display: inline-block;
+    padding: 0.1rem 0.45rem;
+    border-radius: 0.4rem;
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 200, 160, 0.95);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transform: rotate(-8deg);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 200, 160, 0.3);
+}
+
 .orgBannerTitle {
     display: block;
     margin-bottom: 1px;

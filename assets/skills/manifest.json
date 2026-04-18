@@ -9,6 +9,7 @@
     "salesforce/api.SKILL.md",
     "salesforce/connections.SKILL.md",
     "salesforce/metadata.SKILL.md",
+    "salesforce/sf-api-request.SKILL.md",
     "salesforce/soql.SKILL.md"
   ]
 }

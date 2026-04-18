@@ -6,9 +6,8 @@ import screenshotSoql from './assets/screenshot-soql.gif';
 import screenshotMetadata from './assets/screenshot-metadata.gif';
 import screenshotAgent from './assets/screenshot-agent.gif';
 import {
-    APP_URL,
     CHROME_STORE_URL,
-    DOCS_URL,
+    FakeBrowser,
     SiteShell,
 } from './SiteChrome';
 
@@ -34,48 +33,6 @@ function useInView<T extends Element>(threshold = 0.1) {
     return [ref, inView] as const;
 }
 
-function FakeBrowser({ url = 'app.workbench.io', screenshot }: { url?: string; screenshot?: string }) {
-    return (
-        <div className="fake-browser">
-            <div className="fake-browser-bar">
-                <div className="fake-browser-dots">
-                    <span className="dot dot-red" />
-                    <span className="dot dot-yellow" />
-                    <span className="dot dot-green" />
-                </div>
-                <div className="fake-browser-nav">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <polyline points="15 18 9 12 15 6" />
-                    </svg>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <polyline points="9 18 15 12 9 6" />
-                    </svg>
-                </div>
-                <div className="fake-browser-url">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                    </svg>
-                    <span>{url}</span>
-                </div>
-            </div>
-            <div className={`fake-browser-content${screenshot ? ' fake-browser-content--screenshot' : ''}`}>
-                {screenshot ? (
-                    <img src={screenshot} alt="" className="fake-browser-screenshot" />
-                ) : (
-                    <div className="fake-browser-placeholder">
-                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                            <rect x="3" y="3" width="18" height="18" rx="2" />
-                            <path d="M3 9h18" />
-                            <path d="M9 21V9" />
-                        </svg>
-                        <span>Screenshot coming soon</span>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-}
 
 const featureSections = [
     {
@@ -143,22 +100,6 @@ const platforms = [
         cta: 'Add to Chrome',
     },
     {
-        name: 'Web App',
-        description: 'No installation needed. Open the app in any browser and connect your org.',
-        badge: null,
-        icon: (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0" />
-                <path d="M3.6 9h16.8" />
-                <path d="M3.6 15h16.8" />
-                <path d="M11.5 3a17 17 0 0 0 0 18" />
-                <path d="M12.5 3a17 17 0 0 1 0 18" />
-            </svg>
-        ),
-        href: APP_URL,
-        cta: 'Open Web App',
-    },
-    {
         name: 'Desktop',
         description: 'A native desktop app for macOS and Windows. Full toolkit without a browser.',
         badge: 'In development',
@@ -218,7 +159,6 @@ export default function App() {
                         </p>
                         <div className="hero-actions">
                             <a className="button" href={CHROME_STORE_URL} target="_blank" rel="noopener noreferrer">Add Web Extension</a>
-                            <a className="button button-ghost" href={APP_URL}>Launch Web App</a>
                         </div>
                     </div>
                     <div className="hero-browser">
@@ -268,7 +208,6 @@ export default function App() {
                     </p>
                     <div className="hero-actions">
                         <a className="button" href={CHROME_STORE_URL} target="_blank" rel="noopener noreferrer">Add Web Extension</a>
-                        <a className="button button-ghost" href={APP_URL}>Launch Web App</a>
                     </div>
                 </section>
         </SiteShell>
