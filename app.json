@@ -1,0 +1,80 @@
+{
+  "name": "SF Toolkit Web",
+  "description": "Salesforce Developer Toolkit — VS Code web IDE, documentation search, and Chrome extension companion server.",
+  "stack": "container",
+  "env": {
+    "NODE_ENV": {
+      "description": "Runtime environment.",
+      "value": "production"
+    },
+    "CLIENT_ID": {
+      "description": "Salesforce Connected App OAuth2 client ID.",
+      "required": true
+    },
+    "CLIENT_SECRET": {
+      "description": "Salesforce Connected App OAuth2 client secret.",
+      "required": true
+    },
+    "CHROME_ID": {
+      "description": "Chrome Web Store extension ID used in the OAuth callback redirect.",
+      "required": false,
+      "value": "dncmipbpdapfjancbhmbodlhllapmagf"
+    },
+    "GOOGLE_CLIENT_ID_WEB": {
+      "description": "Google OAuth 2.0 client ID for web sign-in.",
+      "required": false
+    },
+    "GOOGLE_CLIENT_SECRET_WEB": {
+      "description": "Google OAuth 2.0 client secret for web sign-in.",
+      "required": false
+    },
+    "GOOGLE_SESSION_SECRET": {
+      "description": "Secret used to sign the Google OAuth session cookie.",
+      "required": false
+    },
+    "SALESFORCE_KEY": {
+      "description": "Primary LLM / OpenAI API key.",
+      "required": false
+    },
+    "SALESFORCE_KEY1": {
+      "description": "LLM API key pool — slot 1.",
+      "required": false
+    },
+    "SALESFORCE_KEY2": {
+      "description": "LLM API key pool — slot 2.",
+      "required": false
+    },
+    "SALESFORCE_KEY3": {
+      "description": "LLM API key pool — slot 3.",
+      "required": false
+    },
+    "SALESFORCE_KEY4": {
+      "description": "LLM API key pool — slot 4.",
+      "required": false
+    },
+    "SALESFORCE_KEY5": {
+      "description": "LLM API key pool — slot 5.",
+      "required": false
+    },
+    "VITE_GA_MEASUREMENT_ID": {
+      "description": "Google Analytics 4 measurement ID (format: G-XXXXXXXXXX). Used by both the docs site and the UI SPA. Omit to disable analytics.",
+      "required": false
+    },
+    "AI_RATE_LIMIT_DAILY": {
+      "description": "Maximum AI/LLM requests per user per day.",
+      "required": false,
+      "value": "100"
+    },
+    "DOC_VERSION": {
+      "description": "Salesforce API documentation version to load at server startup.",
+      "required": false,
+      "value": "260.0"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "standard-2x"
+    }
+  }
+}

@@ -137,42 +137,106 @@ a {
     color: var(--color-text);
 }
 
-/* ─── Language switcher ───────────────────────────────────── */
+/* ─── Language picker ─────────────────────────────────────── */
 
-.lang-switcher {
-    display: flex;
-    align-items: center;
-    gap: 1px;
-    background: var(--color-surface-alt);
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    padding: 2px;
+.lang-picker {
+    position: relative;
 }
 
-.lang-switcher-btn {
+.lang-picker-trigger {
+    display: flex;
+    align-items: center;
+    gap: 4px;
     background: transparent;
     border: none;
-    color: var(--color-text-muted);
     cursor: pointer;
-    font-size: 11px;
-    font-weight: 600;
-    font-family: inherit;
-    letter-spacing: 0.04em;
-    padding: 3px 8px;
-    border-radius: 4px;
-    transition: color 0.15s ease, background 0.15s ease;
+    padding: 4px 6px;
+    border-radius: 6px;
+    color: var(--color-text-muted);
+    transition: background 0.15s ease, color 0.15s ease;
     line-height: 1;
 }
 
-.lang-switcher-btn:hover {
+.lang-picker-trigger:hover {
+    background: var(--color-surface-alt);
     color: var(--color-text);
-    background: var(--color-surface);
 }
 
-.lang-switcher-btn--active {
+.lang-picker-flag {
+    font-size: 18px;
+    line-height: 1;
+    display: block;
+}
+
+.lang-picker-chevron {
+    transition: transform 0.18s ease;
+    flex-shrink: 0;
+}
+
+.lang-picker-chevron--open {
+    transform: rotate(180deg);
+}
+
+.lang-picker-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    list-style: none;
+    margin: 0;
+    padding: 4px;
     background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px -4px rgba(19, 48, 98, 0.14), 0 0 0 1px rgba(0,0,0,0.04);
+    min-width: 148px;
+    z-index: 100;
+}
+
+.lang-picker-dropdown li {
+    margin: 0;
+    padding: 0;
+}
+
+.lang-picker-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    padding: 7px 10px;
+    border-radius: 7px;
+    text-align: left;
+    transition: background 0.12s ease, color 0.12s ease;
+}
+
+.lang-picker-option:hover {
+    background: var(--color-surface-alt);
     color: var(--color-text);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.lang-picker-option--active {
+    color: var(--color-text);
+    font-weight: 500;
+}
+
+.lang-picker-option-flag {
+    font-size: 17px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.lang-picker-option-name {
+    flex: 1;
+}
+
+.lang-picker-check {
+    color: var(--color-brand);
+    flex-shrink: 0;
 }
 
 /* ─── Buttons ─────────────────────────────────────────────── */

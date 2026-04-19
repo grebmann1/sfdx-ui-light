@@ -1,0 +1,22 @@
+# =============================================================================
+# Heroku Container Registry deployment
+#
+# This file tells Heroku to build and run the Docker image instead of using
+# a language buildpack. The Dockerfile packages pre-built artifacts; run
+# `npm run docker:prebuild` locally to produce them before pushing.
+#
+# Deployment steps:
+#   heroku stack:set container -a workbench2
+#   heroku container:push web -a workbench2
+#   heroku container:release web -a workbench2
+#
+# Custom domains (run once per domain):
+#   heroku domains:add workbench-salesforce.com -a workbench2
+#   heroku domains:add app.workbench-salesforce.com -a workbench2
+#   heroku domains:add vscode.workbench-salesforce.com -a workbench2
+#   heroku domains:add doc.workbench-salesforce.com -a workbench2
+# Then point DNS CNAMEs to the targets printed by `heroku domains -a workbench2`.
+# =============================================================================
+build:
+  docker:
+    web: Dockerfile

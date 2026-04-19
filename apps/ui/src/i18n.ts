@@ -31,9 +31,9 @@ i18n
 export default i18n;
 
 export const SUPPORTED_LANGUAGES = [
-    { code: 'en', label: 'EN', name: 'English' },
-    { code: 'fr', label: 'FR', name: 'Français' },
-    { code: 'de', label: 'DE', name: 'Deutsch' },
-    { code: 'es', label: 'ES', name: 'Español' },
-    { code: 'ja', label: 'JA', name: '日本語' },
+    { code: 'en', label: 'EN', name: 'English',  flag: '🇺🇸' },
+    { code: 'fr', label: 'FR', name: 'Français', flag: '🇫🇷' },
+    { code: 'de', label: 'DE', name: 'Deutsch',  flag: '🇩🇪' },
+    { code: 'es', label: 'ES', name: 'Español',  flag: '🇪🇸' },
+    { code: 'ja', label: 'JA', name: '日本語',   flag: '🇯🇵' },
 ] as const;

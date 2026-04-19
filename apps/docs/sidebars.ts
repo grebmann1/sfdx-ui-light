@@ -42,6 +42,11 @@ const sidebars: SidebarsConfig = {
         },
         {
             type: 'category',
+            label: 'Deployment',
+            items: ['deployment/heroku'],
+        },
+        {
+            type: 'category',
             label: 'Contributing',
             items: ['contributing/how-to-contribute', 'contributing/reporting-issues'],
         },

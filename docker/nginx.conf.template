@@ -29,7 +29,10 @@ http {
 
     sendfile        on;
     keepalive_timeout 65;
+    client_max_body_size 32m;
+
     gzip on;
+    gzip_vary on;
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript application/wasm;
 
     # =========================================================================
@@ -68,14 +71,18 @@ http {
         server_name app.workbench-salesforce.com;
 
         location / {
-            proxy_pass         http://127.0.0.1:3000;
-            proxy_http_version 1.1;
-            proxy_set_header   Host              $host;
-            proxy_set_header   X-Real-IP         $remote_addr;
-            proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
-            proxy_set_header   X-Forwarded-Proto $scheme;
-            proxy_set_header   Upgrade           $http_upgrade;
-            proxy_set_header   Connection        "upgrade";
+            proxy_pass             http://127.0.0.1:3000;
+            proxy_http_version     1.1;
+            proxy_set_header       Host              $host;
+            proxy_set_header       X-Real-IP         $remote_addr;
+            proxy_set_header       X-Forwarded-For   $proxy_add_x_forwarded_for;
+            proxy_set_header       X-Forwarded-Proto $scheme;
+            proxy_set_header       Upgrade           $http_upgrade;
+            proxy_set_header       Connection        "upgrade";
+            # Extended timeouts for LLM and slow API calls
+            proxy_connect_timeout  10s;
+            proxy_send_timeout     300s;
+            proxy_read_timeout     300s;
         }
     }
 
@@ -94,9 +101,13 @@ http {
             try_files $uri $uri/ /index.html;
         }
 
+        # nginx does not inherit server-level add_header when a location has its own,
+        # so COEP/COOP/CORP must be repeated here explicitly.
         location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|wasm)$ {
             expires 1y;
             add_header Cache-Control "public, immutable";
+            add_header Cross-Origin-Embedder-Policy "credentialless" always;
+            add_header Cross-Origin-Opener-Policy "same-origin" always;
             add_header Cross-Origin-Resource-Policy "cross-origin" always;
         }
     }
@@ -185,9 +196,13 @@ http {
             try_files $uri $uri/ /index.html;
         }
 
+        # nginx does not inherit server-level add_header when a location has its own,
+        # so COEP/COOP/CORP must be repeated here explicitly.
         location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|wasm)$ {
             expires 1y;
             add_header Cache-Control "public, immutable";
+            add_header Cross-Origin-Embedder-Policy "credentialless" always;
+            add_header Cross-Origin-Opener-Policy "same-origin" always;
             add_header Cross-Origin-Resource-Policy "cross-origin" always;
         }
     }

@@ -31,6 +31,12 @@ const config: Config = {
         ],
     ],
     themeConfig: {
+        ...(process.env.VITE_GA_MEASUREMENT_ID && {
+            gtag: {
+                trackingID: process.env.VITE_GA_MEASUREMENT_ID,
+                anonymizeIP: true,
+            },
+        }),
         navbar: {
             title: 'Workbench Docs',
             items: [

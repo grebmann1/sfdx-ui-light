@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { SUPPORTED_LANGUAGES } from './i18n';
@@ -7,21 +8,64 @@ export const GITHUB_URL = 'https://github.com/grebmann1/sfdx-ui-light';
 export const CHROME_STORE_URL =
     'https://chromewebstore.google.com/detail/salesforce-toolkit/konbmllgicfccombdckckakhnmejjoei?hl=en';
 
-function LanguageSwitcher() {
+function LanguagePicker() {
     const { i18n } = useTranslation();
+    const [open, setOpen] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    const current = SUPPORTED_LANGUAGES.find(l => l.code === i18n.resolvedLanguage)
+        ?? SUPPORTED_LANGUAGES[0];
+
+    useEffect(() => {
+        if (!open) return;
+        function onPointerDown(e: PointerEvent) {
+            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+                setOpen(false);
+            }
+        }
+        document.addEventListener('pointerdown', onPointerDown);
+        return () => document.removeEventListener('pointerdown', onPointerDown);
+    }, [open]);
+
     return (
-        <div className="lang-switcher" role="group" aria-label="Language">
-            {SUPPORTED_LANGUAGES.map(lang => (
-                <button
-                    key={lang.code}
-                    className={`lang-switcher-btn${i18n.resolvedLanguage === lang.code ? ' lang-switcher-btn--active' : ''}`}
-                    onClick={() => i18n.changeLanguage(lang.code)}
-                    aria-label={lang.name}
-                    aria-pressed={i18n.resolvedLanguage === lang.code}
+        <div className="lang-picker" ref={containerRef}>
+            <button
+                className="lang-picker-trigger"
+                onClick={() => setOpen(o => !o)}
+                aria-haspopup="listbox"
+                aria-expanded={open}
+                aria-label={`Language: ${current.name}`}
+            >
+                <span className="lang-picker-flag" aria-hidden="true">{current.flag}</span>
+                <svg
+                    className={`lang-picker-chevron${open ? ' lang-picker-chevron--open' : ''}`}
+                    width="10" height="10" viewBox="0 0 24 24"
+                    fill="none" stroke="currentColor" strokeWidth="2.5"
+                    strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
                 >
-                    {lang.label}
-                </button>
-            ))}
+                    <polyline points="6 9 12 15 18 9" />
+                </svg>
+            </button>
+            {open && (
+                <ul className="lang-picker-dropdown" role="listbox" aria-label="Language">
+                    {SUPPORTED_LANGUAGES.map(lang => (
+                        <li key={lang.code} role="option" aria-selected={lang.code === current.code}>
+                            <button
+                                className={`lang-picker-option${lang.code === current.code ? ' lang-picker-option--active' : ''}`}
+                                onClick={() => { i18n.changeLanguage(lang.code); setOpen(false); }}
+                            >
+                                <span className="lang-picker-option-flag" aria-hidden="true">{lang.flag}</span>
+                                <span className="lang-picker-option-name">{lang.name}</span>
+                                {lang.code === current.code && (
+                                    <svg className="lang-picker-check" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                        <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                )}
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            )}
         </div>
     );
 }
@@ -61,7 +105,7 @@ export function SiteHeader({ showInstall = true }: { showInstall?: boolean }) {
                 Workbench
             </a>
             <nav className="header-nav">
-                <LanguageSwitcher />
+                <LanguagePicker />
                 <a
                     className="header-link"
                     href={GITHUB_URL}
