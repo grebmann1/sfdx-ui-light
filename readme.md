@@ -1,5 +1,10 @@
 # SF Toolkit
 
+> [!WARNING]
+> **This repository is deprecated and no longer maintained.**
+>
+> Development has moved to the new **[Workbench](https://github.com/grebmann1/workbench)** repository, which is the successor to SF Toolkit. Please use and contribute there instead.
+
 The SF Toolkit repository provides a comprehensive suite of tools designed for Salesforce administration. These tools are accessible across multiple platforms, including the SF Toolkit website, an Electron desktop application, and a Chrome Extension, ensuring flexibility and convenience for Salesforce administrators.
 
 ![Welcome Page of SF Toolkit](./git_images/welcome.png)
